@@ -1,0 +1,8 @@
+sphinx
+recommonmark
+sphinxcontrib-autoprogram
+sphinx-copybutton
+sphinx-tabs
+pydata-sphinx-theme
+nbsphinx
+nbconvert
