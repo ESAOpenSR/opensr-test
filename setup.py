@@ -14,7 +14,7 @@ def read(filename):
 
 setup(
     name="opensr-test",
-    version="0.0.1",
+    version="0.0.2",
     url="https://github.com/ESAOpenSR/opensr-test",
     license="MIT",
     author="Cesar Aybar Camacho",
@@ -24,13 +24,9 @@ setup(
     long_description_content_type="text/markdown",
     packages=find_packages(exclude=("tests",), include=["opensr-test", "opensr-test.*"]),    
     install_requires=[
-        "numpy",
         "pydantic",
         "alive_progress",
-        "orjson",
-        "timm",
-        "torchvision",
-        "pandas",
+        "numpy",
     ],
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
@@ -40,6 +36,5 @@ setup(
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10"
     ],
 )
