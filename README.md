@@ -1,6 +1,9 @@
 <p align="center">
-  <a href="https://github.com/ESAOpenSR/opensr-test"><img src="https://user-images.githubusercontent.com/16768318/213960001-66bb7d18-13d8-41d4-9de3-1e8a77f73787.png" alt="header" width="55%"></a>
-</p>[Title](https://github.com/ESAOpenSR/opensr-check)
+  <a href="https://github.com/ESAOpenSR/opensr-test"><img src="https://github.com/ESAOpenSR/opensr-test/assets/16768318/15661226-f4c4-4d55-8dd1-d73a228e36da" alt="header" width="55%"></a>
+</p>
+
+
+
 
 <p align="center">
     <em>A comprehensive benchmark for real-world Sentinel-2 imagery super-resolution</em>
@@ -14,8 +17,8 @@
 <a href="https://opensource.org/licenses/MIT" target="_blank">
     <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License">
 </a>
-<a href='https://opensr-test.readthedocs.io/en/latest/?badge=latest'>
-    <img src='https://readthedocs.org/projects/opensr-test/badge/?version=latest' alt='Documentation Status' />
+<a href='https://opensr-test.readthedocs.io/en/latest/?badge=main'>
+    <img src='https://readthedocs.org/projects/opensr-test/badge/?version=main' alt='Documentation Status' />
 </a>
 <a href="https://github.com/psf/black" target="_blank">
     <img src="https://img.shields.io/badge/code%20style-black-000000.svg" alt="Black">
@@ -39,72 +42,107 @@
 
 ## Overview
 
-In remote sensing, image super-resolution (ISR) is a technique used to create high-resolution (HR) images from low-resolution (R) satellite images, giving a more detailed view of the Earth's surface. However, with the constant development and introduction of new ISR algorithms, it can be challenging to stay updated on the latest advancements and to evaluate their performance objectively. To address this issue, we introduce SRcheck, a Python package that provides an easy-to-use interface for comparing and benchmarking various ISR methods. SRcheck includes a range of datasets that consist of high-resolution and low-resolution image pairs, as well as a set of quantitative metrics for evaluating the performance of SISR algorithms.
+In the domain of remote sensing, image super-resolution (ISR) goal is augmenting the ground sampling distance, also known as spatial resolution. Over recent years, numerous research papers have been proposed addressing ISR; however, they invariably suffer from two main issues. Firstly, the majority of these proposed models are tested on synthetic data. As a result, their applicability and performance in real-world scenarios remain unverified. Secondly, the frequently utilized evaluation metrics for these models, such as LPIPS and SSIM, are inherently designed for perceptual image analysis, not specifically for super-resolution.
+
+In response to these challenges, **'opensr-test'** has been introduced as a Python package, designed to provide users with three meticulously curated test datasets. These datasets are tailored to minimize spatial distortions between Low Resolution (LR) and High Resolution (HR) images, while calibrating differences in the spectral domain. Moreover, the **'opensr-test'** package offers five distinct types of metrics aimed at accurately evaluating the performance of ISR algorithms, thus addressing the aforementioned shortcomings of conventional evaluation techniques.
+
+## Datasets
+
+The utilization of *synthetic data* in benchmarking could potentially introduce biased conclusions, as there are no guarantees that a degradation method could not inadvertently incorporate some form of bias, i.e. the degradation does not match the real-world ground sampling distance of the LR image. Therefore, to avoid *synthetic data* potential errors, the datasets utilized in **opensr-test** are meticulously created following a *cross-sensor approach* that means that HR and LR comes from different sensor but they are aligned as closely as possible, i.e. harmonized. Due to the limited availability of open HR resolution data that correspond with Sentinel-2, we propose using three HR sensors: SPOT, VENµS, and NAIP. The pre-processing of these HR-LR image pairs follows the same methodology as in NAIP-I, detailed in Section \ref{degradation_model}.
+
+
+| Dataset        | Scale | # Scenes | HRsize | HR Reference                                                                               |
+|----------------|-------|----------|--------|--------------------------------------------------------------------------------------------|
+| NAIP-19        | x4    | 200      | 512    | USDA Farm Production and Conservation - Business Center, Geospatial Enterprise Operations. |
+| SPOTPAN-10     | x4    | 200      | 512    | European Space Agency, 2017, SPOT 1-5 ESA                                                  |
+| Mini-SEN2VENµS | x2    | 200      | 512    | Vegetation and Environment monitoring on a New Micro-Satellite (SEN2VENμS).                |
+
+
+
+
+## Metrics
+
+We propose that evaluating the ISR process with a single metric is not adequate, and therefore, we suggest the use of five metrics, which will be detailed below.
+
+<details>
+    <summary><b>Spectral consistency</b></summary>
+    Measured based on the comparison of LR and SR images. The reflectance values are then compared using spectral angle distance metrics. The LR and degraded SR values should not be identical but rather similar.
+</details>
+
+<details>
+    <summary><b>Spatial consistency</b></summary>
+    Measured again from the comparison of the LR and SR images, ground control points are obtained using LightGlue + DISK. The difference between the reference points and a first-order polynomial is then calculated.
+</details>
+
+<details>
+    <summary><b>High-frequency</b></summary>
+    Measured from the comparison of LR and SR images, we calculate the MTF between the LR-SR pairs to assess the improvement in ground sampling distance. The MTF curve represents the system's response in different spatial frequencies. A higher MTF value at a specific frequency indicates a better resolution and sharper image details. The reported metric is the comparison of the area under the MTF curve between the LR and SR images, from the Nyquist frequency of Sentinel2 to the super-resolved image.
+</details>
+
+<details>
+    <summary><b>Omission</b></summary>
+    Error related to the inability to represent the actual high-frequency information from the landscape. The systematic error must be first removed.
+</details>
+
+<details>
+    <summary><b>Hallucinations</b></summary>
+    Hallucinations refer to errors that are solely related to high-frequency information inducted by the super-resolution model, with no correlation to the real continuous space. 
+</details>
+
+
+<img src="https://github.com/ESAOpenSR/opensr-test/assets/16768318/473865e5-5661-4b6a-b941-ae170ffd6d0e" alt="isort"  width="55%">
+
 
 ## Installation
 
 Install the latest version from PyPI:
 
 ```
-pip install srcheck
+pip install opensr-test
 ```
 
-Upgrade `srcheck` by running:
+Upgrade `opensr-test` by running:
 
 ```
-pip install -U srcheck
+pip install -U opensr-test
 ```
 
 Install the latest version from conda-forge:
 
 ```
-conda install -c conda-forge srcheck
+conda install -c conda-forge opensr-test
 ```
 
 Install the latest dev version from GitHub by running:
 
 ```
-pip install git+https://github.com/csaybar/srcheck
+pip install git+https://github.com/ESAOpenSR/opensr-test
 ```
 
 ## How does it work?
 
+opensr-test needs either a PyTorch (torch.nn.Module, torch.jit.trace or  torch.jit.script) or TensorFlow model. The following example shows 
+how to run the benchmarks:
+
 <center>
-    <img src="https://user-images.githubusercontent.com/16768318/213967913-3c665d59-5053-43a7-a450-859b7442b345.png" alt="header" width="70%">
+    <img src="https://github.com/ESAOpenSR/opensr-test/assets/16768318/60a34d0a-f7ab-4c52-b68c-978e51898733" alt="header" width="70%">
 </center>
 
-**srcheck** needs either a `torch.nn.Module` class or a compiled model via `torch.jit.trace` or `torch.jit.script`. The following example shows how to run the benchmarks:
+The following example shows how to run the benchmarks:
 
 ```python
 import torch
-import srcheck
+import opensr_test
 
+# Load your model
 model = torch.jit.load('/content/quantSRmodel.pt', map_location='cpu')
-srcheck.benchmark(model, dataset='SPOT-50', metrics=['PSNR', 'SSIM'], type= "NoSRI")
+
+# Check if the model works
+dataset = opensr_test.naip
+
+opensr_test.check(model, dataset)
+# { 'Spectral': 0.08, 'Spatial': 2.34, 'High-frequency': 1.32, 'Hallucination': 0.90, 'Omission': 1.03}
 ```
-
-srcheck supports two group types of metrics: (a) Surface Reflectance Integrity (SRI) and (b) No Surface Reflectance Integrity (NoSRI). This difference is due to the fact that depending on the application, developers will be interested in optimizing the "image quality" or the "image fidelity". *Image fidelity* refers to how closely the LR image represents the real source distribution (HR). Optimizing fidelity is crucial for applications that require preserving surface reflectance as close as possible to the original values. On the other hand, *image quality* refers to how pleasant the image is for the human eye. Optimizing image quality is important for creating HR image satellite base maps. The image below shows the natural trade-off that exists between these two group types of metrics.
-
-
-<center>
-    <img src="https://user-images.githubusercontent.com/16768318/213970463-5c2a8012-4e76-48ce-bb13-4d51590d359c.png" alt="header" width="60%">
-</center>
-
-But what happens if my ISR algorithm increases the image by a factor of 8, but the datasets available in srcheck do not support 8X? In that case, *srcheck* will automatically convert the results to the native resolution of the datasets. For example, if your algorithm increases the image by 2X, and you want to test it on SPOT-50 whose images are 10m in LR and 6m in HR, *srcheck* will upscale the results from 5 meters to 6m using the bilinear interpolation algorithm. Similarly, in the MUS2-50 dataset, *srcheck* will downscale the results from 5m to 2m. This is done in order the results can be compared with the datasets available.
-
-<center>
-    <img src="https://user-images.githubusercontent.com/16768318/213971771-04b193e7-83e8-436a-b4a1-0c317cc7b756.png" alt="header" width="75%">
-</center>
-
-## Datasets
-
-[**https://zenodo.org/record/7562334**](https://zenodo.org/record/7562334)
-
-More datasets are coming soon!
-
-## Metrics
-
-Metrics documentation is coming soon!
 
 ## Pre-trained Models
 Pre-trained models are available at various scales and hosted at the awesome [`huggingface_hub`](https://huggingface.co/models?filter=super-image). By default the models were pretrained on [DIV2K](https://huggingface.co/datasets/eugenesiow/Div2k), a dataset of 800 high-quality (2K resolution) images for training, augmented to 4000 images and uses a dev set of 100 validation images (images numbered 801 to 900). 
