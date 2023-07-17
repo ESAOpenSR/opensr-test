@@ -98,14 +98,13 @@ that HR and LR comes from different sensor but they are aligned as closely as po
 availability of open HR resolution data that correspond with Sentinel-2, we propose using three HR sensors: SPOT, VENµS, and 
 NAIP.
 
-
-+----------------+-------+----------+--------+--------------------------------------------------------------------------------------------+
-| Dataset        | Scale | # Scenes | HRsize | HR Reference                                                                               |
-+================+=======+==========+========+============================================================================================+
-| NAIP           | 4     | 200      | 512    | USDA Farm Production and Conservation - Business Center, Geospatial Enterprise Operations. |
-| SPOTPAN        | 4     | 200      | 512    | European Space Agency, 2017, SPOT 1-5 ESA                                                  |
-| Mini-SEN2VENµS | 2     | 200      | 512    | Vegetation and Environment monitoring on a New Micro-Satellite (SEN2VENμS).                |
-+----------------+-------+----------+--------+--------------------------------------------------------------------------------------------+
++----------------+-------+--------+--------+--------------------------------------------------------------------------------------------+
+| Dataset        | Scale | Scenes | HRsize | HR Reference                                                                               |
++================+=======+========+========+============================================================================================+
+| NAIP           | 4     | 200    | 512    | USDA Farm Production and Conservation - Business Center, Geospatial Enterprise Operations. |
+| SPOTPAN        | 4     | 200    | 512    | European Space Agency, 2017, SPOT 1-5 ESA                                                  |
+| Mini-SEN2VENµS | 2     | 200    | 512    | Vegetation and Environment monitoring on a New Micro-Satellite (SEN2VENμS).                |
++----------------+-------+--------+--------+--------------------------------------------------------------------------------------------+
 
 
 Metrics
@@ -141,8 +140,13 @@ We propose that evaluating the ISR process with a single metric is not adequate,
       Hallucinations refer to errors that are solely related to high-frequency information inducted by the super-resolution model, with no correlation to the real continuous space. 
    </details>
 
+   <embed>
+     <p align="center">
+       <img src="https://github.com/ESAOpenSR/opensr-test/assets/16768318/473865e5-5661-4b6a-b941-ae170ffd6d0e" alt="isort"  width="55%">
+     </p>
+   </embed>
 
-   <img src="https://github.com/ESAOpenSR/opensr-test/assets/16768318/473865e5-5661-4b6a-b941-ae170ffd6d0e" alt="isort"  width="55%">
+   
 
 
 Installation
