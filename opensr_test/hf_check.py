@@ -162,10 +162,11 @@ def hq_convolve(image1: torch.Tensor, image2: torch.Tensor) -> torch.Tensor:
     Returns:
         int: The metric value. 
     """
+    
 
     # Obtain the scale
     scale = image2.shape[-1] // image1.shape[-1]
-
+    
     # Convert the LR to SRimage scale
     image1 = torch.nn.functional.interpolate(
         input=image1[None],
@@ -182,6 +183,7 @@ def hq_convolve(image1: torch.Tensor, image2: torch.Tensor) -> torch.Tensor:
         mode='bilinear',
         antialias=True
     )
+
     image1_ref = torch.nn.functional.interpolate(
         input=image1_ref,
         size=image2.shape[-2:],
@@ -193,12 +195,8 @@ def hq_convolve(image1: torch.Tensor, image2: torch.Tensor) -> torch.Tensor:
     # Compute the difference
     diff1 = torch.abs(image1 - image1_ref)
     diff2 = torch.abs(image2 - image1_ref)
-
-    # Group get the mean of each image patch (8x8)
-    diff1_r = torch.nn.functional.avg_pool2d(diff1, kernel_size=scale*2, stride=8)    
-    diff2_r = torch.nn.functional.avg_pool2d(diff2, kernel_size=scale*2, stride=8)
     
-    return torch.abs(diff2_r - diff1_r)
+    return torch.abs(diff2 - diff1)
 
 def hf_metric(
     image1: torch.Tensor,
@@ -239,6 +237,22 @@ def hf_metric(
 
 if __name__ == "__main__":
 
-    image1 = torch.rand(3, 128, 128)
-    image2 = torch.rand(3, 512, 512)
-    hf_metric(image1, image2, metric="convolve")
+    # load each image as a torch.Tensor on GPU with shape (3,H,W), normalized in [0,1]
+    import pathlib
+    from opensr_test.lightglue.utils import load_image
+
+    pathdir = pathlib.Path("demo/ROI_05021/")
+    image1 = load_image(pathdir / "m_4111801_sw_11_060_20190831.tif")
+    image2 = load_image(pathdir / "m_4111908_se_11_1_20130720.tif")
+    
+    image1 = image1[:, 900:1400, 900:1400]
+    image2 = image2[:, 900:1400, 900:1400]
+    
+    lr_image = torch.nn.functional.interpolate(
+        image1[None],
+        scale_factor=0.5,
+        mode="bilinear",
+        antialias=True
+
+    ).squeeze(0)
+    sr_image = image1

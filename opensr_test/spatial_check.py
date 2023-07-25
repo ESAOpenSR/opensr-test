@@ -10,7 +10,7 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import PolynomialFeatures
 
 from opensr_test.lightglue import DISK, LightGlue, SuperPoint, viz2d
-from opensr_test.lightglue.utils import load_image, rbd
+from opensr_test.lightglue.utils import rbd
 
 
 def distance_matrix(
@@ -287,6 +287,9 @@ def spatial_metric(
             the grid with the error, otherwise return the mean error (RMSEmean).
     """
 
+    # replace nan values with 0
+    image1 = torch.nan_to_num(image1, nan=0.0)
+    
     # Get the points and matches
     matching_points = spatial_get_matching_points(
         img01=image1, img02=image2, model=models, device=device
@@ -329,17 +332,23 @@ def spatial_metric(
 
 def spatial_model_fit(
     matching_points: Dict[str, torch.Tensor],
+    n_points: Optional[int] = 10,
     threshold_distance: Optional[int] = 5,
     degree: Optional[int] = 1,
     verbose: Optional[bool] = True,
+    scale: Optional[int] = 1,
+    return_rmse: Optional[bool] = False,
 ):
     """Get a model that minimizes the spatial error between two images
 
     Args:
         matching_points (Dict[str, torch.Tensor]): A dictionary with the points0, points1 and image size.
+        n_points (Optional[int], optional): The minimum number of points. Defaults to 10.
         threshold_distance (Optional[int], optional): The maximum distance between the points. Defaults to 5 pixels.
         degree (Optional[int], optional): The degree of the polynomial. Defaults to 1.
         verbose (Optional[bool], optional): If True, print the error. Defaults to False.
+        scale (Optional[int], optional): The scale factor to use. Defaults to 1.
+        return_rmse (Optional[bool], optional): If True, return the RMSE. Defaults to False.
     Returns:
         np.ndarray: The spatial error between the two images
     """
@@ -355,12 +364,12 @@ def spatial_model_fit(
     p1 = points1[thres]
 
     # if not enough points, return 0
-    if p0.shape[0] < 10:
-        raise ValueError("Not enough points to calculate the spatial error")
+    if p0.shape[0] < n_points:
+        raise ValueError("Not enough points to fit the model")
 
     # from torch.Tensor to numpy array
-    p0 = p0.detach().cpu().numpy()
-    p1 = p1.detach().cpu().numpy()
+    p0 = p0.detach().cpu().numpy() * scale
+    p1 = p1.detach().cpu().numpy() * scale
 
     # Fit a polynomial of degree 2 to the points
     X_img0 = p0[:, 0].reshape(-1, 1)
@@ -393,6 +402,12 @@ def spatial_model_fit(
         print(f"Initial [RMSE]: %.04f" % np.mean(full_error2))
         print(f"Final [RMSE]: %.04f" % np.mean(full_error1))
 
+    if return_rmse:
+        return {
+            "models": (model_x, model_y),
+            "rmse": (np.mean(full_error2), np.mean(full_error1))
+        }
+
     return model_x, model_y
 
 
@@ -400,17 +415,19 @@ def spatial_model_transform(
     image1: torch.Tensor,
     spatial_models: tuple,
     precision: Optional[int] = 2,
+    interpolation_mode: Optional[str] = "bilinear",
     device: str = "cuda",
 ) -> torch.Tensor:
-    """Fix the spatial error between two images
+    """ Transform the image according to the spatial model
 
     Args:
         image1 (torch.Tensor): The image 1 with shape (B, H, W)
         spatial_models (tuple): A tuple with the models for x and y
         device (str, optional): The device to use. Defaults to 'cuda'.
-
+        interpolation_mode (Optional[str], optional): The interpolation mode. 
+            Defaults to 'bilinear'.
     Returns:
-        torch.Tensor: The fixed image
+        torch.Tensor: The transformed image
     """
 
     # Get the output device
@@ -426,15 +443,16 @@ def spatial_model_transform(
 
     # Send the data to the device
     image1 = image1.to(device)
-
+    
     # Create a super-grid
     image1 = torch.nn.functional.interpolate(
         image1.unsqueeze(0), scale_factor=precision, mode="nearest-exact"
     ).squeeze(0)
 
     # Get the coordinates
-    x = torch.arange(0, image1.shape[-2], 1).to(device)
-    y = torch.arange(0, image1.shape[-1], 1).to(device)
+    x = torch.arange(0, image1.shape[-2]/precision, 1/precision).to(device)
+    y = torch.arange(0, image1.shape[-1]/precision, 1/precision).to(device)
+    
     xx, yy = torch.meshgrid(x, y)
 
     # Flatten the coordinates
@@ -446,8 +464,8 @@ def spatial_model_transform(
     yy_new = model_y.predict(yy.cpu().numpy())
 
     # Reshape the coordinates
-    xx_new = xx_new.reshape(image1.shape[-2], image1.shape[-2])
-    yy_new = yy_new.reshape(image1.shape[-1], image1.shape[-1])
+    xx_new = xx_new.reshape(image1.shape[-2], image1.shape[-2])*precision
+    yy_new = yy_new.reshape(image1.shape[-1], image1.shape[-1])*precision
 
     # Send the coordinates to torch and to the device
     xx_new = torch.Tensor(xx_new).to(device)
@@ -464,7 +482,7 @@ def spatial_model_transform(
     new_image1 = torch.nn.functional.grid_sample(
         image1_1.unsqueeze(0),
         torch.stack([xx_new, yy_new], dim=2).unsqueeze(0),
-        mode="nearest",
+        mode=interpolation_mode,
         padding_mode="border",
         align_corners=False,
     ).squeeze(0)
@@ -473,15 +491,15 @@ def spatial_model_transform(
     new_image1 = new_image1[
         :, (8 * precision) : -(8 * precision), (8 * precision) : -(8 * precision)
     ]
-
+    
     # Go back to the original size
     new_image1 = torch.nn.functional.interpolate(
         new_image1.unsqueeze(0), scale_factor=1 / precision, mode="nearest-exact"
     ).squeeze(0)
-
+    
     # Save the image
     final_image1 = new_image1.flip(2).to(output_device)
-
+    
     return final_image1
 
 
@@ -511,36 +529,38 @@ if __name__ == "__main__":
 
     # load each image as a torch.Tensor on GPU with shape (3,H,W), normalized in [0,1]
     import pathlib
-    pathdir = pathlib.Path("demo/ROI_05020/")
-    image1 = load_image(pathdir / "m_4211627_se_11_1_20110624.tif")
-    image2 = load_image(pathdir / "m_4211627_se_11_060_20190623.tif")
+    from opensr_test.lightglue.utils import load_image
 
-    k = 2
-    image1 = image1[:, 0 : 512 * k, 0 : 512 * k]
-    image2 = image2[:, 0 : 512 * k, 0 : 512 * k]
+    pathdir = pathlib.Path("demo/ROI_05021/")
+    image1 = load_image(pathdir / "m_4111801_sw_11_060_20190831.tif")
+    image2 = load_image(pathdir / "m_4111908_se_11_1_20130720.tif")
+    
+    image1 = image1[:, 900:1400, 900:1400]
+    image2 = image2[:, 900:1400, 900:1400]
 
     # Set spatial models
-    models = spatial_setup_model(device="cuda")
+    models = spatial_setup_model(device="cuda", features="disk", max_num_keypoints=4096)
     
     # Get the points and matches
     matching_points = spatial_get_matching_points(img01=image1, img02=image2, model=models, device="cuda")
 
     # Fix a image according to the matching points
     spatial_models = spatial_model_fit(
-        matching_points=matching_points, threshold_distance=5, degree=1
+        matching_points=matching_points, threshold_distance=3, degree=1
     )
     
     new_image1 = spatial_model_transform(
         image1=image1,
         spatial_models=spatial_models,
         precision=4,
+        interpolation_mode="nearest",
         device="cuda"
     )
 
     # Spatial error
-    e1 = spatial_metric(image1, image2, models, device="cuda", grid=True, threshold_distance=5)
-    e2 = spatial_metric(new_image1, image2, models, device="cuda", grid=True, threshold_distance=5)
-
+    e1 = spatial_metric(image1, image2, models, device="cuda", grid=True, threshold_distance=3)
+    e2 = spatial_metric(new_image1, image2, models, device="cuda", grid=True, threshold_distance=3)
+    
 
     # Plots ----------------------------------------------------
 
@@ -590,7 +610,7 @@ if __name__ == "__main__":
     # Save the image1    
     img1_path = save_pathdir / "image1.tif"
     with rio.open(img1_path, "w", **metadata) as dst:
-        dst.write(new_image1.cpu().numpy())
+        dst.write(image1.cpu().numpy())
 
     # Save the image2
     img2_path = save_pathdir / "image2.tif"
@@ -598,6 +618,6 @@ if __name__ == "__main__":
         dst.write(image2.cpu().numpy())
 
     # Save the new image1
-    new_img1_path = save_pathdir / "new_image1.tif"
+    new_img1_path = save_pathdir / "new_image2.tif"
     with rio.open(new_img1_path, "w", **metadata) as dst:
         dst.write(new_image1.cpu().numpy())
