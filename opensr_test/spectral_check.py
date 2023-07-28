@@ -1,5 +1,6 @@
 import torch
 from typing import Optional
+from opensr_test.utils import hq_histogram_matching
 
 def spectral_angle_distance(x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
     """Spectral angle distance between two tensors.
@@ -26,6 +27,7 @@ def spectral_information_divergence(x: torch.Tensor, y: torch.Tensor) -> torch.T
     y_norm = torch.nn.functional.normalize(y, p=2, dim=1)
     return torch.sum(x_norm*torch.log(x_norm/y_norm), dim=1)
 
+
 def spectral_pbias(x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
     """Percent bias between two tensors.
     Args:
@@ -35,6 +37,31 @@ def spectral_pbias(x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
         Tensor of shape (N, C, H, W).
     """
     return torch.max(torch.abs(x - y), axis=0).values
+
+
+def spectral_matching(x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
+    """Pearson correlation coefficient between two tensors
+
+    Args:
+        x (torch.Tensor): The LR image
+        y (torch.Tensor): The SR image
+
+    Returns:
+        torch.Tensor: The correlation coefficient
+    """
+    y_hat = hq_histogram_matching(y, x)
+
+    minmin = torch.min(torch.Tensor([torch.min(y_hat), torch.min(x)]))
+    maxmax = torch.max(torch.Tensor([torch.max(y_hat), torch.max(x)]))
+    
+    A = torch.histc(x, bins=100, min=minmin, max=maxmax)
+    B = torch.histc(y_hat, bins=100, min=minmin, max=maxmax)
+    
+    # merge A and B
+    C = torch.stack([A, B], dim=0)
+    
+    # correlation
+    return torch.corrcoef(C)[0,1]
 
 
 def spectral_metric(

@@ -1,5 +1,5 @@
 import torch
-from opensr_test.hf_check import hq_histogram_matching
+from opensr_test.utils import hq_histogram_matching
 from opensr_test.spatial_check import (
     spatial_setup_model,
     spatial_get_matching_points,
