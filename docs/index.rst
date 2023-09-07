@@ -102,7 +102,7 @@ NAIP.
 | Dataset        | Scale | Scenes | HRsize | HR Reference                                                                               |
 +================+=======+========+========+============================================================================================+
 | NAIP           | 4     | 200    | 512    | USDA Farm Production and Conservation - Business Center, Geospatial Enterprise Operations. |
-| SPOTPAN        | 4     | 200    | 512    | European Space Agency, 2017, SPOT 1-5 ESA                                                  |
+| SPOTPAN        | 4     | 200    | 512    | European Space Agency, 2017, SPOT 1-5 ESA.                                                 |
 | Mini-SEN2VENuS | 2     | 200    | 512    | Vegetation and Environment monitoring on a New Micro-Satellite (SEN2VENuS).                |
 +----------------+-------+--------+--------+--------------------------------------------------------------------------------------------+
 

@@ -80,10 +80,7 @@ html_theme_options = {
             "icon": "fab fa-twitter-square",
         },
     ],
-    "logo": {
-        "image_light": "logo.png",
-        "image_dark": "logo.png",
-    },
+    "logo": {"image_light": "logo.png", "image_dark": "logo.png"},
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,

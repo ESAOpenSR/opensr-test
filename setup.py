@@ -14,7 +14,7 @@ def read(filename):
 
 setup(
     name="opensr-test",
-    version="0.0.3",
+    version="0.0.4",
     url="https://github.com/ESAOpenSR/opensr-test",
     license="MIT",
     author="Cesar Aybar Camacho",
@@ -22,11 +22,12 @@ setup(
     description="A comprehensive benchmark for real-world Sentinel-2 imagery super-resolution",
     long_description=read("README.md"),
     long_description_content_type="text/markdown",
-    packages=find_packages(exclude=("tests",), include=["opensr_test", "opensr_test.*"]),    
+    packages=find_packages(
+        exclude=("tests",), include=["opensr_test", "opensr_test.*"]
+    ),
     install_requires=[
-        "pydantic",
-        "alive_progress",
-        "numpy",
+        "torch", "numpy", "matplotlib", "scikit-image", 
+        "scikit-learn", "lpips", "requests"
     ],
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
