@@ -27,7 +27,7 @@ setup(
     ),
     install_requires=[
         "torch", "numpy", "matplotlib", "scikit-image", 
-        "scikit-learn", "lpips", "requests"
+        "scikit-learn", "lpips", "requests", "kornia"
     ],
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
