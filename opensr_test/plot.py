@@ -55,7 +55,7 @@ def quadruplets(
     lr_img: torch.Tensor,
     sr_img: torch.Tensor,
     hr_img: torch.Tensor,
-    landuse_img: torch.Tensor,
+    landuse_img: Optional[torch.Tensor] = None,
     stretch: Optional[str] = "linear",
 ) -> Tuple[plt.figure, plt.Axes]:
     """ Display LR, SR, HR and Landuse images in a single figure.
@@ -65,6 +65,7 @@ def quadruplets(
         sr_img (torch.Tensor): The SR RGB (3xHxW) image.
         hr_img (torch.Tensor): The HR RGB (3xHxW) image.
         landuse_img (torch.Tensor): The landuse grayscale (HxW) image.
+            Optional, defaults to None.
         stretch (Optional[str], optional): Option to stretch the values 
             to increase contrast: "lin" (linear) or "hist" (histogram)
 
@@ -83,8 +84,9 @@ def quadruplets(
         raise ValueError("The SR image must be a RGB (3xHxW) image.")
     if hr_img.shape[0] == 4:
         raise ValueError("The HR image must be a RGB (3xHxW) image.")
-    if landuse_img.ndim != 2:
-        raise ValueError("The landuse image must be a grayscale (HxW) image.")
+    
+    if landuse_img is None:
+        triplets(lr_img, sr_img, hr_img, stretch=stretch)
 
     # Apply the stretch
     if stretch == "linear":

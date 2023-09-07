@@ -543,7 +543,7 @@ def spatial_metric(
 
     # is matching_points is a dict:
     if not isinstance(matching_points, dict):
-        return create_nan_value(image1, description)
+        return create_nan_value(image1, grid, description)
     
     # Fix a image according to the matching points
     affine_model = spatial_model_fit(
@@ -557,7 +557,7 @@ def spatial_metric(
 
     # is matching_points is a dict:
     if not isinstance(affine_model, dict):
-        return create_nan_value(image1, description)
+        return create_nan_value(image1, grid, description)
         
     
     # Calculate the error
@@ -570,7 +570,7 @@ def spatial_metric(
 
     # is matching_points is a dict:
     if not isinstance(sp_error, tuple):
-        return create_nan_value(image1, description)
+        return create_nan_value(image1, grid, description)
      
     grid_error, points = sp_error
 
