@@ -7,11 +7,11 @@ from typing import Any, Optional, Union, Tuple, List
 
 from opensr_test.hallucinations import unsystematic_error
 from opensr_test.highfrequency import highfrequency
-from opensr_test.spatial_check import (spatial_get_matching_points,
+from opensr_test.spatial import (spatial_get_matching_points,
                                        spatial_metric, spatial_model_fit,
                                        spatial_model_transform,
                                        spatial_setup_model)
-from opensr_test.spectral_check import spectral_metric
+from opensr_test.spectral import spectral_metric
 from opensr_test.utils import Value, hq_histogram_matching
 
 
@@ -144,13 +144,13 @@ class Metrics:
 
         # Obtain the LR in the HR space
         self.lr_to_hr = torch.nn.functional.interpolate(
-            lr[None], scale_factor=self.scale_factor, mode="bilinear", antialias=True
+            self.lr[None], scale_factor=self.scale_factor, mode="bilinear", antialias=True
         ).squeeze(0)
         
 
         # Obtain the SR in the LR space
         self.sr_to_lr = torch.nn.functional.interpolate(
-            sr[None],
+            self.sr[None],
             scale_factor=1 / self.scale_factor,
             mode="bilinear",
             antialias=True,
@@ -393,7 +393,7 @@ class Metrics:
         return lpips_ratio
         
 
-    def forward(
+    def compute(
         self,
         lr: torch.Tensor = None,
         sr: torch.Tensor = None,
@@ -520,7 +520,7 @@ class Metrics:
     def plot_error_grids(self, stretch: Optional[str] = "linear"):
 
         # Return the error grids with the metrics names
-        results = self.forward(grid=True, only_value=False)
+        results = self.compute(grid=True, only_value=False)
 
         # Local error reflectance
         e1 = results["spectral_local_error"].value
@@ -528,12 +528,13 @@ class Metrics:
         e1_subtitle = "%.04f" % torch.sqrt(torch.mean(e1 ** 2))
 
         # Spatial error
+        #results["spatial_error"] = create_nan_value(self.lr, grid = True, description = "Spatial error")
         e2 = results["spatial_error"].value
         e2_p_np = results["spatial_error"].points
         e2_points = [list(x.flatten().astype(int)) for x in e2_p_np]
         e2_title = results["spatial_error"].description
-        e2_subtitle = "%.04f" % torch.sqrt(torch.mean(e2 ** 2))
-
+        e2_subtitle = "%.04f" % torch.sqrt(torch.mean(e2 ** 2))            
+        
         # High frequency
         e3 = results["high_frequency"].value
         e3_title = results["high_frequency"].description
@@ -576,4 +577,4 @@ class Metrics:
         return fig, axs
 
     def __call__(self, *args: Any, **kwds: Any) -> Any:
-        return self.forward(*args, **kwds)
+        return self.compute(*args, **kwds)

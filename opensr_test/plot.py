@@ -368,8 +368,13 @@ def display_results(
     )
 
     # Display the spatial local errors
-    axs[1, 1].imshow(e2)
-    axs[1, 1].plot(*e2_points, "r*", markersize=5)
+    
+    if bool(torch.isnan(torch.mean(e2))):
+        axs[1, 1].imshow(e2)
+    else:
+        axs[1, 1].imshow(e2)
+        axs[1, 1].plot(*e2_points, "r*", markersize=5)
+        
     axs[1, 1].set_title(
         "%s \n %s: %s" % (r"$\bf{Spatial\ Local\ Errors}$", e2_title, e2_subtitle)
     )

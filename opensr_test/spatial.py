@@ -269,112 +269,7 @@ def spatial_error(
         return spgrid_2D, (X_img0, y_img0)
     else:
         # rmse
-        return np.median(full_error), (X_img0, y_img0)
-
-
-def spatial_metric(
-    lr: torch.Tensor,
-    sr_to_lr: torch.Tensor,
-    models: tuple,
-    threshold_distance: Optional[int] = 5,
-    threshold_npoints: Optional[int] = 5,
-    grid: Optional[bool] = True,
-    previous_matching: Optional[Dict[str, torch.Tensor]] = None,
-    description: str = "DISK Lightglue",
-    device: str = "cpu",
-) -> Union[float, np.ndarray]:
-    """Calculate the spatial error between two images
-
-    Args:
-        lr (torch.Tensor): The LR image with shape (C, H, W)
-        sr_to_lr (torch.Tensor): The SR degradated to the spatial resolution of
-            LR with shape (C, H, W).
-        model (tuple): A tuple with the feature extractor and the matcher models.
-        threshold_distance (Optional[int], optional): The maximum distance between the
-            points. Defaults to 5 pixels.
-        threshold_npoints (Optional[int], optional): The minimum number of points.
-            Defaults to 5.
-        degree (Optional[int], optional): The degree of the polynomial. Defaults to 1.
-        grid (Optional[bool], optional): If True, return the grid with the error. Defaults 
-            to True.
-        previous_matching (Optional[Dict[str, torch.Tensor]], optional): A dictionary with
-            the points0, points1 and image size before the spatial transformation. Defaults
-            to None.
-        description (str, optional): The description of the metric. Defaults to 
-            'DISK & Lightglue'.
-        device (str, optional): The device to use. Defaults to 'cpu'.
-
-    Returns:
-        Union[float, np.ndarray]: The spatial error between the two images. If grid=True,
-            return the grid with the error, otherwise return the mean error (RMSEmean).
-    """
-
-    # replace nan values with 0
-    # lightglue does not work with nan values
-    image1 = torch.nan_to_num(lr, nan=0.0)
-
-    # Apply histogram matching
-    image2 = hq_histogram_matching(sr_to_lr, lr)
-
-    # Get the points and matches
-    matching_points = spatial_get_matching_points(
-        img01=image1, img02=image2, model=models, device=device
-    )
-
-    # Fix a image according to the matching points
-    affine_model = spatial_model_fit(
-        matching_points=matching_points,
-        threshold_distance=threshold_distance,
-        n_points=threshold_npoints,
-        degree=1,
-        verbose=False,
-        return_rmse=True,
-    )
-
-    # is matching_points is a dict:
-    if not isinstance(matching_points, dict):
-        return torch.nan
-
-    if previous_matching is not None:
-        p0 = matching_points["points0"]
-        p1 = matching_points["points1"]
-
-        pp0 = previous_matching["points0"]
-
-        # obtain the same elements in both arrays (B, H)
-        index1 = torch.where(
-            torch.all(torch.eq(p0.unsqueeze(1), pp0.unsqueeze(0)), dim=2)
-        )[0]
-
-        newp0 = p0[index1]
-        newp1 = p1[index1]
-
-        if (newp0.shape[0] < threshold_npoints) & (newp1.shape[0] < threshold_npoints):
-            warnings.warn("Not enough points to calculate the spatial error")
-            return torch.nan
-
-        matching_points["points0"] = newp0
-        matching_points["points1"] = newp1
-
-    # Calculate the error
-    grid_error, points = spatial_error(
-        matching_points=matching_points,
-        threshold_distance=threshold_distance,
-        threshold_npoints=threshold_npoints,
-        grid=grid,
-    )
-
-    # if grid_error is a grid, convert to torch.Tensor
-    if isinstance(grid_error, np.ndarray):
-        grid_error = torch.from_numpy(grid_error).to(image1.device).float()
-
-    return Value(
-        value=grid_error,
-        points=points,
-        affine_model=affine_model,
-        matching_points=matching_points,
-        description=description,
-    )
+        return np.mean(full_error), (X_img0, y_img0)
 
 
 def spatial_model_fit(
@@ -555,3 +450,139 @@ def spatial_model_transform(
     final_image1 = new_image1.flip(2).to(output_device)
 
     return final_image1
+
+def create_nan_value(
+    image1:torch.Tensor,
+    grid:bool,
+    description:str
+):
+    """Create a empty value object when spatial models
+    return nan values    
+    """
+    
+    # Create fake points
+    points = (
+        np.array([[0], [1], [2]]),
+        np.array([[0], [1], [2]])
+    )
+
+    
+    # Create a affine model that does nothing
+    affine_model = {
+        "models": spatia_polynomial_fit(*points, 1),
+        "rmse": (torch.nan, torch.nan)
+    }
+    
+    # Create a fake model
+    matching_points = {
+        "points0": np.array([[0, 1], [0,1]]),
+        "points1": np.array([[0, 1], [0,1]]),
+        "matches01": np.array([[0, 1], [0,1]]),
+        "img_size": image1.shape[1:]
+    }
+    
+    # Create a fake value matrix
+    value_matrix = torch.zeros_like(image1[0])
+    value_matrix[value_matrix==0] = torch.nan
+    
+    if not grid:
+        value_matrix = float(value_matrix.median())
+        
+    return Value(
+        value=value_matrix,
+        points=points,
+        affine_model=affine_model,
+        matching_points=matching_points,
+        description=description,
+    )
+
+def spatial_metric(
+    lr: torch.Tensor,
+    sr_to_lr: torch.Tensor,
+    models: tuple,
+    threshold_distance: Optional[int] = 5,
+    threshold_npoints: Optional[int] = 5,
+    grid: Optional[bool] = True,
+    description: str = "DISK Lightglue",
+    device: str = "cpu",
+) -> Union[float, np.ndarray]:
+    """Calculate the spatial error between two images
+
+    Args:
+        lr (torch.Tensor): The LR image with shape (C, H, W)
+        sr_to_lr (torch.Tensor): The SR degradated to the spatial resolution of
+            LR with shape (C, H, W).
+        model (tuple): A tuple with the feature extractor and the matcher models.
+        threshold_distance (Optional[int], optional): The maximum distance between the
+            points. Defaults to 5 pixels.
+        threshold_npoints (Optional[int], optional): The minimum number of points.
+            Defaults to 5.
+        degree (Optional[int], optional): The degree of the polynomial. Defaults to 1.
+        grid (Optional[bool], optional): If True, return the grid with the error. Defaults 
+            to True.
+        description (str, optional): The description of the metric. Defaults to 
+            'DISK & Lightglue'.
+        device (str, optional): The device to use. Defaults to 'cpu'.
+
+    Returns:
+        Union[float, np.ndarray]: The spatial error between the two images. If grid=True,
+            return the grid with the error, otherwise return the mean error (RMSEmean).
+    """
+
+    # replace nan values with 0
+    # lightglue does not work with nan values
+    image1 = torch.nan_to_num(lr, nan=0.0)
+
+    # Apply histogram matching
+    image2 = hq_histogram_matching(sr_to_lr, lr)
+
+    # Get the points and matches    
+    matching_points = spatial_get_matching_points(
+        img01=image1, img02=image2, model=models, device=device
+    )
+
+    # is matching_points is a dict:
+    if not isinstance(matching_points, dict):
+        return create_nan_value(image1, description)
+    
+    # Fix a image according to the matching points
+    affine_model = spatial_model_fit(
+        matching_points=matching_points,
+        threshold_distance=threshold_distance,
+        n_points=threshold_npoints,
+        degree=1,
+        verbose=False,
+        return_rmse=True,
+    )
+
+    # is matching_points is a dict:
+    if not isinstance(affine_model, dict):
+        return create_nan_value(image1, description)
+        
+    
+    # Calculate the error
+    sp_error = spatial_error(
+        matching_points=matching_points,
+        threshold_distance=threshold_distance,
+        threshold_npoints=threshold_npoints,
+        grid=grid
+    )
+
+    # is matching_points is a dict:
+    if not isinstance(sp_error, tuple):
+        return create_nan_value(image1, description)
+     
+    grid_error, points = sp_error
+
+
+    # if grid_error is a grid, convert to torch.Tensor
+    if isinstance(grid_error, np.ndarray):
+        grid_error = torch.from_numpy(grid_error).to(image1.device).float()
+
+    return Value(
+        value=grid_error,
+        points=points,
+        affine_model=affine_model,
+        matching_points=matching_points,
+        description=description,
+    )
