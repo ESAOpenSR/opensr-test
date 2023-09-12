@@ -47,57 +47,58 @@ def load(
         ROOT_FOLDER = pathlib.Path(model_dir)
         
     DATASETS = ["naip", "spot", "venus"]
+    if dataset not in DATASETS:
+        raise NotImplementedError("The dataset %s is not implemented." % dataset)
+        
     URL = "https://huggingface.co/csaybar/opensr-test/resolve/main"
-    HRFILES = ["HR_NAIP.npy", "HR_SPOT67.npy", "HR_VENUS.npy"]
-
+    
     # Create folder
     [(ROOT_FOLDER / x).mkdir(exist_ok=True) for x in DATASETS]
 
     # Download the files
-    for d in DATASETS:
+    
+    ## hr file
+    hrfile_url = "%s/%s/%s" % (URL, dataset, "hr.npy")
+    hrfile_path = ROOT_FOLDER / dataset / "hr.npy"
+    if not hrfile_path.exists() or force:
+        print(f"Downloading {dataset} dataset  - {hrfile_path.stem} file.")
+        download(hrfile_url, hrfile_path)
 
-        ## hr file
-        hrfile_url = "%s/%s/%s" % (URL, d, HRFILES[DATASETS.index(d)])
-        hrfile_path = ROOT_FOLDER / d / HRFILES[DATASETS.index(d)]
-        if not hrfile_path.exists() or force:
-            print(f"Downloading {d} dataset  - {hrfile_path.stem} file.")
-            download(hrfile_url, hrfile_path)
+    ## lr file
+    lrfile_url = "%s/%s/lr.npy" % (URL, dataset)
+    lrfile_path = ROOT_FOLDER / dataset / "lr.npy"
+    if not lrfile_path.exists() or force:
+        print(f"Downloading {dataset} dataset  - {lrfile_path.stem} file.")
+        download(lrfile_url, lrfile_path)
 
-        ## lr file
-        lrfile_url = "%s/%s/LR_S2.npy" % (URL, d)
-        lrfile_path = ROOT_FOLDER / d / "LR_S2.npy"
-        if not lrfile_path.exists() or force:
-            print(f"Downloading {d} dataset  - {lrfile_path.stem} file.")
-            download(lrfile_url, lrfile_path)
+    ## landuse file
+    landuse_url = "%s/%s/landuse2.npy" % (URL, dataset)
+    landuse_path = ROOT_FOLDER / dataset / "landuse2.npy"
+    if not landuse_path.exists() or force:
+        print(f"Downloading {dataset} dataset  - {landuse_path.stem} file.")
+        download(landuse_url, landuse_path)
 
-        ## landuse file
-        landuse_url = "%s/%s/LANDUSE.npy" % (URL, d)
-        landuse_path = ROOT_FOLDER / d / "LANDUSE.npy"
-        if not landuse_path.exists() or force:
-            print(f"Downloading {d} dataset  - {landuse_path.stem} file.")
-            download(landuse_url, landuse_path)
-
-        ## metadata file
-        csvfile_url = "%s/%s/metadata.csv" % (URL, d)
-        csvfile_path = ROOT_FOLDER / d / "metadata.csv"
-        if not csvfile_path.exists() or force:
-            print(f"Downloading {d} dataset  - {csvfile_path.stem} file.")
-            download(csvfile_url, csvfile_path)
+    ## metadata file
+    csvfile_url = "%s/%s/metadata.csv" % (URL, dataset)
+    csvfile_path = ROOT_FOLDER / dataset / "metadata.csv"
+    if not csvfile_path.exists() or force:
+        print(f"Downloading {dataset} dataset  - {csvfile_path.stem} file.")
+        download(csvfile_url, csvfile_path)
 
     # Load the dataset
 
     ## LR file
-    lr_data = np.load(ROOT_FOLDER / dataset / "LR_S2.npy")
+    lr_data = np.load(ROOT_FOLDER / dataset / "lr.npy") / 10000
     lr_data_torch = torch.from_numpy(lr_data).float()
 
     ## HR file
-    hr_data = np.load(ROOT_FOLDER / dataset / HRFILES[DATASETS.index(dataset)])
+    hr_data = np.load(ROOT_FOLDER / dataset / "hr.npy") / 10000
     hr_data_torch = torch.from_numpy(hr_data).float()
 
     ## LandUse file
-    land_use = np.load(ROOT_FOLDER / dataset / "LANDUSE.npy")
-    land_use_torch = torch.from_numpy(land_use).float()
-
+    land_use = np.load(ROOT_FOLDER / dataset / "landuse2.npy")
+    land_use_torch = torch.from_numpy(land_use)
+    
     return {"lr": lr_data_torch, "hr": hr_data_torch, "landuse": land_use_torch}
 
 
