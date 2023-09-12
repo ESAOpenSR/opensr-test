@@ -4,6 +4,7 @@ import numpy as np
 import requests
 import torch
 
+from typing import Optional
 
 def download(url: str, save_path: str) -> str:
     """ Download a file from a url.
@@ -23,7 +24,11 @@ def download(url: str, save_path: str) -> str:
     return None
 
 
-def load(dataset: str = "naip", force: bool = False) -> torch.Tensor:
+def load(
+    dataset: str = "naip",
+    model_dir: Optional[str] = None,
+    force: bool = False
+) -> torch.Tensor:
     """ Load a dataset.
 
     Args:
@@ -36,8 +41,11 @@ def load(dataset: str = "naip", force: bool = False) -> torch.Tensor:
     Returns:
         torch.Tensor: The dataset in a tensor of shape (N, C, H, W).
     """
-
-    ROOT_FOLDER = get_credentials_path()
+    if model_dir is None:
+        ROOT_FOLDER = get_data_path()
+    else:
+        ROOT_FOLDER = pathlib.Path(model_dir)
+        
     DATASETS = ["naip", "spot", "venus"]
     URL = "https://huggingface.co/csaybar/opensr-test/resolve/main"
     HRFILES = ["HR_NAIP.npy", "HR_SPOT67.npy", "HR_VENUS.npy"]
@@ -93,7 +101,7 @@ def load(dataset: str = "naip", force: bool = False) -> torch.Tensor:
     return {"lr": lr_data_torch, "hr": hr_data_torch, "landuse": land_use_torch}
 
 
-def get_credentials_path() -> str:
+def get_data_path() -> str:
     cred_path = pathlib.Path.home() / ".config/opensr_test/"
     cred_path.mkdir(parents=True, exist_ok=True)
     return cred_path
