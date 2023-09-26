@@ -8,6 +8,15 @@ from opensr_test.lightglue import viz2d
 from opensr_test.utils import hq_histogram_matching
 from skimage import exposure
 
+def min_max_range(tensor):
+    """ 
+    Return the min and max range of a tensor
+    """
+    tensor[torch.isnan(tensor)] = 0
+    rmax = torch.tensor([tensor.min(), tensor.max()]).abs().max()
+    rmin = rmax * -1
+    return rmin, rmax
+
 
 def linear_fix(img: torch.Tensor, permute=True) -> torch.Tensor:
     """ Linearly stretch the values of the image to increase contrast.
@@ -86,7 +95,7 @@ def quadruplets(
         raise ValueError("The HR image must be a RGB (3xHxW) image.")
     
     if landuse_img is None:
-        triplets(lr_img, sr_img, hr_img, stretch=stretch)
+        return triplets(lr_img, sr_img, hr_img, stretch=stretch)
 
     # Apply the stretch
     if stretch == "linear":
@@ -374,7 +383,7 @@ def display_results(
     if bool(torch.isnan(torch.mean(e2))):
         axs[1, 1].imshow(e2)
     else:
-        axs[1, 1].imshow(e2)
+        axs[1, 1].imshow(e2, vmin=e2.min(), vmax=e2.max(), cmap="RdBu")
         axs[1, 1].plot(*e2_points, "r*", markersize=5)
         
     axs[1, 1].set_title(
@@ -388,15 +397,17 @@ def display_results(
     )
 
     # Display the improvement ratio
-    axs[1, 3].imshow(e4, vmin=-1, vmax=1)
+    minr, maxr = min_max_range(e4)    
+    axs[1, 3].imshow(e4, cmap="RdBu", vmin=minr, vmax=maxr)
     axs[1, 3].set_title(
-        "%s \n %s: %s" % (r"$\bf{Improvement\ Ratio}$", e4_title, e4_subtitle)
+        "%s \n %s %s" % (r"$\bf{Unsystimatic\ error}$", e4_title, e4_subtitle)
     )
 
     # Display the Hallucination error
-    axs[1, 4].imshow(e5, vmin=0, vmax=0.1)
+    minr, maxr = min_max_range(e5)
+    axs[1, 4].imshow(e5, cmap="RdBu", vmin=minr, vmax=maxr)
     axs[1, 4].set_title(
-        "%s \n %s: %s" % (r"$\bf{Hallucination\ Error}$", e5_title, e5_subtitle)
+        "%s \n %s %s" % (r"$\bf{Ha[Red]\ vs \ Im[Blue]}$", e5_title, e5_subtitle)
     )
 
     return fig, axs

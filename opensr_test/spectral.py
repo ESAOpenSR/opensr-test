@@ -83,11 +83,11 @@ def spectral_metric(lr: torch.Tensor, sr_to_lr: torch.Tensor, metric: str, grid:
 
     if metric == "sad":
         metric_value = spectral_angle_distance(lr, sr_to_lr)
-    elif metric == "sid":
+    elif metric == "information_divergence":
         metric_value = spectral_information_divergence(lr, sr_to_lr)
-    elif metric == "sd":
+    elif metric == "difference":
         metric_value = spectral_diff(lr, sr_to_lr)
-    elif metric == "pbias":
+    elif metric == "simple_ratio":
         metric_value = spectral_pbias(lr, sr_to_lr)
     else:
         raise NotImplementedError(f"Metric {metric} not implemented.")

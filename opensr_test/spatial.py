@@ -43,6 +43,7 @@ def linear_rbf(
         z (np.ndarray): Array with the z coordinates of the points (image 1)
         xi (np.ndarray): Array with the x coordinates of the points (target image)
         yi (np.ndarray): Array with the y coordinates of the points (target image)
+    
     Returns:
         np.ndarray: Array with the interpolated values
     """

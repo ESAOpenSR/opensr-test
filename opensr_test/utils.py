@@ -1,9 +1,98 @@
-from typing import Dict, List, Optional, Tuple
+from typing import Literal, Dict, List, Optional, Tuple
 
 import torch
 from skimage.exposure import match_histograms
 from sklearn.pipeline import Pipeline
 
+
+def spectral_reducer(
+    X: torch.Tensor,
+    method: Literal["mean", "median", "max", "min", "luminosity"] = "luminosity",
+    rgb_bands: Optional[List[int]] = [0, 1, 2],
+) -> torch.Tensor:
+    """ Reduce the number of channels of a tensor from (C, H, W) to 
+    (H, W) using a given method.
+    
+    Args:
+        X (torch.Tensor): The tensor to reduce.
+        
+        method (str, optional): The method used to reduce the number of 
+            channels. Must be one of "mean", "median", "max", "min", 
+            "luminosity". Defaults to "mean".
+            
+    Raises:
+        ValueError: If the method is not valid.
+    
+    Returns:
+        torch.Tensor: The reduced tensor.
+    """
+    if method == "mean":
+        return X.mean(dim=0)
+    elif method == "median":
+        return X.median(dim=0).values
+    elif method == "max":
+        return X.max(dim=0).values
+    elif method == "min":
+        return X.min(dim=0).values
+    elif method == "luminosity":
+        return (
+            0.2126*X[rgb_bands[0]] +
+            0.7152*X[rgb_bands[1]] +
+            0.0722*X[rgb_bands[2]]
+        )
+    else:
+        raise ValueError(
+            "Invalid method. Must be one of 'mean', 'median', 'max', 'min', 'luminosity'."
+        )
+
+
+def spatial_reducer(
+    x: torch.Tensor,
+    reduction: Literal[
+        "mean_abs", "mean", "median", "median_abs",
+        "max","max_abs", "min", "min_abs"
+    ]
+) -> torch.Tensor:
+    """Reduces a given tensor by a given reduction method.
+    
+    Args:
+        x (torch.Tensor): The tensor to reduce
+        reduction (Literal["mean_abs", "mean", "median", 
+            "median_abs", "max","max_abs", "min", "min_abs"]): 
+            The reduction method to use.
+                
+    Return:
+        torch.Tensor: The reduced tensor
+        
+    Raise:
+        ValueError: If the reduction method is not supported.
+    """
+    if reduction == "mean":
+        return torch.nanmean(x)
+    if reduction == "mean_abs":
+        return torch.nanmean(torch.abs(x))
+    if reduction == "median":
+        return torch.nanmedian(x)
+    if reduction == "median_abs":
+        return torch.nanmedian(torch.abs(x))
+    if reduction == "max":
+        return torch.max(x[x == x])
+    if reduction == "max_abs":
+        xabs = torch.abs(x)
+        return torch.max(xabs[xabs == xabs])
+    if reduction == "min":
+        return torch.min(x[x == x])
+    if reduction == "min_abs":
+        xabs = torch.abs(x)
+        return torch.min(xabs[xabs == xabs])
+    if reduction == "sum":
+        return torch.nansum(x)
+    if reduction == "sum_abs":
+        return torch.nansum(torch.abs(x))
+    if reduction == "none" or reduction is None:
+        raise ValueError("None is not a valid reduction method.")
+    
+    raise ValueError("Reduction parameter unknown.")
 
 class Value:
     def __init__(

@@ -1,8 +1,7 @@
-from typing import Literal
-
 import numpy as np
 import torch
-from opensr_test.utils import Value, hq_histogram_matching
+
+from opensr_test.utils import Value, spatial_reducer
 
 
 def hf_energy(image: torch.Tensor, downsample_factor: int) -> torch.Tensor:
@@ -23,12 +22,18 @@ def hf_energy(image: torch.Tensor, downsample_factor: int) -> torch.Tensor:
 
     # Downsample the image
     downsampled_image = torch.nn.functional.interpolate(
-        input=image, scale_factor=1 / downsample_factor, mode="bilinear", antialias=True
+        input=image,
+        scale_factor=1 / downsample_factor,
+        mode="bilinear",
+        antialias=True
     )
 
     # Upsample the downsampled image to the same size as the original image
     upsampled_downsampled_image = torch.nn.functional.interpolate(
-        input=downsampled_image, size=image.shape[-2:], mode="bilinear", antialias=True
+        input=downsampled_image,
+        size=image.shape[-2:],
+        mode="bilinear",
+        antialias=True
     )
 
     # Compute the high-frequency introduced by the upsampling
@@ -68,35 +73,6 @@ def fill_nan_with_mean(arr: torch.Tensor) -> torch.Tensor:
 
     return filled_arr.to(device).float()
 
-
-def hq_reduce(
-    x: torch.Tensor, reduction: Literal["mean", "sum", "median"]
-) -> torch.Tensor:
-    """Reduces a given tensor by a given reduction method.
-    
-    Args:
-        x (torch.Tensor): The tensor to reduce
-        reduction (Literal["mean", "sum", "median"]): The reduction
-            method to use. ('elementwise_mean', 'none', 'sum')
-            
-    Return:
-        torch.Tensor: The reduced tensor
-        
-    Raise:
-        ValueError: If the reduction method is not supported.
-    """
-    if reduction == "mean":
-        return torch.nanmean(x)
-    if reduction == "none" or reduction is None:
-        raise ValueError("None is not a valid reduction method.")
-    if reduction == "sum":
-        return torch.nansum(x)
-    if reduction == "median":
-        return torch.nanmedian(x)
-
-    raise ValueError("Reduction parameter unknown.")
-
-
 def hq_mtf_each(
     image1: torch.Tensor, image2: torch.Tensor, reduction: str, scale: int
 ) -> torch.Tensor:
@@ -128,7 +104,7 @@ def hq_mtf_each(
 
     mtf = torch.masked_select(fft_preds / fft_target, tensormask)
 
-    return hq_reduce(1 - torch.clamp(mtf, 0, 1), reduction)
+    return spatial_reducer(1 - torch.clamp(mtf, 0, 1), reduction)
 
 
 def hq_mtf(lr_to_hr: torch.Tensor, sr: torch.Tensor, scale: int) -> Value:
@@ -147,16 +123,16 @@ def hq_mtf(lr_to_hr: torch.Tensor, sr: torch.Tensor, scale: int) -> Value:
 
     # Pad the images to be divisible by the patch size
     lr_to_hr_pad = torch.nn.functional.pad(
-        input=lr_to_hr,
+        input=lr_to_hr[None, None],
         pad=(0, ks - lr_to_hr.shape[-1] % ks, 0, ks - lr_to_hr.shape[-2] % ks),
         mode="reflect",
-    )
-
+    ).squeeze()
+    
     sr_pad = torch.nn.functional.pad(
-        input=sr,
+        input=sr[None, None],
         pad=(0, ks - sr.shape[-1] % ks, 0, ks - sr.shape[-2] % ks),
         mode="reflect",
-    )
+    ).squeeze()
 
     # Dimensions of the new image (after chopping)
     high_dim = lr_to_hr_pad.shape[-2:]
@@ -164,38 +140,41 @@ def hq_mtf(lr_to_hr: torch.Tensor, sr: torch.Tensor, scale: int) -> Value:
 
     # chop image in patches of size ks x ks an
     # image of size (C, H, W) -> (C, newdiv[0], newdiv[1], ks, ks)
-    # considering the stride of the patches as 4
-    lr_to_hr_patch = lr_to_hr_pad.unfold(1, ks, ks).unfold(2, ks, ks)
-    sr_patch = sr_pad.unfold(1, ks, ks).unfold(2, ks, ks)
-
+    # considering the stride of the patches as 4    
+    lr_to_hr_patch = lr_to_hr_pad[None].unfold(1, ks, ks).unfold(2, ks, ks)
+    sr_patch = sr_pad[None].unfold(1, ks, ks).unfold(2, ks, ks)
+    
     # Compute MTF for each patch.
     mtf_results = torch.zeros(newdiv)
     for i in range(newdiv[0]):
         for j in range(newdiv[1]):
             # Get the patch
             preds_p_iter = lr_to_hr_patch[:, i, j, :, :]
-            target_p_iter = sr_patch[:, i, j, :, :]
-
-            preds_p_iter = hq_histogram_matching(preds_p_iter, target_p_iter)
+            target_p_iter = sr_patch[:, i, j, :, :]            
 
             ## Estimate the MTF
             mtf_pred = hq_mtf_each(
-                image1=preds_p_iter, image2=target_p_iter, reduction="mean", scale=scale
+                image1=preds_p_iter,
+                image2=target_p_iter,
+                reduction="mean",
+                scale=scale
             )
 
             # Save the results
             mtf_results[i, j] = mtf_pred
-
+    
     # Fill NaN values with the mean of the closest neighbors
     mtf_results_filled = fill_nan_with_mean(mtf_results)
     mtf_results_up = torch.nn.functional.interpolate(
-        input=mtf_results_filled[None, None], size=sr.shape[-2:], mode="bicubic"
+        input=mtf_results_filled[None, None],
+        size=sr.shape[-2:],
+        mode="bicubic"
     ).squeeze()
-
+    
     # Remove the padding
     mtf_results_up = mtf_results_up[0 : lr_to_hr.shape[-2], 0 : lr_to_hr.shape[-1]]
-
-    return Value(mtf_results_up, "Cross-sensor MTF")
+    
+    return Value(mtf_results_up, "|SRharm - LRdown|")
 
 
 def hq_simple(lr_to_hr: torch.Tensor, sr: torch.Tensor) -> Value:
@@ -212,8 +191,8 @@ def hq_simple(lr_to_hr: torch.Tensor, sr: torch.Tensor) -> Value:
             LR' image.
     """
     return Value(
-        value=torch.median(torch.abs(sr - lr_to_hr), axis=0)[0],
-        description="|SR'-LR| diff",
+        value=torch.abs(sr - lr_to_hr),
+        description="|SRharm - LRdown|",
     )
 
 
@@ -229,23 +208,27 @@ def hq_convolve(sr: torch.Tensor, factor: int) -> Value:
         Value: The difference between the SR and SR' [Up/Down] 
             image.            
     """
-    sr_energy = hf_energy(sr[None], downsample_factor=factor).squeeze()
-    sr_energy_median = torch.median(torch.abs(sr_energy), axis=0)[0]
-
-    return Value(value=sr_energy_median, description="|SR'| Up/Down")
+    sr_energy = hf_energy(sr[None, None], downsample_factor=factor).squeeze()
+    return Value(value=torch.abs(sr_energy), description="|SRharm - SRharm[Up/Down]|")
 
 
 def highfrequency(
-    lr_to_hr: torch.Tensor, sr_norm: torch.Tensor, metric: str, scale: int, grid: bool
+    lr_to_hr: torch.Tensor,
+    sr_harm: torch.Tensor,
+    method: str,
+    grid: bool,
+    reducer: str,
+    scale: int
 ) -> Value:
     """ Calculate the high-frequencies difference between two images.
 
     Args:
         lr_to_hr (torch.Tensor): The LR image in the HR space (C, H, W).
-        sr_norm (torch.Tensor): The SR with systematic errors removed (C, H, W).
-        metric (str, optional): The metric to use. Defaults to 'mtf'.
-        scale (int, optional): The scale of the super-resolution.
-        grid (bool, optional): Whether to return the metric as a grid or not
+        sr_harm (torch.Tensor): The SR with systematic errors removed (C, H, W).
+        method (str, optional): The method to use. Defaults to 'mtf'.
+        grid (bool, optional): Whether to return the metric as a grid or not.
+        reducer (str, optional): The reducer to use. Defaults to 'mean'.
+        scale (int, optional): The scale of the super-resolution.        
         
     Returns:
         torch.Tensor: The metric value.
@@ -255,19 +238,29 @@ def highfrequency(
     if lr_to_hr.shape[-1] != lr_to_hr.shape[-2]:
         raise ValueError("image1 must be square.")
 
-    if sr_norm.shape[-1] != sr_norm.shape[-2]:
+    if sr_harm.shape[-1] != sr_harm.shape[-2]:
         raise ValueError("image2 must be square.")
 
-    if metric == "mtf":
-        metric_value = hq_mtf(lr_to_hr, sr_norm, scale=scale)
-    elif metric == "convolve":
-        metric_value = hq_convolve(sr_norm, factor=scale)
-    elif metric == "simple":
-        metric_value = hq_simple(lr_to_hr, sr_norm)
+    if method == "frequency_domain":
+        metric_grid = hq_mtf(lr_to_hr, sr_harm, scale=scale)
+    elif method == "simple":
+        metric_grid = hq_convolve(sr_harm, factor=scale)
+    elif method == "spatial_domain":
+        metric_grid = hq_simple(lr_to_hr, sr_harm)
     else:
         raise ValueError("Metric not supported.")
 
     if grid:
-        return metric_value
-
-    return Value(float(metric_value.value.median()), metric_value.description)
+        metric_value = metric_grid
+    else:
+        metric_value = Value(
+            value = float(
+                spatial_reducer(
+                    x=metric_grid.value,
+                    reduction=reducer
+                )
+            ),
+            description=metric_grid.description
+        )
+            
+    return metric_grid, metric_value
