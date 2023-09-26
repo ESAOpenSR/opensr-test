@@ -299,7 +299,9 @@ def spatial_matches(
 
 def display_results(
     lr: torch.Tensor,
+    lrdown: torch.Tensor,
     sr: torch.Tensor,
+    srharm: torch.Tensor,
     hr: torch.Tensor,
     e1: torch.Tensor,
     e1_title: str,
@@ -350,11 +352,16 @@ def display_results(
     # Apply the stretch
     if stretch == "linear":
         lr = linear_fix(lr)
+        lrdown = linear_fix(lrdown)
         sr = linear_fix(sr)
+        srharm = linear_fix(srharm)
         hr = linear_fix(hr)
+
     elif stretch == "histogram":
         lr = equalize_hist(lr)
+        lrdown = equalize_hist(lrdown)
         sr = equalize_hist(sr)
+        srharm = equalize_hist(srharm)
         hr = equalize_hist(hr)
 
     # Create the figure and axes (remove white space around the images)
@@ -365,13 +372,17 @@ def display_results(
         ax.axis("off")
 
     # Plot the first row (lr, sr, hr)
-    axs[0, 1].imshow(lr)
-    axs[0, 1].set_title("LR", fontsize=20, fontweight="bold")
+    axs[0, 0].imshow(lr)
+    axs[0, 0].set_title("LR", fontsize=20, fontweight="bold")
+    axs[0, 1].imshow(lrdown)
+    axs[0, 1].set_title("LRdown", fontsize=20, fontweight="bold")    
     axs[0, 2].imshow(sr)
     axs[0, 2].set_title("SR", fontsize=20, fontweight="bold")
-    axs[0, 3].imshow(hr)
-    axs[0, 3].set_title("HR", fontsize=20, fontweight="bold")
-
+    axs[0, 3].imshow(srharm)
+    axs[0, 3].set_title("SRharm", fontsize=20, fontweight="bold")
+    axs[0, 4].imshow(hr)
+    axs[0, 4].set_title("HR", fontsize=20, fontweight="bold")
+    
     # Display the local reflectance map error
     axs[1, 0].imshow(e1)
     axs[1, 0].set_title(
@@ -396,18 +407,17 @@ def display_results(
         "%s \n %s: %s" % (r"$\bf{High\ Frequency}$", e3_title, e3_subtitle)
     )
 
-    # Display the improvement ratio
-    minr, maxr = min_max_range(e4)    
-    axs[1, 3].imshow(e4, cmap="RdBu", vmin=minr, vmax=maxr)
+    # Display the unsymmetric error
+    axs[1, 3].imshow(e4)
     axs[1, 3].set_title(
-        "%s \n %s %s" % (r"$\bf{Unsystematic\ error}$", e4_title, e4_subtitle)
+        "%s \n %s: %s" % (r"$\bf{Unsystematic\ error}$", e4_title, e4_subtitle)
     )
 
     # Display the Hallucination error
     minr, maxr = min_max_range(e5)
     axs[1, 4].imshow(e5, cmap="RdBu", vmin=minr, vmax=maxr)
     axs[1, 4].set_title(
-        "%s \n %s %s" % (r"$\bf{Ha[Red]\ vs \ Im[Blue]}$", e5_title, e5_subtitle)
+        "%s \n %s %s" % (r"$\bf{Ha[Red]\ & \ Im[Blue]\ & \ Om[White]}$", e5_title, e5_subtitle)
     )
 
     return fig, axs

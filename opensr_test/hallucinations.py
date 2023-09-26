@@ -137,8 +137,8 @@ def unsystematic_error(
             raise ValueError("method must be either psnr or cpsnr")
     else:
         unsys_err = Value(
-            value = y - x,
-            description = "HR - SRharm"
+            value = torch.abs(y - x),
+            description = "|HR - SRharm|"
         )
         
     return unsys_err

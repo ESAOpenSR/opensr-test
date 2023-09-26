@@ -225,6 +225,7 @@ class Metrics:
                             matching_points=matching_points,
                             threshold_distance=new_td,
                             n_points=self.params.spatial_threshold_npoints,
+                            verbose=False,
                             degree=1
                         )
 
@@ -610,7 +611,7 @@ class Metrics:
         # Improvement
         e4 = results_g["unsystematic_error"].value
         e4_title = results_g["unsystematic_error"].description
-        e4_subtitle = ""
+        e4_subtitle = "%.04f" % results_v["unsystematic_error"]
 
         # Hallucinationdisplay_results
         e5 = results_g["ha/im ratio"]
@@ -620,7 +621,9 @@ class Metrics:
         # Plot high frequency
         fig, axs = opensr_test.plot.display_results(
             self.lr_RGB,
+            self.lr_to_hr_RGB,
             self.sr_RGB,
+            self.sr_harm_RGB,
             self.hr_RGB,
             e1,
             e1_title,

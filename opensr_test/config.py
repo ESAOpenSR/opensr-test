@@ -11,7 +11,7 @@ class Config(BaseModel):
     upsample_method: str = "classic"
             
     # Spatial parameters
-    spatial_features: str = "disk"
+    spatial_features: str = "superpoint"
     spatial_matcher: str = "lightglue"
     spatial_max_num_keypoints: int = 1000
     spatial_threshold_distance: int = 3
@@ -225,7 +225,7 @@ class Config(BaseModel):
     @field_validator("apply_stretch")
     @classmethod
     def check_apply_stretch(cls, value) -> str:
-        valid_methods = [None, "linear", "histogram"]        
+        valid_methods = ["linear", "histogram", "no_stretch"]
         if value not in valid_methods:
             raise ValueError(f"Invalid apply_stretch. Must be one of {valid_methods}")
         return value
