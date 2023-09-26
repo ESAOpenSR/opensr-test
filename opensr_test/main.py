@@ -432,6 +432,13 @@ class Metrics:
         hr = (hr - hr.min()) / (hr.max() - hr.min())
         hr = hr * 2 - 1
         
+        # Naive solution to avoid nan values in the LPIPS
+        # estimation.
+        mask = sr_norm == sr_norm
+        lr_to_hr = lr_to_hr * mask
+        hr = hr * mask
+        sr_norm[~mask] = 0
+        
         # Obtain the perceptual error
         with torch.no_grad():
             perceptual_error_ref = self.perceptual_model(hr, lr_to_hr).mean()
