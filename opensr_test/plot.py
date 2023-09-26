@@ -13,7 +13,7 @@ def min_max_range(tensor):
     Return the min and max range of a tensor
     """
     tensor[torch.isnan(tensor)] = 0
-    rmax = torch.tensor([tensor.min(), tensor.max()]).abs().max()
+    rmax = torch.tensor([tensor.min(), tensor.max()]).abs().min()
     rmin = rmax * -1
     return rmin, rmax
 

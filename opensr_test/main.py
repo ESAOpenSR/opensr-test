@@ -62,7 +62,7 @@ class Metrics:
         self.perceptual_model = lpips.LPIPS(
             net="alex",
             verbose=False
-        )
+        ).to(device)
                 
         # Initial triplets: LR[input], SR[enhanced], HR[ground truth]
         self.lr = None
@@ -507,7 +507,7 @@ class Metrics:
                 "high_frequency": self.hf_metric.value,
                 "unsystematic_error": self.unsystematic_error.value,
                 "ha/im ratio": self.ha_im_ratio,
-                "perceptual_improvement": self.perceptual_ratio
+                "perceptual_improvement": self.perceptual_ratio.value
             }
         else:
             return {
