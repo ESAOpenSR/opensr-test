@@ -605,9 +605,9 @@ class Metrics:
         e4_title = results_g["unsystematic_error"].description
         e4_subtitle = ""
 
-        # Hallucinationdisplay_resultss
+        # Hallucinationdisplay_results
         e5 = results_g["ha/im ratio"]
-        e5_title = "|LRdown - HR| - |SRharm - HR|"
+        e5_title = "|HR - LRdown| - |HR - SRharm|"
         e5_subtitle = ""
 
         # Plot high frequency

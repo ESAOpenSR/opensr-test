@@ -400,7 +400,7 @@ def display_results(
     minr, maxr = min_max_range(e4)    
     axs[1, 3].imshow(e4, cmap="RdBu", vmin=minr, vmax=maxr)
     axs[1, 3].set_title(
-        "%s \n %s %s" % (r"$\bf{Unsystimatic\ error}$", e4_title, e4_subtitle)
+        "%s \n %s %s" % (r"$\bf{Unsystematic\ error}$", e4_title, e4_subtitle)
     )
 
     # Display the Hallucination error

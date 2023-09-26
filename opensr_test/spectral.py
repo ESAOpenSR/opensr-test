@@ -1,8 +1,10 @@
 import torch
-from opensr_test.utils import Value
+from opensr_test.utils import Value, spatial_reducer
 
-
-def spectral_angle_distance(x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
+def spectral_angle_distance(
+    x: torch.Tensor,
+    y: torch.Tensor
+) -> torch.Tensor:
     """Spectral angle distance between two tensors.
     Args:
         x: Tensor of shape (C, H, W).
@@ -10,12 +12,13 @@ def spectral_angle_distance(x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
     Returns:
         Tensor of shape (C, H, W).
     """
-    x_norm = torch.nn.functional.normalize(x, p=2, dim=0)
-    y_norm = torch.nn.functional.normalize(y, p=2, dim=0)
-    return Value(
-        torch.acos(torch.clamp(torch.sum(x_norm * y_norm, dim=0), -1.0, 1.0)),
-        "Spectral Angle Distance",
-    )
+    dot_product = (x * y).sum(dim=0)
+    preds_norm = x.norm(dim=0)
+    target_norm = y.norm(dim=0)
+    sam_score = torch.clamp(dot_product / (preds_norm * target_norm), -1, 1).acos()
+    sam_score_degrees = torch.rad2deg(sam_score)
+
+    return Value(sam_score_degrees, "Spectral Angle Distance")
 
 
 def spectral_information_divergence(x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
@@ -44,7 +47,8 @@ def spectral_diff(x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
         Tensor of shape (C, H, W).
     """
     return Value(
-        torch.median(torch.abs(x - y), axis=0).values, "Spectral difference [X-Y]"
+        torch.median(torch.abs(x - y), axis=0).values, 
+        "Spectral difference [X-Y]"
     )
 
 
@@ -69,7 +73,13 @@ def spectral_pbias(x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
     return Value(median, "Spectral pbias [X/Y]")
 
 
-def spectral_metric(lr: torch.Tensor, sr_to_lr: torch.Tensor, metric: str, grid: bool):
+def spectral_metric(
+    lr: torch.Tensor,
+    sr_to_lr: torch.Tensor,
+    metric: str,
+    grid: bool,
+    spatial_reducer_method: str = "median"
+):
     """ Calculate spectral metrics between two images.
 
     Args:
@@ -80,9 +90,9 @@ def spectral_metric(lr: torch.Tensor, sr_to_lr: torch.Tensor, metric: str, grid:
         grid (Optional[bool], optional): Whether to return the metric 
             as a grid or not
     """
-
+    
     if metric == "sad":
-        metric_value = spectral_angle_distance(lr, sr_to_lr)
+        metric_value = spectral_angle_distance(lr, sr_to_lr)        
     elif metric == "information_divergence":
         metric_value = spectral_information_divergence(lr, sr_to_lr)
     elif metric == "difference":
@@ -95,4 +105,9 @@ def spectral_metric(lr: torch.Tensor, sr_to_lr: torch.Tensor, metric: str, grid:
     if grid:
         return metric_value
 
-    return Value(float(metric_value.value.median()), metric_value.description)
+    avg_m = spatial_reducer(metric_value.value, spatial_reducer_method)
+    
+    return Value(
+        float(avg_m), 
+        metric_value.description
+    )
