@@ -1,68 +1,26 @@
-import itertools
 import warnings
-from typing import Dict, Optional, Tuple, Union
+from typing import Dict, Optional, Union, Tuple, List
 
+import itertools
 import numpy as np
 import torch
+
 from opensr_test.lightglue import DISK, LightGlue, SuperPoint
 from opensr_test.lightglue.utils import rbd
-from opensr_test.utils import Value, hq_histogram_matching
 from scipy.spatial.distance import cdist
 from sklearn.linear_model import LinearRegression
 from sklearn.pipeline import Pipeline, make_pipeline
 from sklearn.preprocessing import PolynomialFeatures
+from skimage.registration import phase_cross_correlation
+from opensr_test.config import Metric
 
 
-def distance_matrix(
-    x0: np.ndarray, y0: np.ndarray, x1: np.ndarray, y1: np.ndarray
-) -> np.ndarray:
-    """Calculate the distance matrix between two sets of points
-
-    Args:
-        x0 (np.ndarray): Array with the x coordinates of the points (image 1)
-        y0 (np.ndarray): Array with the y coordinates of the points (image 1)
-        x1 (np.ndarray): Array with the x coordinates of the points (image 2)
-        y1 (np.ndarray): Array with the y coordinates of the points (image 2)
-
-    Returns:
-        np.ndarray: Array with the distances between the points
-    """
-    obs = np.vstack((x0, y0)).T
-    interp = np.vstack((x1, y1)).T
-    return cdist(obs, interp)
-
-
-def linear_rbf(
-    x: np.ndarray, y: np.ndarray, z: np.ndarray, xi: np.ndarray, yi: np.ndarray
-) -> np.ndarray:
-    """Interpolate using radial basis functions
-
-    Args:
-        x (np.ndarray): Array with the x coordinates of the points (image 1)
-        y (np.ndarray): Array with the y coordinates of the points (image 1)
-        z (np.ndarray): Array with the z coordinates of the points (image 1)
-        xi (np.ndarray): Array with the x coordinates of the points (target image)
-        yi (np.ndarray): Array with the y coordinates of the points (target image)
-    
-    Returns:
-        np.ndarray: Array with the interpolated values
-    """
-    dist = distance_matrix(x, y, xi, yi)
-
-    # Mutual pariwise distances between observations
-    internal_dist = distance_matrix(x, y, x, y)
-
-    # Now solve for the weights such that mistfit at the observations is minimized
-    weights = np.linalg.solve(internal_dist, z)
-
-    # Multiply the weights for each interpolated point by the distances
-    zi = np.dot(dist.T, weights)
-
-    return zi
-
+# %-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+# | Spatial transformation functions
+# %-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 def spatia_polynomial_fit(X: np.ndarray, y: np.ndarray, d: int) -> Pipeline:
-    """Fit a polynomial of degree d to the points
+    """Fit a polynomial regression using matched points
 
     Args:
         X (np.ndarray): Array with the x coordinates or y coordinates of the points (image 1)
@@ -120,19 +78,22 @@ def spatial_setup_model(
 
 
 def spatial_get_matching_points(
-    img01: torch.Tensor, img02: torch.Tensor, model: tuple, device: str = "cpu"
+    img01: torch.Tensor,
+    img02: torch.Tensor,
+    model: tuple, 
+    device: str = "cpu",
 ) -> Dict[str, torch.Tensor]:
     """Predict the spatial error between two images
 
     Args:
-        img01 (torch.Tensor): A torch.tensor with the image 1 (B, H, W)
-        img02 (torch.Tensor): A torch.tensor with the ref image (B, H, W)
-        model (tuple): A tuple with the feature extractor and the matcher
+        img01 (torch.Tensor): A torch.tensor with the input image (B, H, W)
+        img02 (torch.Tensor): A torch.tensor with the reference image (B, H, W)
+        model (tuple): A tuple with the feature extractor and the matcher.
         device (str, optional): The device to use. Defaults to 'cpu'.
 
     Returns:
         Dict[str, torch.Tensor]: A dictionary with the points0, 
-            points1, matches01 and image size.
+            points1, matches01.
     """
 
     # unpack the model - send to device
@@ -150,12 +111,12 @@ def spatial_get_matching_points(
         feats0 = extractor.extract(img01, resize=None)
         if feats0["keypoints"].shape[1] == 0:
             warnings.warn("No keypoints found in image 1")
-            return torch.nan
+            return False
 
         feats1 = extractor.extract(img02, resize=None)
         if feats1["keypoints"].shape[1] == 0:
             warnings.warn("No keypoints found in image 2")
-            return torch.nan
+            return False
 
         # match the features
         matches01 = matcher({"image0": feats0, "image1": feats1})
@@ -163,29 +124,302 @@ def spatial_get_matching_points(
     # remove batch dimension
     feats0, feats1, matches01 = [rbd(x) for x in [feats0, feats1, matches01]]
 
-    matches = matches01["matches"]  # indices with shape (K,2)
-    points0 = feats0["keypoints"][
-        matches[..., 0]
-    ]  # coordinates in image #0, shape (K,2)
-    points1 = feats1["keypoints"][
-        matches[..., 1]
-    ]  # coordinates in image #1, shape (K,2)
+    matches = matches01["matches"]
+    points0 = feats0["keypoints"][matches[..., 0]]
+    points1 = feats1["keypoints"][matches[..., 1]]
 
     matching_points = {
         "points0": points0,
         "points1": points1,
-        "matches01": matches01,
-        "img_size": tuple(img01.shape[-2:]),
+        "matches01": matches01
     }
 
     return matching_points
+
+
+def spatial_model_fit(
+    matching_points: Dict[str, torch.Tensor],
+    n_points: Optional[int] = 10,
+    threshold_distance: Optional[int] = 5,
+    verbose: Optional[bool] = False
+) -> Union[np.ndarray, dict]:
+    """Get a model that minimizes the spatial error between two images
+
+    Args:
+        matching_points (Dict[str, torch.Tensor]): A dictionary with the points0, 
+            points1 and image size.
+        n_points (Optional[int], optional): The minimum number of points. Defaults
+            to 10.
+        threshold_distance (Optional[int], optional): The maximum distance between
+            the points. Defaults to 5 pixels.
+        verbose (Optional[bool], optional): If True, print the error. Defaults to
+            False.
+        scale (Optional[int], optional): The scale factor to use. Defaults to 1.
+        
+    Returns:
+        np.ndarray: The spatial error between the two images
+    """
+
+    points0 = matching_points["points0"]
+    points1 = matching_points["points1"]
+
+    # if the distance between the points is higher than 5 pixels,
+    # it is considered a bad match
+    dist = torch.sqrt(torch.sum((points0 - points1) ** 2, dim=1))
+    thres = dist < threshold_distance
+    p0 = points0[thres]
+    p1 = points1[thres]
+
+    # if not enough points, return 0
+    if p0.shape[0] < n_points:
+        warnings.warn("Not enough points to fit the model")
+        return False
+
+    # from torch.Tensor to numpy array
+    p0 = p0.detach().cpu().numpy()
+    p1 = p1.detach().cpu().numpy()
+
+    # Fit a polynomial of degree 2 to the points
+    X_img0 = p0[:, 0].reshape(-1, 1)
+    X_img1 = p1[:, 0].reshape(-1, 1)
+    model_x = spatia_polynomial_fit(X_img0, X_img1, 1)
+
+    y_img0 = p0[:, 1].reshape(-1, 1)
+    y_img1 = p1[:, 1].reshape(-1, 1)
+    model_y = spatia_polynomial_fit(y_img0, y_img1, 1)
+
+    # display error
+    xoffset = np.round(model_x.predict(np.array(0).reshape(-1, 1)))
+    yoffset = np.round(model_y.predict(np.array(0).reshape(-1, 1)))
+
+    xhat = X_img0 + xoffset
+    yhat = y_img0 + yoffset
+
+    # full error
+    full_error1 = np.sqrt((xhat - X_img1) ** 2 + (yhat - y_img1) ** 2)
+    full_error2 = np.sqrt((X_img0 - X_img1) ** 2 + (y_img0 - y_img1) ** 2)
+
+    if verbose:
+        print(f"Initial [RMSE]: %.04f" % np.mean(full_error2))
+        print(f"Final [RMSE]: %.04f" % np.mean(full_error1))
+
+    to_export = {
+        "offset": (int(xoffset), int(yoffset)),
+        "error": (np.mean(full_error2), np.mean(full_error1)),
+    }
+
+    return to_export
+
+
+def spatial_model_transform_pixel(
+    image1: torch.Tensor,
+    spatial_offset: tuple,
+) -> torch.Tensor:
+    """ Transform the image according to the spatial offset obtained by the
+    spatial_model_fit function. This correction is done at pixel level.
+
+    Args:
+        image1 (torch.Tensor): The image 1 with shape (B, H, W)
+        spatial_offset (tuple): The spatial offset estimated by the 
+            spatial_model_fit function.
+    Returns:
+        torch.Tensor: The transformed image
+    """
+    x_offs, y_offs = spatial_offset["offset"]
+
+    # get max offset
+    moffs = np.max(np.abs([x_offs, y_offs]))
+
+    
+    # Add padding according to the offset
+    image_pad = torch.nn.functional.pad(
+        image1, (moffs, moffs, moffs, moffs), mode="constant", value=0
+    )
+    
+    if x_offs < 0:
+        image_pad = image_pad[:, :, (moffs + x_offs) :]
+    elif x_offs > 0:
+        image_pad = image_pad[:, :, (moffs - x_offs) :]
+    
+    if y_offs < 0:
+        image_pad = image_pad[:, (moffs - y_offs) :, :]
+    elif y_offs > 0:
+        image_pad = image_pad[:, (moffs + y_offs) :, :]
+    
+    # remove padding
+    final_image = image_pad[:, 0:image1.shape[1], 0:image1.shape[2]]
+    
+    return final_image
+
+
+def spatial_model_transform(
+    lr_to_hr: torch.Tensor,
+    hr: torch.Tensor,
+    spatial_offset: tuple
+) -> torch.Tensor:
+    """ Transform the image according to the spatial offset
+
+    Args:
+        lr_to_hr (torch.Tensor): The low resolution image
+        hr (torch.Tensor): The high resolution image
+        spatial_offset (tuple): The spatial offset estimated by the 
+            spatial_model_fit function.
+    Returns:
+        torch.Tensor: The transformed image
+    """
+    
+    # Fix the image according to the spatial offset
+    offset_image1 = spatial_model_transform_pixel(
+        image1=lr_to_hr,
+        spatial_offset=spatial_offset
+    )
+    hr_masked = hr * (offset_image1 != 0)
+    
+    
+    # Create a mask with the offset image
+    offset_image1 = offset_image1.detach().cpu().numpy()
+    hr_masked = hr_masked.detach().cpu().numpy()
+    
+    # Subpixel refinement    
+    shift, error, diffphase = phase_cross_correlation(
+        offset_image1.mean(0), hr_masked.mean(0), upsample_factor=100
+    )
+    
+    # Fix the offset_image according to the subpixel refinement
+    offset_image2 =  spatial_model_transform_pixel(
+        image1=torch.from_numpy(offset_image1).float(),
+        spatial_offset={"offset": list(np.int16(np.round(shift)))}
+    )
+    
+    return offset_image2
+    
+
+def spatial_aligment(
+    sr: torch.Tensor,
+    hr: torch.Tensor,
+    spatial_model: tuple,
+    threshold_n_points: Optional[int] = 5,
+    threshold_distance: Optional[int] = 2**63 - 1,
+    rgb_bands: Optional[List[int]] = [0, 1, 2]
+) -> torch.Tensor:
+    """ Transform the image according to the spatial offset
+
+    Args:
+        sr (torch.Tensor): The super resolved image (B, C, H, W)
+        hr (torch.Tensor): The high resolution image (B, C, H, W)
+        spatial_model (tuple): A tuple with the feature extractor and the matcher models.
+        threshold_n_points (Optional[int], optional): The minimum number of points to fit
+            the linear model. Defaults to 5.
+        threshold_distance (Optional[int], optional): The maximum distance 
+            possible between the points. Defaults to 2**63 - 1.
+
+    Returns:
+        torch.Tensor: The transformed image (B, C, H, W).
+    """
+    # replace nan values with 0
+    # lightglue does not work with nan values
+    sr = torch.nan_to_num(sr, nan=0.0)    
+    hr = torch.nan_to_num(hr, nan=0.0)
+    
+    # get imag01 and img02
+    if sr.shape[0] >= 3:
+        img01 = sr[rgb_bands, ...]
+        img02 = hr[rgb_bands, ...]
+    else:
+        img01 = sr[0][None]
+        img02 = hr[0][None]
+    
+    # Get the matching points
+    matching_points = spatial_get_matching_points(
+        img01=img01,
+        img02=img02,
+        model=spatial_model
+    )
+    
+    if matching_points is False:
+        warnings.warn("Not enough points to align the images")
+        return sr, matching_points
+    
+
+    # Fix the image according to the spatial offset
+    spatial_offset = spatial_model_fit(
+        matching_points=matching_points,
+        n_points = threshold_n_points,
+        threshold_distance = threshold_distance,
+        verbose = False
+    )
+    
+    if spatial_offset is False:
+        warnings.warn("Not enough valid points to align the images")
+        return sr, matching_points
+    
+    # Fix the image according to the spatial offset
+    offset_image = spatial_model_transform(
+        lr_to_hr=sr,
+        hr=hr,
+        spatial_offset=spatial_offset
+    )
+        
+    return offset_image, matching_points
+
+# %-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+# | Spatial transformation functions
+# %-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+
+def distance_matrix(
+    x0: np.ndarray, y0: np.ndarray, x1: np.ndarray, y1: np.ndarray
+) -> np.ndarray:
+    """Calculate the distance matrix between two sets of points
+
+    Args:
+        x0 (np.ndarray): Array with the x coordinates of the points (image 1)
+        y0 (np.ndarray): Array with the y coordinates of the points (image 1)
+        x1 (np.ndarray): Array with the x coordinates of the points (image 2)
+        y1 (np.ndarray): Array with the y coordinates of the points (image 2)
+
+    Returns:
+        np.ndarray: Array with the distances between the points
+    """
+    obs = np.vstack((x0, y0)).T
+    interp = np.vstack((x1, y1)).T
+    return cdist(obs, interp)
+
+
+def linear_rbf(
+    x: np.ndarray, y: np.ndarray, z: np.ndarray, xi: np.ndarray, yi: np.ndarray
+) -> np.ndarray:
+    """Interpolate using radial basis functions
+
+    Args:
+        x (np.ndarray): Array with the x coordinates of the points (image 1)
+        y (np.ndarray): Array with the y coordinates of the points (image 1)
+        z (np.ndarray): Array with the z coordinates of the points (image 1)
+        xi (np.ndarray): Array with the x coordinates of the points (target image)
+        yi (np.ndarray): Array with the y coordinates of the points (target image)
+    
+    Returns:
+        np.ndarray: Array with the interpolated values
+    """
+    dist = distance_matrix(x, y, xi, yi)
+
+    # Mutual pariwise distances between observations
+    internal_dist = distance_matrix(x, y, x, y)
+
+    # Now solve for the weights such that mistfit at the observations is minimized
+    weights = np.linalg.solve(internal_dist, z)
+
+    # Multiply the weights for each interpolated point by the distances
+    zi = np.dot(dist.T, weights)
+
+    return zi
 
 
 def spatial_error(
     matching_points: Dict[str, torch.Tensor],
     threshold_distance: Optional[int] = 5,
     threshold_npoints: Optional[int] = 5,
-    grid: Optional[bool] = None,
+    img_size: Optional[Tuple[int, int]] = (1024, 1024),
 ) -> Union[Tuple[float, Tuple[list, list]], Tuple[np.ndarray, Tuple[list, list]]]:
     """Calculate the spatial error between two images
 
@@ -197,9 +431,8 @@ def spatial_error(
         threshold_npoints (Optional[int], optional): The minimum number of 
             points. Defaults to 5.            
         degree (Optional[int], optional): The degree of the polynomial. Defaults to 1.
-        grid (Optional[bool], optional): If True, return the grid with the error.
-            Defaults to None.
-
+        img_size (Optional[Tuple[int, int]], optional): The size of the image. Defaults
+            to (1024, 1024).
     Returns:
         Union[Tuple[float, Tuple[list, list]], Tuple[np.ndarray, Tuple[list, list]]] : 
             The spatial error between the two images. If grid=True, return the 
@@ -211,8 +444,7 @@ def spatial_error(
     """
 
     points0 = matching_points["points0"]
-    points1 = matching_points["points1"]
-    img_size = matching_points["img_size"]
+    points1 = matching_points["points1"]    
 
     # if the distance between the points is higher than 5 pixels,
     # it is considered a bad match
@@ -224,7 +456,7 @@ def spatial_error(
     # if not enough points, return 0
     if p0.shape[0] < threshold_npoints:
         warnings.warn("Not enough points to calculate the spatial error")
-        return torch.nan
+        return np.array(np.nan)
 
     # from torch.Tensor to numpy array
     p0 = p0.detach().cpu().numpy()
@@ -244,266 +476,37 @@ def spatial_error(
     # Calculate the error
     full_error = np.sqrt(X_error ** 2 + y_error ** 2)
 
-    if grid:
-        # Interpolate the error
-        arr_grid = np.array(
-            list(
-                itertools.product(
-                    np.arange(0, img_size[0], 1), np.arange(0, img_size[1], 1)
-                )
+    # Interpolate the error
+    arr_grid = np.array(
+        list(
+            itertools.product(
+                np.arange(0, img_size[0], 1), np.arange(0, img_size[1], 1)
             )
         )
-
-        spgrid_1D = linear_rbf(
-            X_img0.flatten(),
-            y_img0.flatten(),
-            full_error.flatten(),
-            arr_grid[:, 0],
-            arr_grid[:, 1],
-        )
-
-        spgrid_2D = np.flip(
-            np.transpose(np.flip(spgrid_1D.reshape(img_size), axis=0), axes=(1, 0)),
-            axis=1,
-        )
-
-        return spgrid_2D, (X_img0, y_img0)
-    else:
-        # rmse
-        return np.mean(full_error), (X_img0, y_img0)
-
-
-def spatial_model_fit(
-    matching_points: Dict[str, torch.Tensor],
-    n_points: Optional[int] = 10,
-    threshold_distance: Optional[int] = 5,
-    degree: Optional[int] = 1,
-    verbose: Optional[bool] = True,
-    scale: Optional[int] = 1,
-    return_rmse: Optional[bool] = False,
-) -> Union[np.ndarray, dict]:
-    """Get a model that minimizes the spatial error between two images
-
-    Args:
-        matching_points (Dict[str, torch.Tensor]): A dictionary with the points0, 
-            points1 and image size.
-        n_points (Optional[int], optional): The minimum number of points. Defaults
-            to 10.
-        threshold_distance (Optional[int], optional): The maximum distance between
-            the points. Defaults to 5 pixels.
-        degree (Optional[int], optional): The degree of the polynomial. Defaults 
-            to 1.
-        verbose (Optional[bool], optional): If True, print the error. Defaults to
-            False.
-        scale (Optional[int], optional): The scale factor to use. Defaults to 1.
-        return_rmse (Optional[bool], optional): If True, return the RMSE. Defaults
-            to False.
-    Returns:
-        np.ndarray: The spatial error between the two images
-    """
-
-    points0 = matching_points["points0"]
-    points1 = matching_points["points1"]
-
-    # if the distance between the points is higher than 5 pixels,
-    # it is considered a bad match
-    dist = torch.sqrt(torch.sum((points0 - points1) ** 2, dim=1))
-    thres = dist < threshold_distance
-    p0 = points0[thres]
-    p1 = points1[thres]
-
-    # if not enough points, return 0
-    if p0.shape[0] < n_points:
-        warnings.warn("Not enough points to fit the model")
-        return torch.nan
-
-    # from torch.Tensor to numpy array
-    p0 = p0.detach().cpu().numpy() * scale
-    p1 = p1.detach().cpu().numpy() * scale
-
-    # Fit a polynomial of degree 2 to the points
-    X_img0 = p0[:, 0].reshape(-1, 1)
-    X_img1 = p1[:, 0].reshape(-1, 1)
-    model_x = spatia_polynomial_fit(X_img0, X_img1, degree)
-
-    y_img0 = p0[:, 1].reshape(-1, 1)
-    y_img1 = p1[:, 1].reshape(-1, 1)
-    model_y = spatia_polynomial_fit(y_img0, y_img1, degree)
-
-    # display error
-    xhat = model_x.predict(X_img0)
-    yhat = model_y.predict(y_img0)
-
-    # full error
-    full_error1 = np.sqrt((xhat - X_img1) ** 2 + (yhat - y_img1) ** 2)
-    full_error2 = np.sqrt((X_img0 - X_img1) ** 2 + (y_img0 - y_img1) ** 2)
-
-    if verbose:
-        if degree == 1:
-            # get the params polynomial features
-            print(
-                "[X] Model: %.04f*X + %.04f"
-                % (float(model_x[1].coef_), float(model_x[1].intercept_))
-            )
-            print(
-                "[Y] Model: %.04f*X + %.04f"
-                % (float(model_y[1].coef_), float(model_y[1].intercept_))
-            )
-        print(f"Initial [RMSE]: %.04f" % np.mean(full_error2))
-        print(f"Final [RMSE]: %.04f" % np.mean(full_error1))
-
-    if return_rmse:
-        return {
-            "models": (model_x, model_y),
-            "rmse": (np.mean(full_error2), np.mean(full_error1)),
-        }
-
-    return model_x, model_y
-
-
-def spatial_model_transform(
-    image1: torch.Tensor,
-    spatial_models: tuple,
-    precision: Optional[int] = 2,
-    interpolation_mode: Optional[str] = "bilinear",
-    device: str = "cpu",
-) -> torch.Tensor:
-    """ Transform the image according to the spatial model
-
-    Args:
-        image1 (torch.Tensor): The image 1 with shape (B, H, W)
-        spatial_models (tuple): A tuple with the models for x and y
-        device (str, optional): The device to use. Defaults to 'cpu'.
-        interpolation_mode (Optional[str], optional): The interpolation
-            mode. Defaults to 'bilinear'.
-    Returns:
-        torch.Tensor: The transformed image
-    """
-
-    # Get the output device
-    output_device = image1.device
-
-    # Unpack the model - send to device
-    model_y, model_x = spatial_models
-
-    # Add padding to the image
-    image1 = torch.nn.functional.pad(
-        image1, pad=(8, 8, 8, 8), mode="constant", value=torch.nan
     )
 
-    # Send the data to the device
-    image1 = image1.to(device)
-
-    # Create a super-grid
-    image1 = torch.nn.functional.interpolate(
-        image1.unsqueeze(0), scale_factor=precision, mode="nearest-exact"
-    ).squeeze(0)
-
-    # Get the coordinates
-    x = torch.arange(0, image1.shape[-2] / precision, 1 / precision).to(device)
-    y = torch.arange(0, image1.shape[-1] / precision, 1 / precision).to(device)
-
-    xx, yy = torch.meshgrid(x, y)
-
-    # Flatten the coordinates
-    xx = xx.flatten().unsqueeze(1)
-    yy = yy.flatten().unsqueeze(1)
-
-    # Predict the new coordinates
-    xx_new = model_x.predict(xx.cpu().numpy())
-    yy_new = model_y.predict(yy.cpu().numpy())
-
-    # Reshape the coordinates
-    xx_new = xx_new.reshape(image1.shape[-2], image1.shape[-2]) * precision
-    yy_new = yy_new.reshape(image1.shape[-1], image1.shape[-1]) * precision
-
-    # Send the coordinates to torch and to the device
-    xx_new = torch.Tensor(xx_new).to(device)
-    yy_new = torch.Tensor(yy_new).to(device)
-
-    # Grid must be normalized to [-1, 1]
-    xx_new = (xx_new / (image1.shape[-2] / 2) - 1) * -1
-    yy_new = (yy_new / (image1.shape[-1] / 2) - 1) * -1
-
-    # Image mirror torch
-    image1_1 = torch.flip(image1.transpose(2, 1), [2])
-
-    # Interpolate the image
-    new_image1 = torch.nn.functional.grid_sample(
-        image1_1.unsqueeze(0),
-        torch.stack([xx_new, yy_new], dim=2).unsqueeze(0),
-        mode=interpolation_mode,
-        padding_mode="border",
-        align_corners=False,
-    ).squeeze(0)
-
-    # Remove the padding
-    new_image1 = new_image1[
-        :, (8 * precision) : -(8 * precision), (8 * precision) : -(8 * precision)
-    ]
-
-    # Go back to the original size
-    new_image1 = torch.nn.functional.interpolate(
-        new_image1.unsqueeze(0), scale_factor=1 / precision, mode="nearest-exact"
-    ).squeeze(0)
-
-    # Save the image
-    final_image1 = new_image1.flip(2).to(output_device)
-
-    return final_image1
-
-def create_nan_value(
-    image1:torch.Tensor,
-    grid:bool,
-    description:str
-):
-    """Create a empty value object when spatial models
-    return nan values    
-    """
-    
-    # Create fake points
-    points = (
-        np.array([[0], [1], [2]]),
-        np.array([[0], [1], [2]])
+    spgrid_1D = linear_rbf(
+        X_img0.flatten(),
+        y_img0.flatten(),
+        full_error.flatten(),
+        arr_grid[:, 0],
+        arr_grid[:, 1],
     )
 
-    
-    # Create a affine model that does nothing
-    affine_model = {
-        "models": spatia_polynomial_fit(*points, 1),
-        "rmse": (torch.nan, torch.nan)
-    }
-    
-    # Create a fake model
-    matching_points = {
-        "points0": np.array([[0, 1], [0,1]]),
-        "points1": np.array([[0, 1], [0,1]]),
-        "matches01": np.array([[0, 1], [0,1]]),
-        "img_size": image1.shape[1:]
-    }
-    
-    # Create a fake value matrix
-    value_matrix = torch.zeros_like(image1[0])
-    value_matrix[value_matrix==0] = torch.nan
-    
-    if not grid:
-        value_matrix = float(value_matrix.median())
-        
-    return Value(
-        value=value_matrix,
-        points=points,
-        affine_model=affine_model,
-        matching_points=matching_points,
-        description=description,
+    spgrid_2D = np.flip(
+        np.transpose(np.flip(spgrid_1D.reshape(img_size), axis=0), axes=(1, 0)),
+        axis=1,
     )
+
+    return spgrid_2D
+
 
 def spatial_metric(
     lr: torch.Tensor,
     sr_to_lr: torch.Tensor,
-    models: tuple,
-    threshold_distance: Optional[int] = 5,
-    threshold_npoints: Optional[int] = 5,
-    grid: Optional[bool] = True,
+    spatial_model: tuple,
+    threshold_n_points: Optional[int] = 5,
+    threshold_distance: Optional[int] = 2**63 - 1,
     description: str = "DISK Lightglue",
     device: str = "cpu",
 ) -> Union[float, np.ndarray]:
@@ -513,7 +516,7 @@ def spatial_metric(
         lr (torch.Tensor): The LR image with shape (C, H, W)
         sr_to_lr (torch.Tensor): The SR degradated to the spatial resolution of
             LR with shape (C, H, W).
-        model (tuple): A tuple with the feature extractor and the matcher models.
+        spatial_model (tuple): A tuple with the feature extractor and the matcher models.
         threshold_distance (Optional[int], optional): The maximum distance between the
             points. Defaults to 5 pixels.
         threshold_npoints (Optional[int], optional): The minimum number of points.
@@ -529,61 +532,37 @@ def spatial_metric(
         Union[float, np.ndarray]: The spatial error between the two images. If grid=True,
             return the grid with the error, otherwise return the mean error (RMSEmean).
     """
-
+    
     # replace nan values with 0
     # lightglue does not work with nan values
-    image1 = torch.nan_to_num(lr, nan=0.0)
-
+    lr = torch.nan_to_num(lr, nan=0.0)
+    sr_to_lr = torch.nan_to_num(sr_to_lr, nan=0.0)
+    
     # Apply histogram matching
-    image2 = hq_histogram_matching(sr_to_lr, lr)
-
-    # Get the points and matches    
+    image1 = lr.mean(0)[None]
+    image2 = sr_to_lr.mean(0)[None]
+    
+    # Get the points and matches
     matching_points = spatial_get_matching_points(
-        img01=image1, img02=image2, model=models, device=device
+        img01=image1, img02=image2, model=spatial_model, device=device
     )
 
     # is matching_points is a dict:
-    if not isinstance(matching_points, dict):
-        return create_nan_value(image1, grid, description)
-    
-    # Fix a image according to the matching points
-    affine_model = spatial_model_fit(
-        matching_points=matching_points,
-        threshold_distance=threshold_distance,
-        n_points=threshold_npoints,
-        degree=1,
-        verbose=False,
-        return_rmse=True,
-    )
+    if matching_points is False:
+        return Metric(
+            value=torch.tensor(torch.nan),
+            description=description
+        ), matching_points
 
-    # is matching_points is a dict:
-    if not isinstance(affine_model, dict):
-        return create_nan_value(image1, grid, description)
-        
-    
     # Calculate the error
     sp_error = spatial_error(
         matching_points=matching_points,
         threshold_distance=threshold_distance,
-        threshold_npoints=threshold_npoints,
-        grid=grid
+        threshold_npoints=threshold_n_points,
+        img_size=image1[0].shape
     )
-
-    # is matching_points is a dict:
-    if not isinstance(sp_error, tuple):
-        return create_nan_value(image1, grid, description)
-     
-    grid_error, points = sp_error
-
-
-    # if grid_error is a grid, convert to torch.Tensor
-    if isinstance(grid_error, np.ndarray):
-        grid_error = torch.from_numpy(grid_error).to(image1.device).float()
-
-    return Value(
-        value=grid_error,
-        points=points,
-        affine_model=affine_model,
-        matching_points=matching_points,
+    
+    return Metric(
+        value=torch.from_numpy(sp_error).float(),
         description=description,
-    )
+    ), matching_points

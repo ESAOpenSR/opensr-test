@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Optional, Tuple
 
 import matplotlib.colors as colors
 import matplotlib.pyplot as plt
@@ -33,6 +33,26 @@ def linear_fix(img: torch.Tensor, permute=True) -> torch.Tensor:
     for i in range(3):
         p2, p98 = np.percentile(img[i, ...], (2, 98))
         img_rescale = exposure.rescale_intensity(img[i, ...], in_range=(p2, p98))
+        container.append(img_rescale)
+    new_img = np.array(container)
+    if permute:
+        new_img = np.moveaxis(new_img, 0, -1)
+    return torch.from_numpy(new_img).float()
+
+def do_nothing(img: torch.Tensor, permute=True) -> torch.Tensor:
+    """ Do nothing to the image.
+    
+    Args:
+        img (torch.Tensor): The RGB image to stretch (3xHxW).
+        permute (bool, optional): Permute the dimensions to HxWx3.
+            Defaults to True.
+    Returns:
+        torch.Tensor: The stretched image (HxWx3)
+    """
+    img = img.detach().cpu().numpy()
+    container = []
+    for i in range(3):
+        img_rescale = img[i, ...]
         container.append(img_rescale)
     new_img = np.array(container)
     if permute:
@@ -211,7 +231,11 @@ def triplets(
         lr_img = equalize_hist(lr_img)
         sr_img = equalize_hist(sr_img)
         hr_img = equalize_hist(hr_img)
-
+    else:
+        lr_img = do_nothing(lr_img)
+        sr_img = do_nothing(sr_img)
+        hr_img = do_nothing(hr_img)
+    
     # Define the categorical values and colors
     values = [10, 20, 30, 40, 50, 60, 70, 80, 90, 95, 100]
     colors_list = [
@@ -264,13 +288,10 @@ def spatial_matches(
     points0: torch.Tensor,
     points1: torch.Tensor,
     matches01: Dict[str, torch.Tensor],
-    threshold_distance: Optional[int] = 5,
-    messages: Optional[List] = None,
-    stretch: Optional[str] = "linear",
+    threshold_distance: Optional[int] = 5,    
+    stretch: Optional[str] = "linear"
 ):
-
-    sr_to_lr = hq_histogram_matching(sr_to_lr, lr)
-
+    
     if stretch == "linear":
         sr_to_lr = linear_fix(sr_to_lr, permute=False)
         lr = linear_fix(lr, permute=False)
@@ -288,12 +309,6 @@ def spatial_matches(
     axes = viz2d.plot_images([lr, sr_to_lr], titles=["LR", "SR to LR"])
     viz2d.plot_matches(p0, p1, color="lime", lw=0.2)
     viz2d.add_text(0, f'Stop after {matches01["stop"]} layers', fs=20)
-    initial_value = 0.99
-    if messages is not None:
-        for i, msg in enumerate(messages):
-            viz2d.add_text(1, msg, fs=12, pos=(0.01, initial_value))
-            initial_value = initial_value - 0.05
-
     return axes
 
 
@@ -307,12 +322,12 @@ def display_results(
     e1_title: str,
     e1_subtitle: str,
     e2: torch.Tensor,
-    e2_points: Tuple[torch.Tensor, torch.Tensor],
     e2_title: str,
     e2_subtitle: str,
     e3: torch.Tensor,
+    e3_points: Tuple[torch.Tensor, torch.Tensor],
     e3_title: str,
-    e3_subtitle: str,
+    e3_subtitle: str,    
     e4: torch.Tensor,
     e4_title: str,
     e4_subtitle: str,
@@ -363,6 +378,12 @@ def display_results(
         sr = equalize_hist(sr)
         srharm = equalize_hist(srharm)
         hr = equalize_hist(hr)
+    else:
+        lr = do_nothing(lr)
+        lrdown = do_nothing(lrdown)
+        sr = do_nothing(sr)
+        srharm = do_nothing(srharm)
+        hr = do_nothing(hr)
 
     # Create the figure and axes (remove white space around the images)
     fig, axs = plt.subplots(2, 5, figsize=(20, 10), tight_layout=True)
@@ -386,38 +407,84 @@ def display_results(
     # Display the local reflectance map error
     axs[1, 0].imshow(e1)
     axs[1, 0].set_title(
-        "%s \n %s: %s" % (r"$\bf{Local\ Reflectance\ Error}$", e1_title, e1_subtitle)
+        "%s \n %s: %s" % (r"$\bf{Reflectance\ Consistency}$", e1_title, e1_subtitle)
     )
 
-    # Display the spatial local errors
-    
-    if bool(torch.isnan(torch.mean(e2))):
-        axs[1, 1].imshow(e2)
-    else:
-        axs[1, 1].imshow(e2, vmin=e2.min(), vmax=e2.max(), cmap="RdBu")
-        axs[1, 1].plot(*e2_points, "r*", markersize=5)
-        
+    # Display the spectral map error
+    axs[1, 1].imshow(e2)
     axs[1, 1].set_title(
-        "%s \n %s: %s" % (r"$\bf{Spatial\ Local\ Errors}$", e2_title, e2_subtitle)
+        "%s \n %s: %s" % (r"$\bf{Spectral\ Consistency}$", e2_title, e2_subtitle)
     )
 
-    # Display the HF map error
-    axs[1, 2].imshow(e3)
+    # Display the Spatial consistency
+    if len(torch.tensor(e3).shape) == 0:
+        axs[1, 2].imshow(e2*torch.nan)
+    else:
+        axs[1, 2].imshow(e3, vmin=e3.min(), vmax=e3.max(), cmap="RdBu")
+        axs[1, 2].plot([x[0] for x in e3_points], [x[1] for x in e3_points], "r*", markersize=5)
     axs[1, 2].set_title(
-        "%s \n %s: %s" % (r"$\bf{High\ Frequency}$", e3_title, e3_subtitle)
+        "%s \n %s: %s" % (r"$\bf{Spatial\ Consistency}$", e3_title, e3_subtitle)
     )
 
-    # Display the unsymmetric error
+    # Display the distance to the ommission space
     axs[1, 3].imshow(e4)
     axs[1, 3].set_title(
-        "%s \n %s: %s" % (r"$\bf{Unsystematic\ error}$", e4_title, e4_subtitle)
+        "%s \n %s: %s" % (r"$\bf{Distance\ to\ Omission\ Space}$", e4_title, e4_subtitle)
     )
 
     # Display the Hallucination error
-    minr, maxr = min_max_range(e5)
-    axs[1, 4].imshow(e5, cmap="RdBu", vmin=minr, vmax=maxr)
+    axs[1, 4].imshow(e5)
     axs[1, 4].set_title(
-        "%s \n %s %s" % (r"$\bf{Ha[Red]\ & \ Im[Blue]\ & \ Om[White]}$", e5_title, e5_subtitle)
+        "%s \n %s: %s" % (r"$\bf{Distance\ to\ Improvement\ Space}$", e5_title, e5_subtitle)
     )
 
     return fig, axs
+
+
+def display_tc_score(
+    d_im_ref: torch.Tensor,
+    d_om_ref: torch.Tensor,
+    tc_score: torch.Tensor,
+    log_scale: bool = True,
+    xylimits: Optional[Tuple[float, float]] = [0, 3],
+):      
+    # Custom colormap defined by RGB triplets
+    m = 256
+    h = np.array(
+        [[0, 1, 0],
+        [1, 1, 1],
+        [1, 0, 0],
+        [1, 1, 1],
+        [0, 0, 1]]
+    )
+    x = np.linspace(0, 1, h.shape[0])
+    new_x = np.linspace(0, 1, m)
+    h_interp = np.array([np.interp(new_x, x, h[:, i]) for i in range(3)]).T
+    colorbar = plt.cm.colors.ListedColormap(h_interp)
+    
+    # Define triplets
+    p1 = d_im_ref.ravel()
+    p2 = d_om_ref.ravel()
+    p3 = tc_score.ravel() 
+    
+    if log_scale:    
+        fig, ax = plt.subplots()
+        cax = ax.scatter(p1, p2, c=p3, cmap=colorbar)
+        cb = fig.colorbar(cax)
+        cb.set_ticks([-1, -0.5, 0, 0.5, 1])
+        ax.set_ylabel('$d_{im}$', fontsize=18)
+        ax.set_xlabel('$d_{om}$', fontsize=18)
+        ax.set_title('TC score', fontsize=20, fontweight="bold")
+        plt.xscale('log')
+        plt.yscale('log')
+    else:
+        fig, ax = plt.subplots()
+        cax = ax.scatter(p1, p2, c=p3, cmap=colorbar)
+        cb = fig.colorbar(cax)
+        cb.set_ticks([-1, -0.5, 0, 0.5, 1])
+        ax.set_ylabel('$d_{im}$', fontsize=18)
+        ax.set_xlabel('$d_{om}$', fontsize=18)
+        ax.set_ylim(xylimits)
+        ax.set_xlim(xylimits)
+        ax.set_title('TC score', fontsize=20, fontweight="bold")
+    return fig, ax

@@ -1,14 +1,11 @@
-from typing import Literal, Dict, List, Optional, Tuple
+from typing import Literal, Optional
 
 import torch
 from skimage.exposure import match_histograms
-from sklearn.pipeline import Pipeline
-
 
 def spectral_reducer(
     X: torch.Tensor,
-    method: Literal["mean", "median", "max", "min", "luminosity"] = "luminosity",
-    rgb_bands: Optional[List[int]] = [0, 1, 2],
+    method: Literal["mean", "median", "max", "min"] = "mean"
 ) -> torch.Tensor:
     """ Reduce the number of channels of a tensor from (C, H, W) to 
     (H, W) using a given method.
@@ -34,12 +31,6 @@ def spectral_reducer(
         return X.max(dim=0).values
     elif method == "min":
         return X.min(dim=0).values
-    elif method == "luminosity":
-        return (
-            0.2126*X[rgb_bands[0]] +
-            0.7152*X[rgb_bands[1]] +
-            0.0722*X[rgb_bands[2]]
-        )
     else:
         raise ValueError(
             "Invalid method. Must be one of 'mean', 'median', 'max', 'min', 'luminosity'."
@@ -94,43 +85,6 @@ def spatial_reducer(
     
     raise ValueError("Reduction parameter unknown.")
 
-class Value:
-    def __init__(
-        self,
-        value: torch.Tensor,
-        description: str,
-        points: Optional[Tuple[List[int], List[int]]] = None,
-        affine_model: Optional[Tuple[Pipeline, Pipeline]] = None,
-        matching_points: Optional[Dict[str, torch.Tensor]] = None,
-    ) -> None:
-        """ A class to store a value and its description.
-        It is useful to create plots with titles that 
-        highlight the method used for the computation of the 
-        metric.
-        
-        Args:
-            value (torch.Tensor): The metric value.
-            description (str): The name of the metric used to compute 
-                the value.
-            points (Optional[Tuple[List[int], List[int]]], optional):
-                The points used to fit the affine model. Useful for
-                spatial error plots. Defaults to None.
-            affine_model (Optional[Tuple[Pipeline, Pipeline]], optional):
-                The affine model (X, y) used to compute the spatial error.
-                It is a Pipeline object (see sklearn). Defaults to None.
-            matching_points (Optional[Dict[str, torch.Tensor]], optional):
-                Results of the matching algorithm. Defaults to None.
-        """
-
-        self.value = value
-        self.description = description
-        self.points = points
-        self.affine_model = affine_model
-        self.matching_points = matching_points
-
-    def __repr__(self):
-        return "%s: %s" % (self.description, self.value)
-
 
 def hq_histogram_matching(image1: torch.Tensor, image2: torch.Tensor) -> torch.Tensor:
     """ Lazy implementation of histogram matching 
@@ -174,3 +128,69 @@ def estimate_medoid(tensor: torch.Tensor) -> torch.Tensor:
     medoid = tensor[medoid_index]
 
     return medoid
+
+
+def do_square(tensor: torch.Tensor, patch_size: Optional[int] = 32) -> torch.Tensor:
+    """ Split a tensor into n_patches x n_patches patches and return
+    the patches as a tensor.
+    
+    Args:
+        tensor (torch.Tensor): The tensor to split.
+        n_patches (int, optional): The number of patches to split the tensor into.
+            If None, the tensor is split into the smallest number of patches.
+
+    Returns:
+        torch.Tensor: The patches as a tensor.
+    """
+    #tensor = torch.rand(3, 100, 100)
+    # Check if it is a square tensor
+    if tensor.shape[-1] != tensor.shape[-2]:
+        raise ValueError("The tensor must be square.")
+    
+    if patch_size is None:
+        patch_size = 1
+    
+    # tensor (C, H, W)
+    xdim = tensor.shape[1]
+    ydim = tensor.shape[2]
+    
+    minimages_x = int(torch.ceil(torch.tensor(xdim/patch_size)))
+    minimages_y = int(torch.ceil(torch.tensor(ydim/patch_size)))
+    
+    
+    pad_x_01 = int((minimages_x * patch_size - xdim)//2)
+    pad_x_02 = int((minimages_x * patch_size - xdim) - pad_x_01)
+    
+    pad_y_01 = int((minimages_y * patch_size - ydim)//2)
+    pad_y_02 = int((minimages_y * patch_size - ydim) - pad_y_01)
+    
+    padded_tensor = torch.nn.functional.pad(
+        input=tensor,
+        pad=(pad_x_01, pad_x_02, pad_y_01, pad_y_02),
+        mode="constant",
+        value=torch.nan
+    )
+    
+    # split the tensor (C, H, W) into (n_patches, n_patches, C, H, W)
+    patches = padded_tensor.unfold(1, patch_size, patch_size).unfold(2, patch_size, patch_size)
+    
+    # move the axes (C, n_patches, n_patches, H, W) -> (n_patches, n_patches, C, H, W)
+    patches = patches.permute(1, 2, 0, 3, 4)
+    
+    # compress dimensions (n_patches, n_patches, C, H, W) -> (n_patches*n_patches, C, H, W)
+    patches = patches.reshape(-1, *patches.shape[2:])
+    
+    return patches
+
+
+def get_numbers(string: str) -> str:
+    """ Get the numbers from a string. """
+    n_patches = string.replace("patch", "")
+    if n_patches == "":
+        n_patches = 32
+    else:
+        try:
+            n_patches = int(n_patches)
+        except:
+            raise ValueError("Invalid patch name.")
+    return n_patches
