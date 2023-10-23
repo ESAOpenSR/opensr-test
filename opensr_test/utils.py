@@ -3,9 +3,9 @@ from typing import Literal, Optional
 import torch
 from skimage.exposure import match_histograms
 
+
 def spectral_reducer(
-    X: torch.Tensor,
-    method: Literal["mean", "median", "max", "min"] = "mean"
+    X: torch.Tensor, method: Literal["mean", "median", "max", "min"] = "mean"
 ) -> torch.Tensor:
     """ Reduce the number of channels of a tensor from (C, H, W) to 
     (H, W) using a given method.
@@ -40,9 +40,8 @@ def spectral_reducer(
 def spatial_reducer(
     x: torch.Tensor,
     reduction: Literal[
-        "mean_abs", "mean", "median", "median_abs",
-        "max","max_abs", "min", "min_abs"
-    ]
+        "mean_abs", "mean", "median", "median_abs", "max", "max_abs", "min", "min_abs"
+    ],
 ) -> torch.Tensor:
     """Reduces a given tensor by a given reduction method.
     
@@ -82,7 +81,7 @@ def spatial_reducer(
         return torch.nansum(torch.abs(x))
     if reduction == "none" or reduction is None:
         raise ValueError("None is not a valid reduction method.")
-    
+
     raise ValueError("Reduction parameter unknown.")
 
 
@@ -130,7 +129,12 @@ def estimate_medoid(tensor: torch.Tensor) -> torch.Tensor:
     return medoid
 
 
-def do_square(tensor: torch.Tensor, patch_size: Optional[int] = 32) -> torch.Tensor:
+def do_square(
+    tensor: torch.Tensor,
+    patch_size: Optional[int] = 32,
+    get_pad: bool = False,
+    constant_value: float = torch.nan,
+) -> torch.Tensor:
     """ Split a tensor into n_patches x n_patches patches and return
     the patches as a tensor.
     
@@ -142,44 +146,48 @@ def do_square(tensor: torch.Tensor, patch_size: Optional[int] = 32) -> torch.Ten
     Returns:
         torch.Tensor: The patches as a tensor.
     """
-    #tensor = torch.rand(3, 100, 100)
+    # tensor = torch.rand(3, 100, 100)
     # Check if it is a square tensor
     if tensor.shape[-1] != tensor.shape[-2]:
         raise ValueError("The tensor must be square.")
-    
+
     if patch_size is None:
         patch_size = 1
-    
+
     # tensor (C, H, W)
     xdim = tensor.shape[1]
     ydim = tensor.shape[2]
-    
-    minimages_x = int(torch.ceil(torch.tensor(xdim/patch_size)))
-    minimages_y = int(torch.ceil(torch.tensor(ydim/patch_size)))
-    
-    
-    pad_x_01 = int((minimages_x * patch_size - xdim)//2)
+
+    minimages_x = int(torch.ceil(torch.tensor(xdim / patch_size)))
+    minimages_y = int(torch.ceil(torch.tensor(ydim / patch_size)))
+
+    pad_x_01 = int((minimages_x * patch_size - xdim) // 2)
     pad_x_02 = int((minimages_x * patch_size - xdim) - pad_x_01)
-    
-    pad_y_01 = int((minimages_y * patch_size - ydim)//2)
+
+    pad_y_01 = int((minimages_y * patch_size - ydim) // 2)
     pad_y_02 = int((minimages_y * patch_size - ydim) - pad_y_01)
-    
+
     padded_tensor = torch.nn.functional.pad(
         input=tensor,
         pad=(pad_x_01, pad_x_02, pad_y_01, pad_y_02),
         mode="constant",
-        value=torch.nan
+        value=constant_value,
     )
-    
+
     # split the tensor (C, H, W) into (n_patches, n_patches, C, H, W)
-    patches = padded_tensor.unfold(1, patch_size, patch_size).unfold(2, patch_size, patch_size)
-    
+    patches = padded_tensor.unfold(1, patch_size, patch_size).unfold(
+        2, patch_size, patch_size
+    )
+
     # move the axes (C, n_patches, n_patches, H, W) -> (n_patches, n_patches, C, H, W)
     patches = patches.permute(1, 2, 0, 3, 4)
-    
+
     # compress dimensions (n_patches, n_patches, C, H, W) -> (n_patches*n_patches, C, H, W)
     patches = patches.reshape(-1, *patches.shape[2:])
-    
+
+    if get_pad:
+        return patches, (pad_x_01, pad_x_02, pad_y_01, pad_y_02)
+
     return patches
 
 

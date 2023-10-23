@@ -2,10 +2,13 @@ import torch
 from opensr_test.config import Metric
 from opensr_test.distance import get_distance
 
+
 def spectral_metric(
     lr: torch.Tensor,
     sr_to_lr: torch.Tensor,
-    metric: str
+    metric: str,
+    agg_method: str = "pixel",
+    patch_size: int = 32,
 ):
     """ Calculate spectral metrics between two images.
 
@@ -19,7 +22,9 @@ def spectral_metric(
     """
     if not metric in ["sad"]:
         raise ValueError(f"Invalid metric. Must be one of 'sad'")
-        
-    metric_value = get_distance(lr, sr_to_lr, method=metric, agg_method="pixel").compute()
-    
+
+    metric_value = get_distance(
+        x=lr, y=sr_to_lr, method=metric, agg_method=agg_method, patch_size=patch_size
+    ).compute()
+
     return metric_value

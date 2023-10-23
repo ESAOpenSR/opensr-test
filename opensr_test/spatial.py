@@ -1,23 +1,23 @@
-import warnings
-from typing import Dict, Optional, Union, Tuple, List
-
 import itertools
+import warnings
+from typing import Dict, List, Optional, Tuple, Union
+
 import numpy as np
 import torch
-
+from opensr_test.config import Metric
+from opensr_test.distance import DistanceMetric
 from opensr_test.lightglue import DISK, LightGlue, SuperPoint
 from opensr_test.lightglue.utils import rbd
 from scipy.spatial.distance import cdist
+from skimage.registration import phase_cross_correlation
 from sklearn.linear_model import LinearRegression
 from sklearn.pipeline import Pipeline, make_pipeline
 from sklearn.preprocessing import PolynomialFeatures
-from skimage.registration import phase_cross_correlation
-from opensr_test.config import Metric
-
 
 # %-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 # | Spatial transformation functions
 # %-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
 
 def spatia_polynomial_fit(X: np.ndarray, y: np.ndarray, d: int) -> Pipeline:
     """Fit a polynomial regression using matched points
@@ -78,10 +78,7 @@ def spatial_setup_model(
 
 
 def spatial_get_matching_points(
-    img01: torch.Tensor,
-    img02: torch.Tensor,
-    model: tuple, 
-    device: str = "cpu",
+    img01: torch.Tensor, img02: torch.Tensor, model: tuple, device: str = "cpu"
 ) -> Dict[str, torch.Tensor]:
     """Predict the spatial error between two images
 
@@ -128,11 +125,7 @@ def spatial_get_matching_points(
     points0 = feats0["keypoints"][matches[..., 0]]
     points1 = feats1["keypoints"][matches[..., 1]]
 
-    matching_points = {
-        "points0": points0,
-        "points1": points1,
-        "matches01": matches01
-    }
+    matching_points = {"points0": points0, "points1": points1, "matches01": matches01}
 
     return matching_points
 
@@ -141,7 +134,7 @@ def spatial_model_fit(
     matching_points: Dict[str, torch.Tensor],
     n_points: Optional[int] = 10,
     threshold_distance: Optional[int] = 5,
-    verbose: Optional[bool] = False
+    verbose: Optional[bool] = False,
 ) -> Union[np.ndarray, dict]:
     """Get a model that minimizes the spatial error between two images
 
@@ -212,8 +205,7 @@ def spatial_model_fit(
 
 
 def spatial_model_transform_pixel(
-    image1: torch.Tensor,
-    spatial_offset: tuple,
+    image1: torch.Tensor, spatial_offset: tuple
 ) -> torch.Tensor:
     """ Transform the image according to the spatial offset obtained by the
     spatial_model_fit function. This correction is done at pixel level.
@@ -230,32 +222,29 @@ def spatial_model_transform_pixel(
     # get max offset
     moffs = np.max(np.abs([x_offs, y_offs]))
 
-    
     # Add padding according to the offset
     image_pad = torch.nn.functional.pad(
         image1, (moffs, moffs, moffs, moffs), mode="constant", value=0
     )
-    
+
     if x_offs < 0:
         image_pad = image_pad[:, :, (moffs + x_offs) :]
     elif x_offs > 0:
         image_pad = image_pad[:, :, (moffs - x_offs) :]
-    
+
     if y_offs < 0:
         image_pad = image_pad[:, (moffs - y_offs) :, :]
     elif y_offs > 0:
         image_pad = image_pad[:, (moffs + y_offs) :, :]
-    
+
     # remove padding
-    final_image = image_pad[:, 0:image1.shape[1], 0:image1.shape[2]]
-    
+    final_image = image_pad[:, 0 : image1.shape[1], 0 : image1.shape[2]]
+
     return final_image
 
 
 def spatial_model_transform(
-    lr_to_hr: torch.Tensor,
-    hr: torch.Tensor,
-    spatial_offset: tuple
+    lr_to_hr: torch.Tensor, hr: torch.Tensor, spatial_offset: tuple
 ) -> torch.Tensor:
     """ Transform the image according to the spatial offset
 
@@ -267,40 +256,38 @@ def spatial_model_transform(
     Returns:
         torch.Tensor: The transformed image
     """
-    
+
     # Fix the image according to the spatial offset
     offset_image1 = spatial_model_transform_pixel(
-        image1=lr_to_hr,
-        spatial_offset=spatial_offset
+        image1=lr_to_hr, spatial_offset=spatial_offset
     )
     hr_masked = hr * (offset_image1 != 0)
-    
-    
+
     # Create a mask with the offset image
     offset_image1 = offset_image1.detach().cpu().numpy()
     hr_masked = hr_masked.detach().cpu().numpy()
-    
-    # Subpixel refinement    
+
+    # Subpixel refinement
     shift, error, diffphase = phase_cross_correlation(
         offset_image1.mean(0), hr_masked.mean(0), upsample_factor=100
     )
-    
+
     # Fix the offset_image according to the subpixel refinement
-    offset_image2 =  spatial_model_transform_pixel(
+    offset_image2 = spatial_model_transform_pixel(
         image1=torch.from_numpy(offset_image1).float(),
-        spatial_offset={"offset": list(np.int16(np.round(shift)))}
+        spatial_offset={"offset": list(np.int16(np.round(shift)))},
     )
-    
+
     return offset_image2
-    
+
 
 def spatial_aligment(
     sr: torch.Tensor,
     hr: torch.Tensor,
     spatial_model: tuple,
     threshold_n_points: Optional[int] = 5,
-    threshold_distance: Optional[int] = 2**63 - 1,
-    rgb_bands: Optional[List[int]] = [0, 1, 2]
+    threshold_distance: Optional[int] = 2 ** 63 - 1,
+    rgb_bands: Optional[List[int]] = [0, 1, 2],
 ) -> torch.Tensor:
     """ Transform the image according to the spatial offset
 
@@ -318,9 +305,9 @@ def spatial_aligment(
     """
     # replace nan values with 0
     # lightglue does not work with nan values
-    sr = torch.nan_to_num(sr, nan=0.0)    
+    sr = torch.nan_to_num(sr, nan=0.0)
     hr = torch.nan_to_num(hr, nan=0.0)
-    
+
     # get imag01 and img02
     if sr.shape[0] >= 3:
         img01 = sr[rgb_bands, ...]
@@ -328,39 +315,35 @@ def spatial_aligment(
     else:
         img01 = sr[0][None]
         img02 = hr[0][None]
-    
+
     # Get the matching points
     matching_points = spatial_get_matching_points(
-        img01=img01,
-        img02=img02,
-        model=spatial_model
+        img01=img01, img02=img02, model=spatial_model
     )
-    
+
     if matching_points is False:
         warnings.warn("Not enough points to align the images")
         return sr, matching_points
-    
 
     # Fix the image according to the spatial offset
     spatial_offset = spatial_model_fit(
         matching_points=matching_points,
-        n_points = threshold_n_points,
-        threshold_distance = threshold_distance,
-        verbose = False
+        n_points=threshold_n_points,
+        threshold_distance=threshold_distance,
+        verbose=False,
     )
-    
+
     if spatial_offset is False:
         warnings.warn("Not enough valid points to align the images")
         return sr, matching_points
-    
+
     # Fix the image according to the spatial offset
     offset_image = spatial_model_transform(
-        lr_to_hr=sr,
-        hr=hr,
-        spatial_offset=spatial_offset
+        lr_to_hr=sr, hr=hr, spatial_offset=spatial_offset
     )
-        
+
     return offset_image, matching_points
+
 
 # %-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 # | Spatial transformation functions
@@ -444,7 +427,7 @@ def spatial_error(
     """
 
     points0 = matching_points["points0"]
-    points1 = matching_points["points1"]    
+    points1 = matching_points["points1"]
 
     # if the distance between the points is higher than 5 pixels,
     # it is considered a bad match
@@ -494,8 +477,7 @@ def spatial_error(
     )
 
     spgrid_2D = np.flip(
-        np.transpose(np.flip(spgrid_1D.reshape(img_size), axis=0), axes=(1, 0)),
-        axis=1,
+        np.transpose(np.flip(spgrid_1D.reshape(img_size), axis=0), axes=(1, 0)), axis=1
     )
 
     return spgrid_2D
@@ -506,7 +488,7 @@ def spatial_metric(
     sr_to_lr: torch.Tensor,
     spatial_model: tuple,
     threshold_n_points: Optional[int] = 5,
-    threshold_distance: Optional[int] = 2**63 - 1,
+    threshold_distance: Optional[int] = 2 ** 63 - 1,
     description: str = "DISK Lightglue",
     device: str = "cpu",
 ) -> Union[float, np.ndarray]:
@@ -532,16 +514,16 @@ def spatial_metric(
         Union[float, np.ndarray]: The spatial error between the two images. If grid=True,
             return the grid with the error, otherwise return the mean error (RMSEmean).
     """
-    
+
     # replace nan values with 0
     # lightglue does not work with nan values
     lr = torch.nan_to_num(lr, nan=0.0)
     sr_to_lr = torch.nan_to_num(sr_to_lr, nan=0.0)
-    
+
     # Apply histogram matching
     image1 = lr.mean(0)[None]
     image2 = sr_to_lr.mean(0)[None]
-    
+
     # Get the points and matches
     matching_points = spatial_get_matching_points(
         img01=image1, img02=image2, model=spatial_model, device=device
@@ -549,20 +531,64 @@ def spatial_metric(
 
     # is matching_points is a dict:
     if matching_points is False:
-        return Metric(
-            value=torch.tensor(torch.nan),
-            description=description
-        ), matching_points
+        return torch.tensor(torch.nan), matching_points
 
     # Calculate the error
     sp_error = spatial_error(
         matching_points=matching_points,
         threshold_distance=threshold_distance,
         threshold_npoints=threshold_n_points,
-        img_size=image1[0].shape
+        img_size=image1[0].shape,
     )
-    
-    return Metric(
-        value=torch.from_numpy(sp_error).float(),
-        description=description,
-    ), matching_points
+
+    return torch.from_numpy(sp_error).float(), matching_points
+
+
+class SpatialMetric(DistanceMetric):
+    """Spectral information divergence between two tensors"""
+
+    def __init__(
+        self,
+        x: torch.Tensor,
+        y: torch.Tensor,
+        name: str,
+        threshold_n_points: int,
+        threshold_distance: int,
+        spatial_model: tuple,
+        method: str = "image",
+        patch_size: int = 32,
+        device: str = "cpu",
+    ):
+        super().__init__(x=x, y=y, method=method, patch_size=patch_size, name=name)
+        self.spatial_model = spatial_model
+        self.threshold_n_points = threshold_n_points
+        self.threshold_distance = threshold_distance
+        self.device = device
+
+        # Estimate the spatial error at pixel level
+        self.metric, self.matching_points = spatial_metric(
+            lr=x,
+            sr_to_lr=y,
+            spatial_model=self.spatial_model,
+            threshold_n_points=self.threshold_n_points,
+            threshold_distance=self.threshold_distance,
+            device="cpu",
+        )
+
+    def _compute_image(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
+        return self.metric.mean()
+
+    def compute_patch(self) -> torch.Tensor:
+        metric_batched = self.do_square(self.metric[None], self.patch_size)
+        metric_result = torch.zeros(metric_batched.shape[:2])
+        xrange, yrange = metric_batched.shape[0:2]
+
+        for x_index in range(xrange):
+            for y_index in range(yrange):
+                metric_batch = metric_batched[x_index, y_index]
+                metric_result[x_index, y_index] = metric_batch.mean()
+
+        return Metric(value=metric_result, description=self.name)
+
+    def _compute_pixel(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
+        return self.metric

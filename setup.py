@@ -26,9 +26,16 @@ setup(
         exclude=("tests",), include=["opensr_test", "opensr_test.*"]
     ),
     install_requires=[
-        "torch", "numpy", "matplotlib", "scikit-image", 
-        "scikit-learn", "lpips", "requests", "kornia",
-        "pydantic"
+        "torch",
+        "numpy",
+        "matplotlib",
+        "scikit-image",
+        "scikit-learn",
+        "lpips",
+        "requests",
+        "kornia",
+        "pydantic",
+        "opencv-python",
     ],
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",

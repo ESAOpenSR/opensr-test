@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 from opensr_test.lightglue import viz2d
-from opensr_test.utils import hq_histogram_matching
 from skimage import exposure
+
 
 def min_max_range(tensor):
     """ 
@@ -38,6 +38,7 @@ def linear_fix(img: torch.Tensor, permute=True) -> torch.Tensor:
     if permute:
         new_img = np.moveaxis(new_img, 0, -1)
     return torch.from_numpy(new_img).float()
+
 
 def do_nothing(img: torch.Tensor, permute=True) -> torch.Tensor:
     """ Do nothing to the image.
@@ -113,7 +114,7 @@ def quadruplets(
         raise ValueError("The SR image must be a RGB (3xHxW) image.")
     if hr_img.shape[0] == 4:
         raise ValueError("The HR image must be a RGB (3xHxW) image.")
-    
+
     if landuse_img is None:
         return triplets(lr_img, sr_img, hr_img, stretch=stretch)
 
@@ -235,7 +236,7 @@ def triplets(
         lr_img = do_nothing(lr_img)
         sr_img = do_nothing(sr_img)
         hr_img = do_nothing(hr_img)
-    
+
     # Define the categorical values and colors
     values = [10, 20, 30, 40, 50, 60, 70, 80, 90, 95, 100]
     colors_list = [
@@ -288,10 +289,10 @@ def spatial_matches(
     points0: torch.Tensor,
     points1: torch.Tensor,
     matches01: Dict[str, torch.Tensor],
-    threshold_distance: Optional[int] = 5,    
-    stretch: Optional[str] = "linear"
+    threshold_distance: Optional[int] = 5,
+    stretch: Optional[str] = "linear",
 ):
-    
+
     if stretch == "linear":
         sr_to_lr = linear_fix(sr_to_lr, permute=False)
         lr = linear_fix(lr, permute=False)
@@ -327,7 +328,7 @@ def display_results(
     e3: torch.Tensor,
     e3_points: Tuple[torch.Tensor, torch.Tensor],
     e3_title: str,
-    e3_subtitle: str,    
+    e3_subtitle: str,
     e4: torch.Tensor,
     e4_title: str,
     e4_subtitle: str,
@@ -396,14 +397,14 @@ def display_results(
     axs[0, 0].imshow(lr)
     axs[0, 0].set_title("LR", fontsize=20, fontweight="bold")
     axs[0, 1].imshow(lrdown)
-    axs[0, 1].set_title("LRdown", fontsize=20, fontweight="bold")    
+    axs[0, 1].set_title("LRdown", fontsize=20, fontweight="bold")
     axs[0, 2].imshow(sr)
     axs[0, 2].set_title("SR", fontsize=20, fontweight="bold")
     axs[0, 3].imshow(srharm)
     axs[0, 3].set_title("SRharm", fontsize=20, fontweight="bold")
     axs[0, 4].imshow(hr)
     axs[0, 4].set_title("HR", fontsize=20, fontweight="bold")
-    
+
     # Display the local reflectance map error
     axs[1, 0].imshow(e1)
     axs[1, 0].set_title(
@@ -418,10 +419,12 @@ def display_results(
 
     # Display the Spatial consistency
     if len(torch.tensor(e3).shape) == 0:
-        axs[1, 2].imshow(e2*torch.nan)
+        axs[1, 2].imshow(e2 * torch.nan)
     else:
         axs[1, 2].imshow(e3, vmin=e3.min(), vmax=e3.max(), cmap="RdBu")
-        axs[1, 2].plot([x[0] for x in e3_points], [x[1] for x in e3_points], "r*", markersize=5)
+        axs[1, 2].plot(
+            [x[0] for x in e3_points], [x[1] for x in e3_points], "r*", markersize=5
+        )
     axs[1, 2].set_title(
         "%s \n %s: %s" % (r"$\bf{Spatial\ Consistency}$", e3_title, e3_subtitle)
     )
@@ -429,62 +432,78 @@ def display_results(
     # Display the distance to the ommission space
     axs[1, 3].imshow(e4)
     axs[1, 3].set_title(
-        "%s \n %s: %s" % (r"$\bf{Distance\ to\ Omission\ Space}$", e4_title, e4_subtitle)
+        "%s \n %s: %s"
+        % (r"$\bf{Distance\ to\ Omission\ Space}$", e4_title, e4_subtitle)
     )
 
     # Display the Hallucination error
     axs[1, 4].imshow(e5)
     axs[1, 4].set_title(
-        "%s \n %s: %s" % (r"$\bf{Distance\ to\ Improvement\ Space}$", e5_title, e5_subtitle)
+        "%s \n %s: %s"
+        % (r"$\bf{Distance\ to\ Improvement\ Space}$", e5_title, e5_subtitle)
     )
 
     return fig, axs
 
 
 def display_tc_score(
+    sr_rgb: torch.Tensor,
     d_im_ref: torch.Tensor,
     d_om_ref: torch.Tensor,
     tc_score: torch.Tensor,
     log_scale: bool = True,
     xylimits: Optional[Tuple[float, float]] = [0, 3],
-):      
+    stretch: Optional[str] = "linear",
+):
+    # Apply the stretch
+    if stretch == "linear":
+        sr_rgb = linear_fix(sr_rgb)
+    elif stretch == "histogram":
+        sr_rgb = equalize_hist(sr_rgb)
+    else:
+        sr_rgb = do_nothing(sr_rgb)
+
     # Custom colormap defined by RGB triplets
     m = 256
-    h = np.array(
-        [[0, 1, 0],
-        [1, 1, 1],
-        [1, 0, 0],
-        [1, 1, 1],
-        [0, 0, 1]]
-    )
+    h = np.array([[0, 1, 0], [1, 1, 1], [1, 0, 0], [1, 1, 1], [0, 0, 1]])
     x = np.linspace(0, 1, h.shape[0])
     new_x = np.linspace(0, 1, m)
     h_interp = np.array([np.interp(new_x, x, h[:, i]) for i in range(3)]).T
     colorbar = plt.cm.colors.ListedColormap(h_interp)
-    
+
     # Define triplets
     p1 = d_im_ref.ravel()
     p2 = d_om_ref.ravel()
-    p3 = tc_score.ravel() 
-    
-    if log_scale:    
-        fig, ax = plt.subplots()
-        cax = ax.scatter(p1, p2, c=p3, cmap=colorbar)
+    p3 = tc_score.ravel()
+
+    if log_scale:
+        fig, ax = plt.subplots(1, 3, figsize=(15, 5))
+        ax[0].imshow(sr_rgb, aspect="auto")
+        ax[0].set_title("SR RGB", fontsize=20, fontweight="bold")
+        ax[1].imshow(tc_score, aspect="auto", cmap=colorbar)
+        ax[1].set_title("TC score - GRID", fontsize=20, fontweight="bold")
+        cax = ax[2].scatter(p1, p2, c=p3, cmap=colorbar)
         cb = fig.colorbar(cax)
         cb.set_ticks([-1, -0.5, 0, 0.5, 1])
-        ax.set_ylabel('$d_{im}$', fontsize=18)
-        ax.set_xlabel('$d_{om}$', fontsize=18)
-        ax.set_title('TC score', fontsize=20, fontweight="bold")
-        plt.xscale('log')
-        plt.yscale('log')
+        ax[2].set_ylabel("$d_{im}$", fontsize=18)
+        ax[2].set_xlabel("$d_{om}$", fontsize=18)
+        ax[2].set_title("TC score - 2D", fontsize=20, fontweight="bold")
+        ax[2].set_ylim([0.01, 100])
+        ax[2].set_xlim([0.01, 100])
+        ax[2].set_yscale("log")
+        ax[2].set_xscale("log")
     else:
-        fig, ax = plt.subplots()
-        cax = ax.scatter(p1, p2, c=p3, cmap=colorbar)
+        fig, ax = plt.subplots(1, 3, figsize=(15, 5))
+        ax[0].imshow(sr_rgb, aspect="auto")
+        ax[0].set_title("SR RGB", fontsize=20, fontweight="bold")
+        ax[1].imshow(tc_score, aspect="auto", cmap=colorbar)
+        ax[1].set_title("TC score - GRID", fontsize=20, fontweight="bold")
+        cax = ax[2].scatter(p1, p2, c=p3, cmap=colorbar)
         cb = fig.colorbar(cax)
         cb.set_ticks([-1, -0.5, 0, 0.5, 1])
-        ax.set_ylabel('$d_{im}$', fontsize=18)
-        ax.set_xlabel('$d_{om}$', fontsize=18)
-        ax.set_ylim(xylimits)
-        ax.set_xlim(xylimits)
-        ax.set_title('TC score', fontsize=20, fontweight="bold")
+        ax[2].set_ylabel("$d_{im}$", fontsize=18)
+        ax[2].set_xlabel("$d_{om}$", fontsize=18)
+        ax[2].set_ylim(xylimits)
+        ax[2].set_xlim(xylimits)
+        ax[2].set_title("TC score", fontsize=20, fontweight="bold")
     return fig, ax

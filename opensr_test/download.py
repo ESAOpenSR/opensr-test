@@ -1,10 +1,10 @@
 import pathlib
+from typing import Optional
 
 import numpy as np
 import requests
 import torch
 
-from typing import Optional
 
 def download(url: str, save_path: str) -> str:
     """ Download a file from a url.
@@ -25,9 +25,7 @@ def download(url: str, save_path: str) -> str:
 
 
 def load(
-    dataset: str = "naip",
-    model_dir: Optional[str] = None,
-    force: bool = False
+    dataset: str = "naip", model_dir: Optional[str] = None, force: bool = False
 ) -> torch.Tensor:
     """ Load a dataset.
 
@@ -45,18 +43,18 @@ def load(
         ROOT_FOLDER = get_data_path()
     else:
         ROOT_FOLDER = pathlib.Path(model_dir)
-        
+
     DATASETS = ["naip", "spot", "venus"]
     if dataset not in DATASETS:
         raise NotImplementedError("The dataset %s is not implemented." % dataset)
-        
+
     URL = "https://huggingface.co/csaybar/opensr-test/resolve/main"
-    
+
     # Create folder
     [(ROOT_FOLDER / x).mkdir(exist_ok=True) for x in DATASETS]
 
     # Download the files
-    
+
     ## hr file
     hrfile_url = "%s/%s/%s" % (URL, dataset, "hr.npy")
     hrfile_path = ROOT_FOLDER / dataset / "hr.npy"
@@ -98,7 +96,7 @@ def load(
     ## LandUse file
     land_use = np.load(ROOT_FOLDER / dataset / "landuse2.npy")
     land_use_torch = torch.from_numpy(land_use)
-    
+
     return {"lr": lr_data_torch, "hr": hr_data_torch, "landuse": land_use_torch}
 
 
