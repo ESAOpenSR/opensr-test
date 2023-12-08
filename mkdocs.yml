@@ -2,13 +2,13 @@ docs_dir: .
 
 # Project information
 site_name: OpenSR test
-site_url: https://github.com/JulioContrerasH/opensr-test
+site_url: https://github.com/ESAOpenSR/opensr-test
 site_author: Open SR test Contributors
 site_description: A comprehensive benchmark for real-world Sentinel-2 imagery super-resolution
 
 
 # Repository
-repo_url: https://github.com/JulioContrerasH/opensr-test
+repo_url: https://github.com/ESAOpenSR/opensr-test
 repo_name: OpenSR test
 use_directory_urls: false
 
