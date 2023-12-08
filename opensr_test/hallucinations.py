@@ -1,8 +1,11 @@
 from typing import List, Optional
 
 import torch
+import numpy as np
 from opensr_test.distance import get_distance
 
+def sigm(x):
+    return 1 / (1 + np.exp(-(x - 0) / 1)) 
 
 def get_distances(
     lr_to_hr: torch.Tensor,
@@ -68,47 +71,69 @@ def get_distances(
     return reference.value, dist_sr_to_hr.value, dist_sr_to_lr.value
 
 
-def tc_metric(d_im: torch.Tensor, d_om: torch.Tensor) -> torch.Tensor:
-    """ Obtain the coordinates from both the center
-    of the consystency line and the SR model
+def tc_improvement(
+    d_im: torch.Tensor,
+    d_om: torch.Tensor,
+    plambda: float = 0.85
+) -> torch.Tensor:
+    """ Obtain the relative distance to the center
+    of the improvement space
 
     Args:
-        lr_to_hr (torch.Tensor): A tensor (B, C, H, W)
-        sr_harm (torch.Tensor): A tensor (B, C, H, W)
-        hr (torch.Tensor): A tensor (B, C, H, W)
+        d_im (torch.Tensor): The distance to the improvement space
+        d_om (torch.Tensor): The distance to the omission space
+        plambda (float): The parameter calibrated according to the
+            human perception of the quality of the super-resolved
+            image. Defaults to 0.85.
+
+    Returns:
+        torch.Tensor: The relative distance to the center 
+        of the improvement space
     """
-    # Make the distance relative to the center of the consistency line
+    H = d_im + d_om -1  
+    return d_im + d_om*(1 - np.exp(-H*plambda))
 
-    # dot product [1, 1] * [d_im, d_om]
-    n = d_im.size(0)
-    H = torch.matmul(
-        torch.vstack([d_om.ravel(), d_im.ravel()]).T, torch.tensor([1, 1]).float()
-    ).reshape(n, n)
-    I = torch.matmul(
-        torch.vstack([d_im.ravel(), d_om.ravel()]).T, torch.tensor([-1, 1]).float()
-    ).reshape(n, n)
-    H = H - 1
-    TCscore = (I + torch.sign(I)) * torch.exp(-H) / 2
-    return TCscore
-
-
-def tc_metric_02(d_im: torch.Tensor, d_om: torch.Tensor) -> torch.Tensor:
-    """ Obtain the coordinates from both the center
-    of the consystency line and the SR model
+def tc_omission(
+    d_im: torch.Tensor,
+    d_om: torch.Tensor,
+    plambda: float = 0.85
+) -> torch.Tensor:
+    """ Obtain the relative distance to the center
+    of the omission space
 
     Args:
-        lr_to_hr (torch.Tensor): A tensor (B, C, H, W)
-        sr_harm (torch.Tensor): A tensor (B, C, H, W)
-        hr (torch.Tensor): A tensor (B, C, H, W)
-    """
-    n = d_im.size(0)
-    H = torch.matmul(
-        torch.vstack([d_om.ravel(), d_im.ravel()]).T, torch.tensor([1, 1]).float()
-    ).reshape(n, n)
-    I = torch.matmul(
-        torch.vstack([d_im.ravel(), d_om.ravel()]).T, torch.tensor([-1, 1]).float()
-    ).reshape(n, n)
-    H = H - 1
-    TCscore = (I + torch.sign(I)) / (2 * torch.exp(H + 1))
+        d_im (torch.Tensor): The distance to the improvement space
+        d_om (torch.Tensor): The distance to the omission space
+        plambda (float): The parameter calibrated according to the
+            human perception of the quality of the super-resolved
+            image. Defaults to 0.85.
 
-    return TCscore
+    Returns:
+        torch.Tensor: The relative distance to the center 
+        of the improvement space
+    """
+    H = d_im + d_om -1  
+    return d_om + d_im*(1 - np.exp(-H*plambda))
+
+
+def tc_hallucination(
+    d_im: torch.Tensor,
+    d_om: torch.Tensor,
+    plambda: float = 0.85
+) -> torch.Tensor:
+    """ Obtain the relative distance to the center
+    of the omission space
+
+    Args:
+        d_im (torch.Tensor): The distance to the improvement space
+        d_om (torch.Tensor): The distance to the omission space
+        plambda (float): The parameter calibrated according to the
+            human perception of the quality of the super-resolved
+            image. Defaults to 0.85.
+
+    Returns:
+        torch.Tensor: The relative distance to the center 
+        of the improvement space
+    """
+    Q = np.exp(-d_im * d_om * plambda)
+    return Q

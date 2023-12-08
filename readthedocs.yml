@@ -1,6 +1,0 @@
-name: opensr-test
-type: sphinx
-python:
-  version: 3.8
-  setup_py_install: false
-requirements_file: docs/docs-requirements.txt

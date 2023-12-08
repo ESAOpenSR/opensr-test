@@ -237,35 +237,6 @@ def triplets(
         sr_img = do_nothing(sr_img)
         hr_img = do_nothing(hr_img)
 
-    # Define the categorical values and colors
-    values = [10, 20, 30, 40, 50, 60, 70, 80, 90, 95, 100]
-    colors_list = [
-        "#006400",
-        "#ffbb22",
-        "#ffff4c",
-        "#f096ff",
-        "#fa0000",
-        "#b4b4b4",
-        "#f0f0f0",
-        "#0064c8",
-        "#0096a0",
-        "#00cf75",
-        "#fae6a0",
-    ]
-    labels = [
-        "Tree cover (10)",
-        "Shrubland (20)",
-        "Grassland (30)",
-        "Cropland (40)",
-        "Built-up (50)",
-        "Bare / sparse vegetation (60)",
-        "Snow and ice (70)",
-        "Permanent water bodies (80)",
-        "Herbaceous wetland (90)",
-        "Mangroves (95)",
-        "Moss and lichen (100)",
-    ]
-
     # Plot the images
     scale_factor = hr_img.shape[0] / lr_img.shape[0]
     fig, axs = plt.subplots(1, 3, figsize=(25, 5))
@@ -278,7 +249,7 @@ def triplets(
 
     # Add the suptitle
     fig.suptitle("Scale factor: %.2f" % scale_factor, fontsize=16)
-
+    
     # return the figure to plot
     return fig, axs
 
@@ -408,13 +379,13 @@ def display_results(
     # Display the local reflectance map error
     axs[1, 0].imshow(e1)
     axs[1, 0].set_title(
-        "%s \n %s: %s" % (r"$\bf{Reflectance\ Consistency}$", e1_title, e1_subtitle)
+        "%s \n %s: %s" % (r"$\bf{Reflectance\ Consistency \downarrow}$", e1_title, e1_subtitle)
     )
 
     # Display the spectral map error
     axs[1, 1].imshow(e2)
     axs[1, 1].set_title(
-        "%s \n %s: %s" % (r"$\bf{Spectral\ Consistency}$", e2_title, e2_subtitle)
+        "%s \n %s: %s" % (r"$\bf{Spectral\ Consistency \downarrow}$", e2_title, e2_subtitle)
     )
 
     # Display the Spatial consistency
@@ -426,21 +397,21 @@ def display_results(
             [x[0] for x in e3_points], [x[1] for x in e3_points], "r*", markersize=5
         )
     axs[1, 2].set_title(
-        "%s \n %s: %s" % (r"$\bf{Spatial\ Consistency}$", e3_title, e3_subtitle)
+        "%s \n %s: %s" % (r"$\bf{Spatial\ Consistency \downarrow}$", e3_title, e3_subtitle)
     )
 
     # Display the distance to the ommission space
     axs[1, 3].imshow(e4)
     axs[1, 3].set_title(
         "%s \n %s: %s"
-        % (r"$\bf{Distance\ to\ Omission\ Space}$", e4_title, e4_subtitle)
+        % (r"$\bf{Distance\ to\ Omission\ Space \uparrow}$", e4_title, e4_subtitle)
     )
 
     # Display the Hallucination error
     axs[1, 4].imshow(e5)
     axs[1, 4].set_title(
         "%s \n %s: %s"
-        % (r"$\bf{Distance\ to\ Improvement\ Space}$", e5_title, e5_subtitle)
+        % (r"$\bf{Distance\ to\ Improvement\ Space \downarrow}$", e5_title, e5_subtitle)
     )
 
     return fig, axs
@@ -452,9 +423,8 @@ def display_tc_score(
     d_om_ref: torch.Tensor,
     tc_score: torch.Tensor,
     log_scale: bool = True,
-    xylimits: Optional[Tuple[float, float]] = [0, 3],
     stretch: Optional[str] = "linear",
-):
+):    
     # Apply the stretch
     if stretch == "linear":
         sr_rgb = linear_fix(sr_rgb)
@@ -463,47 +433,41 @@ def display_tc_score(
     else:
         sr_rgb = do_nothing(sr_rgb)
 
-    # Custom colormap defined by RGB triplets
-    m = 256
-    h = np.array([[0, 1, 0], [1, 1, 1], [1, 0, 0], [1, 1, 1], [0, 0, 1]])
-    x = np.linspace(0, 1, h.shape[0])
-    new_x = np.linspace(0, 1, m)
-    h_interp = np.array([np.interp(new_x, x, h[:, i]) for i in range(3)]).T
-    colorbar = plt.cm.colors.ListedColormap(h_interp)
-
+    # Custom categorical colormap - Blue[0], Green[1], Red[2]
+    colorbar = colors.ListedColormap(["blue", "green", "red"])
+    
     # Define triplets
     p1 = d_im_ref.ravel()
-    p2 = d_om_ref.ravel()
-    p3 = tc_score.ravel()
+    p1 = p1[~torch.isnan(p1)]
 
+    p2 = d_om_ref.ravel()
+    p2 = p2[~torch.isnan(p2)]
+    
+    p3 = tc_score.ravel()
+    p3 = p3[~torch.isnan(p3)]
+    
     if log_scale:
         fig, ax = plt.subplots(1, 3, figsize=(15, 5))
-        ax[0].imshow(sr_rgb, aspect="auto")
+        ax[0].imshow(sr_rgb)
         ax[0].set_title("SR RGB", fontsize=20, fontweight="bold")
-        ax[1].imshow(tc_score, aspect="auto", cmap=colorbar)
+        ax[1].imshow(tc_score, cmap=colorbar)
         ax[1].set_title("TC score - GRID", fontsize=20, fontweight="bold")
-        cax = ax[2].scatter(p1, p2, c=p3, cmap=colorbar)
-        cb = fig.colorbar(cax)
-        cb.set_ticks([-1, -0.5, 0, 0.5, 1])
+        ax[2].scatter(p1, p2, c=p3, cmap=colorbar)
         ax[2].set_ylabel("$d_{im}$", fontsize=18)
         ax[2].set_xlabel("$d_{om}$", fontsize=18)
         ax[2].set_title("TC score - 2D", fontsize=20, fontweight="bold")
-        ax[2].set_ylim([0.01, 100])
-        ax[2].set_xlim([0.01, 100])
         ax[2].set_yscale("log")
-        ax[2].set_xscale("log")
+        ax[2].set_xscale("log")    
+        # make square and equal
+        ax[2].set_aspect(1.0/ax[2].get_data_ratio(), adjustable='box')
     else:
         fig, ax = plt.subplots(1, 3, figsize=(15, 5))
-        ax[0].imshow(sr_rgb, aspect="auto")
+        ax[0].imshow(sr_rgb.permute(1, 2, 0)*3)
         ax[0].set_title("SR RGB", fontsize=20, fontweight="bold")
-        ax[1].imshow(tc_score, aspect="auto", cmap=colorbar)
+        ax[1].imshow(tc_score, cmap=colorbar)
         ax[1].set_title("TC score - GRID", fontsize=20, fontweight="bold")
-        cax = ax[2].scatter(p1, p2, c=p3, cmap=colorbar)
-        cb = fig.colorbar(cax)
-        cb.set_ticks([-1, -0.5, 0, 0.5, 1])
+        ax[2].scatter(p1, p2, c=p3, cmap=colorbar)        
         ax[2].set_ylabel("$d_{im}$", fontsize=18)
         ax[2].set_xlabel("$d_{om}$", fontsize=18)
-        ax[2].set_ylim(xylimits)
-        ax[2].set_xlim(xylimits)
-        ax[2].set_title("TC score", fontsize=20, fontweight="bold")
+        ax[2].set_title("TC score - 2D", fontsize=20, fontweight="bold")        
     return fig, ax

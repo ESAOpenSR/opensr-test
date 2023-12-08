@@ -14,7 +14,7 @@ def read(filename):
 
 setup(
     name="opensr-test",
-    version="0.0.7",
+    version="0.0.9999",
     url="https://github.com/ESAOpenSR/opensr-test",
     license="MIT",
     author="Cesar Aybar Camacho",
@@ -26,17 +26,19 @@ setup(
         exclude=("tests",), include=["opensr_test", "opensr_test.*"]
     ),
     install_requires=[
-        "torch",
+        "torch>=1.9.0",
         "numpy",
         "matplotlib",
         "scikit-image",
         "scikit-learn",
-        "lpips",
         "requests",
         "kornia",
         "pydantic",
         "opencv-python",
     ],
+    extras_require={
+        "perceptual": ["open_clip_torch", "lpips"]
+    },
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
         "License :: OSI Approved :: MIT License",

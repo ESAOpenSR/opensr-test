@@ -1,10 +1,9 @@
 from abc import ABC, abstractmethod
 from typing import List, Optional, Union
-
-import lpips
 import torch
 from opensr_test.config import Metric
-
+from opensr_test.utils import check_lpips, check_openclip
+from torchvision.transforms import Normalize
 
 class DistanceMetric(ABC):
     """ Metaclass to define the distance metrics
@@ -109,6 +108,11 @@ class DistanceMetric(ABC):
                 y_batch = y_batched[x_index, y_index]
                 metric_result[x_index, y_index] = self._compute_image(x_batch, y_batch)
 
+        # Go back to the original size
+        metric_result = torch.nn.functional.interpolate(
+            metric_result[None, None], size=self.x.shape[-2:], mode="nearest"
+        ).squeeze()
+        
         return Metric(value=metric_result, description=self.name)
 
     def compute_pixel(self) -> torch.Tensor:
@@ -301,6 +305,9 @@ class LPIPS(DistanceMetric):
         patch_size: int = 32,
         device: Union[str, torch.device] = "cpu",
     ):
+        # if extra_requires (setup.py) is not fulfilled, raise error
+        check_lpips()
+        import lpips
 
         if method == "patch":
             if patch_size < 32:
@@ -324,6 +331,60 @@ class LPIPS(DistanceMetric):
 
     def _compute_pixel(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
         raise NotImplementedError("LPIPS cannot be computed at pixel level.")
+
+
+class CLIPscore(DistanceMetric):
+    """Estimate the CLIPscore between two tensors"""
+
+    def __init__(
+        self,
+        x: torch.Tensor,
+        y: torch.Tensor,
+        method: str = "image",
+        patch_size: int = 32,
+        device: Union[str, torch.device] = "cpu",
+    ):
+        # if extra_requires (setup.py) is not fulfilled, raise error
+        check_openclip()
+        import open_clip
+
+        if method != "patch":
+            raise ValueError(
+                "CLIPscore can only be computed at patch level of 256x256."
+            )
+
+        if method == "patch":
+            if patch_size != 256:
+                raise ValueError("The patch size must be 256.")
+
+        # Set the model        
+        self.model = open_clip.create_model_and_transforms(
+            "ViT-B-16-SigLIP-256",
+            pretrained='webli',
+            device=device
+        )[0]
+        
+        # Normalize the tensors
+        normalize = Normalize(
+            mean=(0.48145466, 0.4578275, 0.40821073),
+            std=(0.26862954, 0.26130258, 0.27577711)
+        )
+        x_norm = normalize(x)
+        y_norm = normalize(y)
+
+        super().__init__(
+            x=x_norm, y=y_norm, method=method, patch_size=patch_size, name="CLIPscore"
+        )
+
+    @torch.no_grad()
+    def _compute_image(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
+        x_emb = self.model.encode_image(x[None]).squeeze()
+        y_emb = self.model.encode_image(y[None]).squeeze()
+        return torch.nn.functional.l1_loss(x_emb, y_emb)
+
+    def _compute_pixel(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
+        raise NotImplementedError("CLIPscore cannot be computed at pixel level.")
+
 
 
 class CROSSMTF(DistanceMetric):
@@ -394,6 +455,12 @@ def get_distance(
     Returns:
         torch.Tensor: The metric value.
     """
+    if x.shape[0] != y.shape[0]:
+        raise ValueError("The number of channels in x and y must be the same.")
+
+    if x.shape[1] != y.shape[1]:
+        raise ValueError("The height of x and y must be the same.")
+
     if method == "kl":
         distance_fn = KL(x=x, y=y, method=agg_method, patch_size=patch_size)
     elif method == "l1":
@@ -402,7 +469,7 @@ def get_distance(
         distance_fn = L2(x=x, y=y, method=agg_method, patch_size=patch_size)
     elif method == "pbias":
         distance_fn = PBIAS(x=x, y=y, method=agg_method, patch_size=patch_size)
-    elif method == "psnr":
+    elif method == "ipsnr":
         distance_fn = 1 / PSNR(x=x, y=y, method=agg_method, patch_size=patch_size)
     elif method == "sad":
         distance_fn = SAD(x=x, y=y, method=agg_method, patch_size=patch_size)
@@ -416,13 +483,13 @@ def get_distance(
         distance_fn = LPIPS(
             x_rgb, y_rgb, method=agg_method, patch_size=patch_size, device=device
         )
+    elif method == "clip":
+        x_rgb = x[rgb_bands, :, :]
+        y_rgb = y[rgb_bands, :, :]
+        distance_fn = CLIPscore(
+            x_rgb, y_rgb, method=agg_method, patch_size=patch_size, device=device
+        )
     else:
         raise ValueError("No valid distance method.")
-
-    if x.shape[0] != y.shape[0]:
-        raise ValueError("The number of channels in x and y must be the same.")
-
-    if x.shape[1] != y.shape[1]:
-        raise ValueError("The height of x and y must be the same.")
 
     return distance_fn

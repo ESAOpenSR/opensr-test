@@ -202,3 +202,22 @@ def get_numbers(string: str) -> str:
         except:
             raise ValueError("Invalid patch name.")
     return n_patches
+
+
+def check_lpips():
+    try:
+        import lpips
+    except ImportError as e:
+        raise ImportError(
+            "The extra requirement for perceptual metrics is not installed. "
+            "Please install it with `pip install opensr-test[perceptual]`."
+        ) from e
+
+def check_openclip():
+    try:
+        import open_clip
+    except ImportError as e:
+        raise ImportError(
+            "The extra requirement for perceptual metrics is not installed. "
+            "Please install it with `pip install opensr-test[perceptual]`."
+        ) from e

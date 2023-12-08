@@ -1,6 +1,6 @@
 import pathlib
 from typing import Optional
-
+from opensr_test.config import create_param_config
 import numpy as np
 import requests
 import torch
@@ -22,7 +22,6 @@ def download(url: str, save_path: str) -> str:
             if chunk:
                 f.write(chunk)
     return None
-
 
 def load(
     dataset: str = "naip", model_dir: Optional[str] = None, force: bool = False
@@ -87,17 +86,22 @@ def load(
 
     ## LR file
     lr_data = np.load(ROOT_FOLDER / dataset / "lr.npy") / 10000
-    lr_data_torch = torch.from_numpy(lr_data).float()
+    lr_data_torch = lr_data.astype(np.float32)
 
     ## HR file
     hr_data = np.load(ROOT_FOLDER / dataset / "hr.npy") / 10000
-    hr_data_torch = torch.from_numpy(hr_data).float()
+    hr_data_torch = hr_data.astype(np.float32)
 
     ## LandUse file
     land_use = np.load(ROOT_FOLDER / dataset / "landuse2.npy")
-    land_use_torch = torch.from_numpy(land_use)
+    land_use_torch = land_use
 
-    return {"lr": lr_data_torch, "hr": hr_data_torch, "landuse": land_use_torch}
+    return {
+        "lr": lr_data_torch,
+        "hr": hr_data_torch,
+        "landuse": land_use_torch,
+        "params": create_param_config(dataset)
+    }
 
 
 def get_data_path() -> str:

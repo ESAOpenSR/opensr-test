@@ -3,9 +3,11 @@ from typing import Any, Optional, Union
 
 import opensr_test.plot
 import torch
-from opensr_test.config import (Auxiliar, Config, Consistency, Distance,
-                                Results, TCscore)
-from opensr_test.hallucinations import get_distances, tc_metric
+from opensr_test.config import (
+    Auxiliar, Consistency, Distance,
+    Results, Correctness, Config
+)
+from opensr_test.hallucinations import get_distances, tc_improvement, tc_omission, tc_hallucination
 from opensr_test.kernels import apply_downsampling, apply_upsampling
 from opensr_test.reflectance import reflectance_metric
 from opensr_test.spatial import (SpatialMetric, spatial_aligment,
@@ -17,8 +19,6 @@ from opensr_test.utils import hq_histogram_matching
 class Metrics:
     def __init__(
         self,
-        params: Optional[Config] = None,
-        method: Optional[str] = "pixel",
         device: Union[str, torch.device, None] = "cpu",
         **kwargs: Any
     ) -> None:
@@ -31,31 +31,26 @@ class Metrics:
                 setup the opensr-test experiment. Defaults to None.
                 If None, the default parameters are used. See 
                 config.py for more information.
-            method (Optional[str], optional): Whether to use a pixel,
-                patch or grid-based evaluation. Defaults to "pixel".
-                Multiple patch methods are supported: "patch2", "patch4",
-                "patch8", etc. They refer to the size of the patch. For
-                instance, "patch2" means that the metric is computed by
-                averaging the metric of 2x2 pixel at LR space.                                
             device (Union[str, torch.device, None], optional): The
                 device to use. Defaults to "cpu".
         """
+        
 
-        # Get the parameters
+        # Set the parameters
         if kwargs is None:
-            if params is None:
-                self.params = Config()
-            else:
-                self.params = params
+            self.params = Config()
         else:
-            if params is None:
-                self.params = Config(**kwargs)
-            else:
-                self.params = params
+            self.params = Config(**kwargs)
+        
+        # If patch size is 1, then the aggregation method must be pixel
+        if self.params.patch_size == 1:
+            self.params.agg_method = "pixel"
 
         # Global parameters
-        self.method = method
+        self.method = self.params.agg_method
         self.device = device
+
+        
 
         # Set the spatial grid regulator
         self.apply_upsampling = apply_upsampling
@@ -116,8 +111,11 @@ class Metrics:
         self.d_om = None
         self.d_hr = None
 
-        ## tc score
-        self.tc_score = None
+        ## Correctness metrics
+        self.omission = None
+        self.improvement = None
+        self.hallucination = None
+        self.classification = None
 
         ## Percentage of hallucination and improvement
         self.ha_percentage = None
@@ -130,6 +128,8 @@ class Metrics:
         sr: torch.Tensor,
         hr: torch.Tensor,
         landuse: Optional[torch.Tensor] = None,
+        downsample_method: Optional[str] = "classic",
+        upsample_method: Optional[str] = "classic",
     ) -> None:
         """ Obtain the performance metrics of the SR image.
 
@@ -138,28 +138,44 @@ class Metrics:
             sr (torch.Tensor): The SR image as a tensor (C, H, W).
             hr (torch.Tensor): The HR image as a tensor (C, H, W).
         """
-        # Move all the images to the same device
-        self.lr = lr.to(self.device)
-        self.sr = sr.to(self.device)
-        self.hr = hr.to(self.device)
-        self.landuse = landuse.to(self.device) if landuse is not None else None
+        # Check if SR has gradients
+        if sr.requires_grad:
+            raise ValueError("The SR image must not have gradients.")
+
+        # If patch size is higher than the image size, then
+        # return an error.
+        if (self.params.patch_size > lr.shape[1]) or (self.params.patch_size > lr.shape[2]):
+            raise ValueError("The patch size must be lower than the image size.")
 
         # Obtain the scale factor
-        scale_factor = self.hr.shape[-1] / self.lr.shape[-1]
+        scale_factor = hr.shape[-1] / lr.shape[-1]
         if not scale_factor.is_integer():
             raise ValueError("The scale factor must be an integer.")
         self.scale_factor = int(scale_factor)
 
+
+        # Move all the images to the same device
+        self.lr = self.apply_mask(lr.to(self.device), self.params.mask // self.scale_factor)
+        self.sr = self.apply_mask(sr.to(self.device), self.params.mask)
+        self.hr = self.apply_mask(hr.to(self.device), self.params.mask)
+        self.landuse = self.apply_mask(landuse.to(self.device), self.params.mask // self.scale_factor) if landuse is not None else None
+
+
         # Obtain the LR in the HR space
-        self.lr_to_hr = self.apply_downsampling(
-            X=self.lr[None], scale=self.scale_factor, method=self.params.upsample_method
-        ).squeeze(0)
+        if self.scale_factor > 1:
+            self.lr_to_hr = self.apply_downsampling(
+                X=self.lr[None], 
+                scale=self.scale_factor, 
+                method=downsample_method
+            ).squeeze(0)
+        else:
+            self.lr_to_hr = self.lr
 
         # Obtain the SR in the LR space
         self.sr_to_lr = self.apply_upsampling(
             X=self.sr[None],
             scale=self.scale_factor,
-            method=self.params.downsample_method,
+            method=upsample_method
         ).squeeze(0)
 
         # Obtain the RGB images
@@ -273,7 +289,7 @@ class Metrics:
             name=spatial_description,
             threshold_n_points=threshold_npoints,
             threshold_distance=threshold_distance,
-            method=self.params.agg_method,
+            method="pixel",
             patch_size=self.params.patch_size,
             device=self.device,
         )
@@ -281,7 +297,25 @@ class Metrics:
         self.spatial_aligment_value = spatial_metric_result.compute()
         self.matching_points_01 = spatial_metric_result.matching_points
 
-    def _distance_metric(self) -> None:
+    def _create_mask(self, stability_threshold: float = 0.) -> None:
+        d_ref, d_im, d_om = get_distances(
+            lr_to_hr=self.lr_to_hr,
+            sr_harm=self.sr_harm,
+            hr=self.hr,
+            distance_method="l1",
+            agg_method="pixel"
+        )
+
+        # create mask
+        mask1 = (d_ref > stability_threshold)*1
+        mask2 = (d_im > stability_threshold)*1
+        mask3 = (d_om > stability_threshold)*1
+        mask = ((mask1 + mask2 + mask3) > 0) * 1.0
+        mask[mask == 0] = torch.nan
+        self.tc_mask = mask
+        return mask
+
+    def _distance_metric(self, stability_threshold: float = 0.) -> None:
         self.d_ref, self.d_im, self.d_om = get_distances(
             lr_to_hr=self.lr_to_hr,
             sr_harm=self.sr_harm,
@@ -293,20 +327,14 @@ class Metrics:
             device=self.device,
         )
 
-        # create mask
-        mask1 = self.d_ref > self.params.stability_threshold
-        mask2 = self.d_im > self.params.stability_threshold
-        mask3 = self.d_om > self.params.stability_threshold
-        mask = (mask1 * mask2 * mask3) * 1.0
-        mask[mask == 0] = torch.nan
-
         # Apply mask
+        mask = self._create_mask(stability_threshold)
         self.potential_pixels = torch.nansum(mask)
         self.d_ref_masked = self.d_ref * mask
         self.d_im_masked = self.d_im * mask
         self.d_om_masked = self.d_om * mask
 
-    def _tc_score(self) -> None:
+        # Compute relative distance
         self.d_im_ref = self.d_im_masked / self.d_ref_masked
         self.d_om_ref = self.d_om_masked / self.d_ref_masked
 
@@ -314,14 +342,38 @@ class Metrics:
             self.d_im_ref = self.d_im_ref.reshape(-1)
             self.d_om_ref = self.d_om_ref.reshape(-1)
 
-        self.tc_score = tc_metric(d_im=self.d_im_ref, d_om=self.d_om_ref)
-
-        self.im_percentage = torch.sum((self.tc_score >= 0.5)) / self.potential_pixels
-        self.om_percentage = torch.sum((self.tc_score <= -0.5)) / self.potential_pixels
-        self.ha_percentage = (
-            torch.sum(((self.tc_score > -0.5) & (self.tc_score < 0.5)))
-            / self.potential_pixels
+    def _improvement(self, im_score: float = 0.80) -> None:
+        self.improvement = tc_improvement(
+            d_im=self.d_im_ref,
+            d_om=self.d_om_ref,
+            plambda=im_score
         )
+
+    def _omission(self, om_score: float = 0.80) -> None:
+        self.omission = tc_omission(
+            d_im=self.d_im_ref,
+            d_om=self.d_om_ref,
+            plambda=om_score
+        )
+
+    def _hallucination(self, ha_score: float = 0.80) -> None:
+        self.hallucination = tc_hallucination(
+            d_im=self.d_im_ref,
+            d_om=self.d_om_ref,
+            plambda=ha_score
+        )
+        
+        correctness_stack = torch.stack([
+            self.improvement,
+            self.omission,
+            self.hallucination
+        ], dim=0)
+        
+        self.classification = torch.argmin(correctness_stack, dim=0) * self.tc_mask
+        
+        self.im_percentage = torch.sum(self.classification==0) / self.potential_pixels
+        self.om_percentage = torch.sum(self.classification==1) / self.potential_pixels
+        self.ha_percentage = torch.sum(self.classification==2) / self.potential_pixels
 
     def _prepare(self) -> None:
         self.results = Results(
@@ -333,11 +385,11 @@ class Metrics:
             distance=Distance(
                 lr_to_hr=self.d_ref, sr_to_hr=self.d_im, sr_to_lr=self.d_om
             ),
-            score=TCscore(
-                tc=self.tc_score,
-                ha_percent=float(self.ha_percentage),
-                om_percent=float(self.om_percentage),
-                im_percent=float(self.im_percentage),
+            correctness=Correctness(
+                omission=self.omission,
+                improvement=self.improvement,
+                hallucination=self.hallucination,
+                classification=self.classification
             ),
             auxiliar=Auxiliar(
                 sr_harm=self.sr_harm,
@@ -357,7 +409,13 @@ class Metrics:
             "im_percent": float(self.im_percentage),
         }
 
-    def compute(self) -> dict:
+    def compute(
+        self,
+        stability_threshold: Optional[float] = 0.01,
+        im_score: Optional[float] = 0.8,
+        om_score: Optional[float] = 0.8,
+        ha_score: Optional[float] = 0.8,
+    ) -> None:
 
         """ Obtain the performance metrics of the SR image.
         
@@ -383,15 +441,22 @@ class Metrics:
         self.sr_harm_setup()
 
         # Obtain the distance metrics
-        self._distance_metric()
+        self._distance_metric(stability_threshold)
 
-        # Obtain the tc score
-        self._tc_score()
+        # Obtain the improvement metrics
+        self._improvement(im_score)
 
+        # Obtain the omission metrics
+        self._omission(om_score)
+
+        # Obtain the hallucination metrics
+        self._hallucination(ha_score)
+        
+        # Prepare the results
         self._prepare()
 
-        return None
 
+        return None
     def plot_triplets(self, apply_harm: bool = True, stretch: Optional[str] = "linear"):
         if apply_harm:
             tplot = opensr_test.plot.triplets(
@@ -431,7 +496,7 @@ class Metrics:
         return qplot
 
     def plot_spatial_matches(self, stretch: Optional[str] = "linear"):
-
+        
         # Retrieve the linear affine model and the matching points
         if self.results.auxiliar.matching_points_lr is False:
             warnings.warn("Spatial model is nan. No spatial matches will be plotted.")
@@ -448,11 +513,15 @@ class Metrics:
             matches01=matching_points["matches01"],
             threshold_distance=self.params.spatial_threshold_distance,
             stretch=stretch,
-        )
+        )        
 
-    def plot_pixel_summary(self, stretch: Optional[str] = "linear"):
-        if not self.params.agg_method == "pixel":
-            raise ValueError("This method only works with pixel-based metrics.")
+    def plot_summary(self, stretch: Optional[str] = "linear"):
+        contion1 = self.params.agg_method == "pixel"
+        contion2 = self.method == "patch"
+        if (contion1 and contion2):
+            raise ValueError(
+                "This method only works for pixel and patch evaluation."
+            )
 
         # Reflectance metric
         e1 = self.results.consistency.reflectance.value
@@ -473,6 +542,8 @@ class Metrics:
             .cpu()
             .numpy()
         )
+
+        # if patch, then divide by the scale factor
         e3_points = [list(x.flatten().astype(int)) for x in e3_p_np]
         e3_title = self.results.consistency.spatial.description
         e3_subtitle = "%.04f" % float(e3.nanmean())
@@ -515,16 +586,29 @@ class Metrics:
         return fig, axs
 
     def plot_tc(
-        self, log_scale: Optional[bool] = True, xylimits: Optional[list] = [0, 3]
+        self, 
+        log_scale: Optional[bool] = True,
+        stretch: Optional[str] = "linear"
     ):
         return opensr_test.plot.display_tc_score(
             sr_rgb=self.sr_harm_RGB,
             d_im_ref=self.d_im_ref,
             d_om_ref=self.d_om_ref,
-            tc_score=self.tc_score,
+            tc_score=self.classification,
             log_scale=log_scale,
-            xylimits=xylimits,
+            stretch=stretch
         )
 
     def __call__(self) -> Any:
         return self.compute()
+
+    def apply_mask(self, X: torch.Tensor, mask: int) -> torch.Tensor:
+        if mask is None:
+            return X        
+        # C, H, W
+        if len(X.shape) == 3:
+            return X[:, mask: -mask, mask: -mask]
+        elif len(X.shape) == 2:
+            return X[mask: -mask, mask: -mask]
+        else:
+            raise ValueError("The tensor must be 2D or 3D.")

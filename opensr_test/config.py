@@ -1,7 +1,13 @@
 from typing import Any, List, Optional, Union
-
 import torch
 from pydantic import BaseModel, field_validator
+
+class DatasetParams(BaseModel):
+    blur_gaussian_sigma: Optional[List[float]]
+    stability_threshold: Union[List[float], float]
+    correctness_params: List[float]
+    downsample_method: str
+    upsample_method: str
 
 
 class Metric(BaseModel):
@@ -35,14 +41,14 @@ class Distance(BaseModel):
         return value
 
 
-class TCscore(BaseModel):
-    tc: Any
-    ha_percent: float
-    om_percent: float
-    im_percent: float
+class Correctness(BaseModel):
+    omission: Any
+    improvement: Any
+    hallucination: Any
+    classification: Any
 
     @classmethod
-    @field_validator("tc_score")
+    @field_validator("omission", "improvement", "hallucination", "classification")
     def check_value(cls, value) -> torch.Tensor:
         if not isinstance(value, torch.Tensor):
             raise ValueError("value must be a torch.Tensor.")
@@ -66,20 +72,16 @@ class Auxiliar(BaseModel):
 class Results(BaseModel):
     consistency: Consistency
     distance: Distance
-    score: TCscore
+    score: Correctness
     auxiliar: Auxiliar
 
 
 class Config(BaseModel):
     # General parameters
-    agg_method: str = "pixel"  # pixel, image, patch[2...image]
-    patch_size: Optional[int] = 32
+    agg_method: str = "pixel"  # pixel, image
+    mask: Optional[int] = 32
+    patch_size: Optional[int] = None        
     rgb_bands: Optional[List[int]] = [0, 1, 2]
-    stability_threshold: float = 0.001
-
-    # Downsampling/Upsampling parameters
-    downsample_method: str = "classic"  #
-    upsample_method: str = "classic"
 
     # Spatial parameters
     spatial_features: str = "superpoint"
@@ -115,24 +117,6 @@ class Config(BaseModel):
             raise ValueError("rgb_bands must have 3 elements.")
         return value
 
-    # Downsampling/Upsampling parameters - validator --------------
-    @field_validator("downsample_method")
-    @classmethod
-    def check_downsample_method(cls, value) -> str:
-        valid_methods = ["classic", "naip", "spot", "venus"]
-        if value not in valid_methods:
-            raise ValueError(
-                f"Invalid downsample_method. Must be one of {valid_methods}"
-            )
-        return value
-
-    @field_validator("upsample_method")
-    @classmethod
-    def check_upsample_method(cls, value) -> str:
-        valid_methods = ["classic"]
-        if value not in valid_methods:
-            raise ValueError(f"Invalid upsample_method. Must be one of {valid_methods}")
-        return value
 
     # Spatial parameters - validator ----------------------------
 
@@ -178,7 +162,6 @@ class Config(BaseModel):
     # Spectral parameters - validator ----------------------------
 
     # Global ---------------------------------
-
     @field_validator("reflectance_method")
     @classmethod
     def check_reflectance_method(cls, value) -> str:
@@ -190,7 +173,6 @@ class Config(BaseModel):
         return value
 
     # Local ---------------------------------
-
     @field_validator("spectral_method")
     @classmethod
     def check_spectral_method(cls, value) -> str:
@@ -200,7 +182,6 @@ class Config(BaseModel):
         return value
 
     # Create SRharm - validator ------------------------------------------
-
     @field_validator("harm_apply_spectral")
     @classmethod
     def check_harm_apply_spectral(cls, value) -> bool:
@@ -220,7 +201,65 @@ class Config(BaseModel):
     @field_validator("distance_method")
     @classmethod
     def check_unsys_method(cls, value) -> str:
-        valid_methods = ["psnr", "lpips", "sam", "l1", "l2", "kl", "pbias"]
+        valid_methods = ["psnr", "lpips", "clip", "sam", "l1", "l2", "kl", "pbias"]
         if value not in valid_methods:
             raise ValueError(f"Invalid unsys_method. Must be one of {valid_methods}")
         return value
+
+def create_param_config(dataset = "naip") -> DatasetParams:
+    if dataset == "naip":
+        params = DatasetParams(
+            blur_gaussian_sigma = [0.5291, 0.4943, 0.5110, 0.4771],
+            stability_threshold = [
+                0.02, 0.016, 0.025, 0.015, 0.023, 0.019,
+                0.021, 0.019, 0.012, 0.027, 0.016, 0.02,
+                0.018, 0.02, 0.018, 0.019, 0.019, 0.019,
+                0.013, 0.013, 0.013, 0.015, 0.015, 0.015,
+                0.018, 0.017, 0.016, 0.015, 0.022, 0.016
+            ],
+            correctness_params=[0.80, 0.80, 0.40],
+            downsample_method = "naip",
+            upsample_method = "classic"
+        )
+    elif dataset == "spot":
+        params = DatasetParams(
+            blur_gaussian_sigma = [0.5795, 0.6057, 0.6451, 0.6145],
+            stability_threshold = [
+                0.014, 0.016, 0.013, 0.010, 0.032,
+                0.040, 0.014, 0.037, 0.030, 0.036,
+                0.026, 0.030
+            ],
+            correctness_params=[0.80, 0.80, 0.40],
+            downsample_method = "spot",
+            upsample_method = "classic"
+        )
+
+    elif dataset == "venus":
+        params = DatasetParams(
+            blur_gaussian_sigma = [0.5180, 0.5305, 0.5468, 0.5645],
+            stability_threshold = [
+                0.015, 0.012, 0.012, 0.012, 0.013, 0.011,
+                0.01, 0.012, 0.011, 0.013, 0.01, 0.013,
+                0.013, 0.01, 0.017, 0.01, 0.012, 0.013,
+                0.011, 0.013, 0.017, 0.011, 0.01, 0.011,
+                0.012, 0.015, 0.012, 0.011, 0.01, 0.017,
+                0.016, 0.01, 0.011, 0.014, 0.012, 0.016,
+                0.01, 0.012, 0.013, 0.01, 0.016, 0.016, 
+                0.012, 0.011, 0.016, 0.01, 0.015, 0.016, 
+                0.016, 0.01, 0.015, 0.011, 0.016, 0.016, 
+                0.013, 0.013, 0.014, 0.01, 0.011
+            ],
+            correctness_params=[0.80, 0.80, 0.40],
+            downsample_method = "venus",
+            upsample_method = "classic"
+        )
+    elif dataset == "general":
+        params = DatasetParams(
+            blur_gaussian_sigma = None,
+            stability_threshold = 0.01,
+            correctness_params=[0.80, 0.80, 0.40],
+            downsample_method = "classic",
+            upsample_method = "classic"
+        )
+
+    return params
