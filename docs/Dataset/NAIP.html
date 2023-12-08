@@ -1,0 +1,1417 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A comprehensive benchmark for real-world Sentinel-2 imagery super-resolution">
+      
+      
+        <meta name="author" content="Open SR test Contributors">
+      
+      
+        <link rel="canonical" href="https://github.com/ESAOpenSR/opensr-test/docs/Dataset/NAIP.html">
+      
+      <link rel="icon" href="../../resources/ms_icon.png">
+      <meta name="generator" content="mkdocs-1.3.1, mkdocs-material-8.2.16">
+    
+    
+      
+        <title>NAIP - OpenSR test</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.1c3799f8.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.cc9b2e1e.min.css">
+        
+      
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="black">
+  
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#_1" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="OpenSR test" class="md-header__button md-logo" aria-label="OpenSR test" data-md-component="logo">
+      
+  <img src="../images/logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            OpenSR test
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              NAIP
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      <form class="md-header__option" data-md-component="palette">
+        
+          
+          
+          <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="black"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+          
+            <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6zm0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4zM7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+            </label>
+          
+        
+          
+          
+          <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="#201357" data-md-color-accent="white"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_2">
+          
+            <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3Z"/></svg>
+            </label>
+          
+        
+      </form>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/ESAOpenSR/opensr-test" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    OpenSR test
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-tabs__inner md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../index.html" class="md-tabs__link">
+        Home
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../Properties/main.html" class="md-tabs__link">
+        Properties
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../API/model_parameters.html" class="md-tabs__link">
+        API
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+    
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="main.html" class="md-tabs__link md-tabs__link--active">
+        Dataset
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../Metrics/consistency.html" class="md-tabs__link">
+        Metrics
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../Examples/pytorch_models.html" class="md-tabs__link">
+        Examples
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../benchmarks.html" class="md-tabs__link">
+        Benchmarks
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="OpenSR test" class="md-nav__button md-logo" aria-label="OpenSR test" data-md-component="logo">
+      
+  <img src="../images/logo.png" alt="logo">
+
+    </a>
+    OpenSR test
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/ESAOpenSR/opensr-test" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    OpenSR test
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1" data-md-state="indeterminate" type="checkbox" id="__nav_1" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../index.html">Home</a>
+          
+            <label for="__nav_1">
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Home" data-md-level="1">
+        <label class="md-nav__title" for="__nav_1">
+          <span class="md-nav__icon md-icon"></span>
+          Home
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../CONTRIBUTING.html" class="md-nav__link">
+        Contributing
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Code_of_Conduct.html" class="md-nav__link">
+        Code of Conduct
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../CHANGELOG.html" class="md-nav__link">
+        Changelog
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../LICENSE.html" class="md-nav__link">
+        License
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" data-md-state="indeterminate" type="checkbox" id="__nav_2" checked>
+      
+      
+      
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_2">
+          Properties
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Properties" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          Properties
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Properties/main.html" class="md-nav__link">
+        Main
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" data-md-state="indeterminate" type="checkbox" id="__nav_3" checked>
+      
+      
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_3">
+          API
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="API" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          API
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API/model_parameters.html" class="md-nav__link">
+        Model parameters
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API/setup_method.html" class="md-nav__link">
+        Setup method
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API/compute_method.html" class="md-nav__link">
+        Compute method
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API/summary_method.html" class="md-nav__link">
+        Summary method
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API/results_attributes.html" class="md-nav__link">
+        Results attributes
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" checked>
+      
+      
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_4">
+          Dataset
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Dataset" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          Dataset
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="main.html" class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="NAIP.html" class="md-nav__link md-nav__link--active">
+        NAIP
+      </a>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="SPOT.html" class="md-nav__link">
+        SPOT
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Ven%C2%B5s.html" class="md-nav__link">
+        Venµs
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" data-md-state="indeterminate" type="checkbox" id="__nav_5" checked>
+      
+      
+      
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_5">
+          Metrics
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Metrics" data-md-level="1">
+        <label class="md-nav__title" for="__nav_5">
+          <span class="md-nav__icon md-icon"></span>
+          Metrics
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Metrics/consistency.html" class="md-nav__link">
+        Consistency metrics
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Metrics/distance.html" class="md-nav__link">
+        Distance metrics
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Metrics/correctness.html" class="md-nav__link">
+        Correctness metrics
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6" data-md-state="indeterminate" type="checkbox" id="__nav_6" checked>
+      
+      
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_6">
+          Examples
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Examples" data-md-level="1">
+        <label class="md-nav__title" for="__nav_6">
+          <span class="md-nav__icon md-icon"></span>
+          Examples
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Examples/pytorch_models.html" class="md-nav__link">
+        PyTorch models
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Examples/tensorflow_models.html" class="md-nav__link">
+        Tensorflow models
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Examples/diffuser_models.html" class="md-nav__link">
+        Diffuser models
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Examples/multi_image_sr_model.html" class="md-nav__link">
+        Multi-image SR model
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Examples/create_correctness_animation.html" class="md-nav__link">
+        Create correctness animation
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_7" data-md-state="indeterminate" type="checkbox" id="__nav_7" checked>
+      
+      
+      
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_7">
+          Benchmarks
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Benchmarks" data-md-level="1">
+        <label class="md-nav__title" for="__nav_7">
+          <span class="md-nav__icon md-icon"></span>
+          Benchmarks
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../benchmarks.html" class="md-nav__link">
+        Benchmarks
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+  <a href="https://github.com/ESAOpenSR/opensr-test/edit/master/docs/docs/Dataset/NAIP.md" title="Edit this page" class="md-content__button md-icon">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
+  </a>
+
+
+
+<h1 id="_1"></h1>
+<h1 id="the-naip-product">The NAIP product</h1>
+<h2 id="identification-information">Identification Information</h2>
+<ul>
+<li><strong>Citation</strong>:<ul>
+<li><strong>Citation Information</strong>:<ul>
+<li>Originator: USDA-FSA-APFO Aerial Photography Field Office</li>
+<li>Publication Date: 20111108</li>
+<li>Title: NAIP Digital Ortho Photo Image</li>
+<li>Geospatial Data Presentation Form: remote-sensing image</li>
+<li><strong>Publication Information</strong>:<ul>
+<li>Publication Place: Salt Lake City, Utah</li>
+<li>Publisher: USDA-FSA-APFO Aerial Photography Field Office</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="description">Description</h2>
+<ul>
+<li><strong>Abstract</strong>:<ul>
+<li>This data set contains imagery from the National Agriculture Imagery Program (NAIP). NAIP acquires digital ortho imagery during the agricultural growing seasons in the continental U.S. A primary goal of the NAIP program is to make ortho imagery available within one year of acquisition. NAIP offers four main products: 1-meter GSD ortho imagery rectified to a horizontal accuracy of within +/- 5 meters of reference DOQQs from NDOP; 2-meter GSD ortho imagery rectified to within +/- 10 meters of reference DOQQs; 1-meter GSD ortho imagery rectified to within +/- 6 meters to true ground; and 2-meter GSD ortho imagery rectified to within +/- 10 meters to true ground. The tiling format of NAIP imagery is based on a 3.75' x 3.75' quarter quadrangle with a 300-meter buffer on all sides, formatted to the UTM coordinate system using NAD83. NAIP imagery may contain up to 10% cloud cover per tile.</li>
+</ul>
+</li>
+<li><strong>Purpose</strong>:<ul>
+<li>NAIP imagery is intended to provide current agricultural conditions in support of USDA farm programs. The 1-meter GSD product is used for Common Land Unit boundaries and other data sets. The 1-meter NAIP imagery is usually acquired in full-state projects in cooperation with state government and other federal agencies for various purposes, including land use planning and natural resource assessment. NAIP is also used for disaster response, providing current pre-event imagery. The 2-meter GSD NAIP imagery, primarily for assessing crop condition and compliance with USDA farm program conditions, is typically acquired only for agricultural areas within state projects.</li>
+</ul>
+</li>
+</ul>
+<h2 id="time-period-of-content">Time Period of Content</h2>
+<ul>
+<li><strong>Time Period Information</strong>:<ul>
+<li>Single Date/Time:<ul>
+<li>Calendar Date: 20110720</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Currentness Reference: Ground Condition</li>
+</ul>
+<h2 id="status">Status</h2>
+<ul>
+<li>Progress: Complete</li>
+<li>Maintenance and Update Frequency: Irregular</li>
+</ul>
+<h2 id="spatial-domain">Spatial Domain</h2>
+<ul>
+<li><strong>Bounding Coordinates</strong>:<ul>
+<li>West Bounding Coordinate: -112.0000</li>
+<li>East Bounding Coordinate: -111.9375</li>
+<li>North Bounding Coordinate: 40.5625</li>
+<li>South Bounding Coordinate: 40.5000</li>
+</ul>
+</li>
+</ul>
+<h2 id="keywords">Keywords</h2>
+<ul>
+<li><strong>Theme</strong>:<ul>
+<li>Theme Keyword Thesaurus: None</li>
+<li>Theme Keywords: farming, Digital Ortho rectified Image, Ortho Rectification, Quarter Quadrangle Centered, NAIP, Aerial Compliance, Compliance</li>
+</ul>
+</li>
+<li><strong>Place</strong>:<ul>
+<li>Place Keyword Thesaurus: Geographic Names Information System</li>
+<li>Place Keywords: UT, Salt Lake, 49035, UT035, SALT LAKE CO UT FSA, 4011125, MIDVALE, SW, MIDVALE</li>
+</ul>
+</li>
+</ul>
+<h2 id="access-constraints">Access Constraints</h2>
+<ul>
+<li>There are no limitations for access.</li>
+</ul>
+<h2 id="use-constraints">Use Constraints</h2>
+<ul>
+<li>Imagery may be replaced to address defects found in a small number of products through quality assurance processes. Imagery containing defects requiring new imagery acquisition, such as excessive cloud cover, specular reflectance, etc., will not be replaced within a NAIP project year.</li>
+</ul>
+<h2 id="point-of-contact">Point of Contact</h2>
+<ul>
+<li><strong>Contact Information</strong>:<ul>
+<li><strong>Contact Organization Primary</strong>:<ul>
+<li>Contact Organization: Aerial Photography Field Office (APFO)</li>
+</ul>
+</li>
+<li><strong>Contact Address</strong>:<ul>
+<li>Address Type: mailing and physical address</li>
+<li>Address: 2222 West 2300 South, Salt Lake City, Utah, 84119-2020, USA</li>
+</ul>
+</li>
+<li>Contact Voice Telephone: 801-844-2922</li>
+<li>Contact Facsimile Telephone: 801-956-3653</li>
+<li>Contact Electronic Mail Address: apfo.sales@slc.usda.gov</li>
+</ul>
+</li>
+</ul>
+<h2 id="browse-graphic">Browse Graphic</h2>
+<ul>
+<li>Browse Graphic File Name: None</li>
+<li>Browse Graphic File Description: None</li>
+<li>Browse Graphic File Type: None</li>
+</ul>
+<h2 id="native-data-set-environment">Native Data Set Environment</h2>
+<ul>
+<li>Unknown</li>
+</ul>
+<h2 id="data-quality-information">Data Quality Information</h2>
+<ul>
+<li><strong>Logical Consistency Report</strong>:<ul>
+<li>NAIP 3.75 minute tile file names are based on the USGS quadrangle naming convention.</li>
+</ul>
+</li>
+<li>Completeness Report: None</li>
+<li><strong>Positional Accuracy</strong>:<ul>
+<li><strong>Horizontal Positional Accuracy</strong>:<ul>
+<li>Horizontal Positional Accuracy Report: FSA Digital Orthophoto Specs.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="lineage">Lineage</h2>
+<ul>
+<li><strong>Source Information</strong>:<ul>
+<li><strong>Source Citation</strong>:<ul>
+<li><strong>Citation Information</strong>:<ul>
+<li>Originator: USDA-FSA-APFO Aerial Photography Field Office</li>
+<li>Publication Date: 20111108</li>
+<li>Title: MIDVALE, SW</li>
+<li>Geospatial Data Presentation Form: remote-sensing image</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Type of Source Media: Unknown</li>
+<li><strong>Source Time Period of Content</strong>:<ul>
+<li><strong>Time Period Information</strong>:<ul>
+<li>Single Date/Time:<ul>
+<li>Calendar Date: 20110720</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Source Currentness Reference: Aerial Photography Date for aerial photo source.</li>
+</ul>
+</li>
+<li>Source Citation Abbreviation: Georectified Image</li>
+<li>Source Contribution: Digital Georectified Image.</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li>
+<p><strong>Process Step</strong>:</p>
+<ul>
+<li>Process Description: Digital imagery was collected at a nominal GSD of 1.0m using three Cessna 441 aircrafts flying at an average flight height of 9052m AGL. N14NW, N16NW flew with Leica Geosystem's ADS80/SH82 digital sensors sn30017 &amp; sn30034 both with firmware 3.15. N911PJ flew with Leica Geosystem's ADS40/SH52 digital sensor sn30014 with firmware v2.14. Each sensor collected 11 image bands. PanF27A, PanF02A, and PanB14A panchromatic bands with a spectral range of 465-676nm. RedN00a and RedB16a with a spectral range of 604-664nm. GrnN00a and GrnB16a with a spectral range of 533-587nm. BluN00a and BluB16a with a spectral range of 420-492nm and Near-infrared bands NirN00a and NirB16a with a spectral range of 833-920nm. The CCD arrays have a pixel size of 6.5 microns in a 12000x1 format. Both the CCD's and the A/D convertors have a dynamic range of 12bits. The data is stored in 16bit format. The ADS is a push-broom sensor and the ground footprint of the imagery at NAIP scale is 12km wide by the length flightline. The maximum flightline length is limited to approximately 240km. The factory calibrations and IMU alignments for each sensor (sn30017 8/6/2009, sn30014 5/15/2008 and sn30034 12/7/2007) were tested and verified by in-situ test flights before the start of the project. The Leica ADS Flight Planning and Evaluation Software (FPES) is used to develop the flight acquisition plans. Flight acquisition sub blocks are designed first to define the GNSS base station logistics, and to break the project up into manageable acquisition units. The flight acquisition sub blocks are designed based on the specified acquisition season, native UTM zone of the DOQQs, flight line length limitations (to ensure sufficient performance of the IMU solution) as well as air traffic restrictions in the area. Once the sub blocks have been delineated they are brought into FPES for flight line design. The design parameters used in FPES will be 30% lateral overlap and 1.0m resolution. The flight lines have been designed with a north/south orientation. The design takes into account the latitude of the state, which affects line spacing due to convergence as well as the terrain. SRTM elevation data is used in the FPES design to ensure the 1m GSD is achieved over all types of terrain. The raw data was downloaded from the sensors after each flight using Leica XPro software. The imagery was then georeferenced using the 200Hz GPS/INS data creating an exterior orientation for each scan line (x/y/z/o/p/k). Technicians precisely measured tie points in 3 bands/looks (Back/Nadir/Forward) for each line using Leica Xpro software. The resulting point data and exterior orientation data were used to perform a full bundle adjustment with ORIMA software. Blunders were removed, and additional tie points measured in weak areas to ensure a robust solution. Once the point data was clean and point coverage was acceptable, photo-identifiable GPS-surveyed ground control points were introduced into the block adjustment. The bundle adjustment process produces revised exterior orientation data for the sensor with GPS/INS, datum, and sensor calibration errors modeled and removed. Using the revised exterior orientation from the bundle adjustment, orthorectified image strips were created with Xpro software and the May 2011 USGS 10m NED DEM. The Xpro orthorectification software applies an atmospheric-BRDF radiometric correction to the imagery. This correction compensates for atmospheric absorption, solar illumination angle and bi-directional reflectance. The orthorectified strips were then overlaid with each other and the ground control to check accuracy. Once the accuracy of the orthorectified image strips were validated the strips were then imported into Inpho's OrthoVista 4.5 package which was used for the final radiometric balance, mosaic, and DOQQ sheet creation. The final DOQQ sheets, with a 300m buffer and a ground pixel resolution of 1m were then combined and compressed to create the county-wide CCMs.</li>
+</ul>
+<ul>
+<li>Process Date: 20111108</li>
+</ul>
+</li>
+</ul>
+<h2 id="spatial-data-organization-information">Spatial Data Organization Information</h2>
+<ul>
+<li>Indirect Spatial Reference: Salt Lake County, UT</li>
+<li>Direct Spatial Reference Method: Raster</li>
+<li><strong>Raster Object Information</strong>:<ul>
+<li>Raster Object Type: Pixel</li>
+<li>Row Count: 1</li>
+<li>Column Count: 1</li>
+</ul>
+</li>
+</ul>
+<h2 id="spatial-reference-information">Spatial Reference Information</h2>
+<ul>
+<li><strong>Horizontal Coordinate System Definition</strong>:<ul>
+<li><strong>Planar</strong>:<ul>
+<li><strong>Grid Coordinate System</strong>:<ul>
+<li>Grid Coordinate System Name: Universal Transverse Mercator</li>
+<li><strong>Universal Transverse Mercator</strong>:<ul>
+<li>UTM Zone Number: 12</li>
+<li><strong>Transverse Mercator</strong>:<ul>
+<li>Scale Factor at Central Meridian: 0.9996</li>
+<li>Longitude of Central Meridian: -111.0</li>
+<li>Latitude of Projection Origin: 0.0</li>
+<li>False Easting: 500000</li>
+<li>False Northing: 0.0</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>Planar Coordinate Information</strong>:<ul>
+<li>Planar Coordinate Encoding Method: row and column</li>
+<li><strong>Coordinate Representation</strong>:<ul>
+<li>Abscissa Resolution: 1</li>
+<li>Ordinate Resolution: 1</li>
+</ul>
+</li>
+<li>Planar Distance Units: meters</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>Geodetic Model</strong>:<ul>
+<li>Horizontal Datum Name: North American Datum of 1983</li>
+<li>Ellipsoid Name: Geodetic Reference System 80 (GRS 80)</li>
+<li>Semi-major Axis: 6378137</li>
+<li>Denominator of Flattening Ratio: 298.257</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="entity-and-attribute-information">Entity and Attribute Information</h2>
+<ul>
+<li><strong>Overview Description</strong>:<ul>
+<li><strong>Entity and Attribute Overview</strong>:<ul>
+<li>32-bit pixels, 4 band color (RGBIR) values 0 - 255</li>
+</ul>
+</li>
+<li>Entity and Attribute Detail Citation: None</li>
+</ul>
+</li>
+</ul>
+<h2 id="distribution-information">Distribution Information</h2>
+<ul>
+<li><strong>Distributor</strong>:<ul>
+<li><strong>Contact Information</strong>:<ul>
+<li><strong>Contact Person Primary</strong>:<ul>
+<li>Contact Person: Supervisor Customer Services Section</li>
+<li>Contact Organization: USDA-FSA-APFO Aerial Photography Field Office</li>
+</ul>
+</li>
+<li><strong>Contact Address</strong>:<ul>
+<li>Address Type: mailing and physical address</li>
+<li>Address: 2222 West 2300 South, Salt Lake City, Utah, 84119-2020, USA</li>
+</ul>
+</li>
+<li>Contact Voice Telephone: 801-844-2922</li>
+<li>Contact Facsimile Telephone: 801-956-3653</li>
+<li>Contact Electronic Mail Address: apfo.sales@slc.usda.gov</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>Distribution Liability</strong>:<ul>
+<li>In no event shall the creators, custodians, or distributors of this information be liable for any damages arising out of its use (or the inability to use it).</li>
+</ul>
+</li>
+<li><strong>Standard Order Process</strong>:<ul>
+<li><strong>Digital Form</strong>:<ul>
+<li><strong>Digital Transfer Information</strong>:<ul>
+<li>Format Name: GeoTIFF - Georeferenced Tagged Image File Format</li>
+<li>Format Information Content: Multispectral 4-band</li>
+</ul>
+</li>
+<li><strong>Digital Transfer Option</strong>:<ul>
+<li><strong>Offline Option</strong>:<ul>
+<li>Offline Media: CD-ROM</li>
+<li>Recording Format: ISO 9660 Mode 1 Level 2 Extensions</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Fees: Contact the Aerial Photography Field Office for more information</li>
+</ul>
+</li>
+<li>Resource Description: m_4011125_sw_12_1_20110720_20111011.tif</li>
+</ul>
+<h2 id="metadata-reference-information">Metadata Reference Information</h2>
+<ul>
+<li>Metadata Date: 20111108</li>
+<li><strong>Metadata Contact</strong>:<ul>
+<li><strong>Contact Information</strong>:<ul>
+<li><strong>Contact Organization Primary</strong>:<ul>
+<li>Contact Organization: USDA-FSA-APFO Aerial Photography Field Office</li>
+</ul>
+</li>
+<li><strong>Contact Address</strong>:<ul>
+<li>Address Type: mailing and physical address</li>
+<li>Address: 2222 West 2300 South, Salt Lake City, Utah, 84119-2020, USA</li>
+</ul>
+</li>
+<li>Contact Voice Telephone: 801-844-2922</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Metadata Standard Name: Content Standard for Digital Geospatial Metadata</li>
+<li>Metadata Standard Version: FGDC-STD-001-1998</li>
+</ul>
+<p>Metadata obtained from: <a href="https://naipeuwest.blob.core.windows.net/naip/v002/ut/2011/ut_fgdc_2011/40111/m_4011125_sw_12_1_20110720.txt">https://naipeuwest.blob.core.windows.net/naip/v002/ut/2011/ut_fgdc_2011/40111/m_4011125_sw_12_1_20110720.txt</a></p>
+<p align="center">
+  <img src="../images/naip1.png" align="left" width="40%"/>
+  <img src="../images/naip2.png" align="right" width="40%"/>
+</p>
+
+              
+            </article>
+          </div>
+        </div>
+        
+          <a href="#" class="md-top md-icon" data-md-component="top" data-md-state="hidden">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+            Back to top
+          </a>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="main.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Home" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Home
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="SPOT.html" class="md-footer__link md-footer__link--next" aria-label="Next: SPOT" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              SPOT
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.instant", "navigation.tabs", "navigation.top", "navigation.expand", "navigation.indexes", "header.autohide"], "search": "../../assets/javascripts/workers/search.2a1c317c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.3a4b43e5.min.js"></script>
+      
+        <script src="../../javascripts/mathjax.js"></script>
+      
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>
