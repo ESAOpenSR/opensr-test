@@ -72,7 +72,7 @@ class Auxiliar(BaseModel):
 class Results(BaseModel):
     consistency: Consistency
     distance: Distance
-    score: Correctness
+    correctness: Correctness
     auxiliar: Auxiliar
 
 
@@ -84,7 +84,7 @@ class Config(BaseModel):
     rgb_bands: Optional[List[int]] = [0, 1, 2]
 
     # Spatial parameters
-    spatial_features: str = "superpoint"
+    spatial_features: str = "disk"
     spatial_matcher: str = "lightglue"
     spatial_max_num_keypoints: int = 1000
     spatial_threshold_distance: int = 3
@@ -123,7 +123,7 @@ class Config(BaseModel):
     @field_validator("spatial_features")
     @classmethod
     def check_spatial_features(cls, value) -> str:
-        valid_methods = ["disk", "superpoint"]
+        valid_methods = ["disk", "superpoint", "sift", "aliked", "doghardnet"]
         if value not in valid_methods:
             raise ValueError(
                 f"Invalid spatial_features. Must be one of {valid_methods}"

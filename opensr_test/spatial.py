@@ -1,18 +1,20 @@
 import itertools
 import warnings
+import random
 from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import torch
 from opensr_test.config import Metric
 from opensr_test.distance import DistanceMetric
-from opensr_test.lightglue import DISK, LightGlue, SuperPoint
+from opensr_test.lightglue import LightGlue, SuperPoint, DISK, SIFT, ALIKED, DoGHardNet
 from opensr_test.lightglue.utils import rbd
 from scipy.spatial.distance import cdist
 from skimage.registration import phase_cross_correlation
 from sklearn.linear_model import LinearRegression
 from sklearn.pipeline import Pipeline, make_pipeline
 from sklearn.preprocessing import PolynomialFeatures
+
 
 # %-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 # | Spatial transformation functions
@@ -65,6 +67,12 @@ def spatial_setup_model(
         extractor = SuperPoint(max_num_keypoints=max_num_keypoints).eval().to(device)
     elif features == "disk":
         extractor = DISK(max_num_keypoints=max_num_keypoints).eval().to(device)
+    elif features == "sift":
+        extractor = SIFT(max_num_keypoints=max_num_keypoints).eval().to(device)
+    elif features == "aliked":
+        extractor = ALIKED(max_num_keypoints=max_num_keypoints).eval().to(device)
+    elif features == "doghardnet":
+        extractor = DoGHardNet(max_num_keypoints=max_num_keypoints).eval().to(device)
     else:
         raise ValueError(f"Unknown feature extractor {features}")
 
