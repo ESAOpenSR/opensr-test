@@ -13,7 +13,7 @@ from opensr_test.reflectance import reflectance_metric
 from opensr_test.spatial import (SpatialMetric, spatial_aligment,
                                  spatial_setup_model)
 from opensr_test.spectral import spectral_metric
-from opensr_test.utils import hq_histogram_matching
+from opensr_test.utils import hq_histogram_matching, seed_everything
 
 
 class Metrics:
@@ -144,15 +144,15 @@ class Metrics:
 
         # If patch size is higher than the image size, then
         # return an error.
-        if (self.params.patch_size > lr.shape[1]) or (self.params.patch_size > lr.shape[2]):
-            raise ValueError("The patch size must be lower than the image size.")
+        if self.params.patch_size is not None:
+            if (self.params.patch_size > lr.shape[1]) or (self.params.patch_size > lr.shape[2]):
+                raise ValueError("The patch size must be lower than the image size.")
 
         # Obtain the scale factor
         scale_factor = hr.shape[-1] / lr.shape[-1]
         if not scale_factor.is_integer():
             raise ValueError("The scale factor must be an integer.")
         self.scale_factor = int(scale_factor)
-
 
         # Move all the images to the same device
         self.lr = self.apply_mask(lr.to(self.device), self.params.mask // self.scale_factor)
@@ -383,7 +383,9 @@ class Metrics:
                 spatial=dict(self.spatial_aligment_value),
             ),
             distance=Distance(
-                lr_to_hr=self.d_ref, sr_to_hr=self.d_im, sr_to_lr=self.d_om
+                lr_to_hr=self.d_ref,
+                sr_to_hr=self.d_im,
+                sr_to_lr=self.d_om
             ),
             correctness=Correctness(
                 omission=self.omission,
@@ -432,6 +434,8 @@ class Metrics:
         Returns:
             dict: The performance metrics for the SR image.
         """
+        seed_everything(42)
+
         # Obtain the RS metrics
         self._reflectance_metric()
         self._spectral_metric()
@@ -455,8 +459,8 @@ class Metrics:
         # Prepare the results
         self._prepare()
 
-
         return None
+
     def plot_triplets(self, apply_harm: bool = True, stretch: Optional[str] = "linear"):
         if apply_harm:
             tplot = opensr_test.plot.triplets(
