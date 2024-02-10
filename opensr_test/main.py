@@ -224,12 +224,16 @@ class Metrics:
 
         # Save the SR harmonized image
         self.sr_harm = sr_harm
-        self.matching_points_02 = matching_points
+        
+        if self.params.harm_apply_spatial:
+            self.matching_points_02 = matching_points
+        else:
+            self.matching_points_02 = False
 
         # Estimate mask and apply to HR and SR
-        mask = torch.sum(torch.abs(self.sr_harm), axis=0) != 0
-        self.hr = self.hr * mask
-        self.hr_RGB = self.hr_RGB * mask
+        #mask = torch.sum(torch.abs(self.sr_harm), axis=0) != 0
+        #self.hr = self.hr * mask
+        #self.hr_RGB = self.hr_RGB * mask
 
         if self.lr.shape[0] >= 3:
             self.sr_harm_RGB = self.sr_harm[self.params.rgb_bands]
@@ -461,44 +465,25 @@ class Metrics:
 
         return None
 
-    def plot_triplets(self, apply_harm: bool = True, stretch: Optional[str] = "linear"):
-        if apply_harm:
-            tplot = opensr_test.plot.triplets(
-                lr_img=self.lr_RGB,
-                sr_img=self.sr_harm_RGB,
-                hr_img=self.hr_RGB,
-                stretch=stretch,
-            )
-        else:
-            tplot = opensr_test.plot.triplets(
-                lr_img=self.lr_RGB,
-                sr_img=self.sr_RGB,
-                hr_img=self.hr_RGB,
-                stretch=stretch,
-            )
-        return tplot
+    def plot_triplets(self, stretch: Optional[str] = "linear"):
+        return opensr_test.plot.triplets(
+            lr_img=self.lr_RGB,
+            sr_img=self.sr_harm_RGB,
+            hr_img=self.hr_RGB,
+            stretch=stretch,
+        )
 
     def plot_quadruplets(
         self, apply_harm: bool = True, stretch: Optional[str] = "linear"
     ):
-        if apply_harm:
-            qplot = opensr_test.plot.quadruplets(
-                lr_img=self.lr_RGB,
-                sr_img=self.sr_harm_RGB,
-                hr_img=self.hr_RGB,
-                landuse_img=self.landuse,
-                stretch=stretch,
-            )
-        else:
-            qplot = opensr_test.plot.quadruplets(
+        return opensr_test.plot.quadruplets(
                 lr_img=self.lr_RGB,
                 sr_img=self.sr_RGB,
                 hr_img=self.hr_RGB,
                 landuse_img=self.landuse,
                 stretch=stretch,
             )
-        return qplot
-
+    
     def plot_spatial_matches(self, stretch: Optional[str] = "linear"):
         
         # Retrieve the linear affine model and the matching points
@@ -608,7 +593,11 @@ class Metrics:
 
     def apply_mask(self, X: torch.Tensor, mask: int) -> torch.Tensor:
         if mask is None:
-            return X        
+            return X
+        
+        if mask == 0:
+            return X
+        
         # C, H, W
         if len(X.shape) == 3:
             return X[:, mask: -mask, mask: -mask]
