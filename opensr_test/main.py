@@ -11,9 +11,10 @@ from opensr_test.hallucinations import get_distances, tc_improvement, tc_omissio
 from opensr_test.kernels import apply_downsampling, apply_upsampling
 from opensr_test.reflectance import reflectance_metric
 from opensr_test.spatial import (SpatialMetric, spatial_aligment,
-                                 spatial_setup_model)
+                                 spatial_setup_model,
+                                 spatial_model_transform_pixel)
 from opensr_test.spectral import spectral_metric
-from opensr_test.utils import hq_histogram_matching, seed_everything
+from opensr_test.utils import hq_histogram_matching, seed_everything, get_zeros_at_edges
 
 
 class Metrics:
@@ -49,8 +50,6 @@ class Metrics:
         # Global parameters
         self.method = self.params.agg_method
         self.device = device
-
-        
 
         # Set the spatial grid regulator
         self.apply_upsampling = apply_upsampling
@@ -192,9 +191,6 @@ class Metrics:
             self.lr_to_hr_RGB = self.lr_to_hr[0][None]
             self.sr_to_lr_RGB = self.sr_to_lr[0][None]
 
-        # Apply harmozination
-        self.sr_harm_setup()
-
         return None
 
     def sr_harm_setup(self) -> None:
@@ -211,7 +207,7 @@ class Metrics:
             sr_harm = self.sr
 
         if self.params.harm_apply_spatial:
-            sr_harm, matching_points = spatial_aligment(
+            sr_harm, matching_points, spatial_offset = spatial_aligment(
                 sr=sr_harm,
                 hr=self.hr,
                 spatial_model=self.spatial_model,
@@ -219,21 +215,20 @@ class Metrics:
                 threshold_distance=self.params.spatial_threshold_distance,
                 rgb_bands=self.params.rgb_bands,
             )
-        else:
-            sr_harm = sr_harm
-
-        # Save the SR harmonized image
-        self.sr_harm = sr_harm
-        
-        if self.params.harm_apply_spatial:
             self.matching_points_02 = matching_points
         else:
+            self.sr_harm = sr_harm
             self.matching_points_02 = False
 
-        # Estimate mask and apply to HR and SR
-        #mask = torch.sum(torch.abs(self.sr_harm), axis=0) != 0
-        #self.hr = self.hr * mask
-        #self.hr_RGB = self.hr_RGB * mask
+        # Remove the black edges
+        xmin, xmax, ymin, ymax = get_zeros_at_edges(sr_harm, self.scale_factor)
+        self.sr_harm = sr_harm[:, xmin: xmax, ymin: ymax]
+        self.lr_to_hr = self.lr_to_hr[:, xmin: xmax, ymin: ymax]
+        self.sr = self.sr[:, xmin: xmax, ymin: ymax]   
+        self.hr = self.hr[:, xmin: xmax, ymin: ymax]
+        self.hr_RGB = self.hr[self.params.rgb_bands]
+        self.lr = self.lr[:, xmin//self.scale_factor: xmax//self.scale_factor, ymin//self.scale_factor: ymax//self.scale_factor]
+        self.lr_RGB = self.lr[self.params.rgb_bands]    
 
         if self.lr.shape[0] >= 3:
             self.sr_harm_RGB = self.sr_harm[self.params.rgb_bands]
@@ -246,7 +241,7 @@ class Metrics:
         
         Returns:
             Value: The spectral global error.
-        """
+        """        
         self.reflectance_value = reflectance_metric(
             lr=self.lr,
             sr_to_lr=self.sr_to_lr,
@@ -404,12 +399,13 @@ class Metrics:
                 matching_points_hr=self.matching_points_02,
             ),
         )
-
+    
     def summary(self) -> dict:
         return {
             "reflectance": float(self.reflectance_value.value.nanmean()),
             "spectral": float(self.spectral_value.value.nanmean()),
             "spatial": float(self.spatial_aligment_value.value.nanmean()),
+            "synthesis": float(self.d_om.nanmean()),
             "ha_percent": float(self.ha_percentage),
             "om_percent": float(self.om_percentage),
             "im_percent": float(self.im_percentage),
@@ -446,7 +442,7 @@ class Metrics:
         self._spatial_metric()
 
         # Create SR' without systematic error
-        self.sr_harm_setup()
+        self.sr_harm_setup()        
 
         # Obtain the distance metrics
         self._distance_metric(stability_threshold)

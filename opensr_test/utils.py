@@ -231,3 +231,41 @@ def seed_everything(seed: int):
     torch.cuda.manual_seed(seed)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = True
+
+
+def get_zeros_at_edges(img: torch.Tensor, scale_factor: int) -> tuple:
+    """ Obtain the zeros at the edges of the image
+
+    Args:
+        img (torch.Tensor): The input image.
+        threshold (float, optional): The threshold to consider a zero. 
+            Defaults to 50.
+
+    Returns:
+        tuple: The number of zeros at the edges
+    """
+
+    # Create a mask
+    reference = img.mean(axis=0)
+    x_threshold = reference.shape[0]//2
+    y_threshold = reference.shape[1]//2
+
+    # Get the zeros
+    x_reference = np.zeros(reference.shape[0])
+    for index in range(reference.shape[0]):
+        x_reference[index] = (reference[index] == 0).sum() > y_threshold
+    x_ref_min = np.where(x_reference==0)[0].min()
+    x_ref_max = np.where(x_reference==0)[0].max()
+
+    y_reference = np.zeros(reference.shape[1])
+    for index in range(reference.shape[1]):
+        y_reference[index] = (reference[:, index] == 0).sum() > x_threshold
+    y_ref_min = np.where(y_reference==0)[0].min()
+    y_ref_max = np.where(y_reference==0)[0].max()
+
+    # Check if the scale factor is too large
+    x_range = x_ref_max - x_ref_min
+    y_range = y_ref_max - y_ref_min
+    x_norm, y_norm = (x_range % scale_factor, y_range % scale_factor)
+    
+    return x_ref_min + x_norm, x_ref_max, y_ref_min + y_norm, y_ref_max
