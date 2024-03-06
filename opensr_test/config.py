@@ -201,7 +201,7 @@ class Config(BaseModel):
     @field_validator("distance_method")
     @classmethod
     def check_unsys_method(cls, value) -> str:
-        valid_methods = ["psnr", "lpips", "clip", "sam", "l1", "l2", "kl", "pbias"]
+        valid_methods = ["ipsnr", "lpips", "clip", "sam", "l1", "l2", "kl", "pbias"]
         if value not in valid_methods:
             raise ValueError(f"Invalid unsys_method. Must be one of {valid_methods}")
         return value
