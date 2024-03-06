@@ -237,7 +237,7 @@ class PSNR(DistanceMetric):
     def _compute_pixel(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
         l2_distance = torch.nanmean((x - y) ** 2, axis=0)
         l2_distance[l2_distance < self.epsilon] = self.epsilon
-        return 10 * torch.log10(self.data_range ** 2 / l2_distance)
+        return 1/(10 * torch.log10(self.data_range ** 2 / l2_distance))
 
 
 class SAD(DistanceMetric):
@@ -470,7 +470,7 @@ def get_distance(
     elif method == "pbias":
         distance_fn = PBIAS(x=x, y=y, method=agg_method, patch_size=patch_size)
     elif method == "ipsnr":
-        distance_fn = 1 / PSNR(x=x, y=y, method=agg_method, patch_size=patch_size)
+        distance_fn = PSNR(x=x, y=y, method=agg_method, patch_size=patch_size)
     elif method == "sad":
         distance_fn = SAD(x=x, y=y, method=agg_method, patch_size=patch_size)
     elif method == "crossmtf":
