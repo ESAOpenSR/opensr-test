@@ -1,8 +1,9 @@
 from typing import List, Optional
 
-import torch
 import numpy as np
+import torch
 from opensr_test.distance import get_distance
+
 
 def sigm(x):
     return 1 / (1 + np.exp(-(x - 0) / 1)) 

@@ -1,20 +1,20 @@
-import itertools
-import warnings
-import random
 from typing import Dict, List, Optional, Tuple, Union
+
+import itertools
+import random
+import warnings
 
 import numpy as np
 import torch
 from opensr_test.config import Metric
 from opensr_test.distance import DistanceMetric
-from opensr_test.lightglue import LightGlue, SuperPoint, DISK, SIFT, ALIKED, DoGHardNet
+from opensr_test.lightglue import ALIKED, DISK, SIFT, DoGHardNet, LightGlue, SuperPoint
 from opensr_test.lightglue.utils import rbd
 from scipy.spatial.distance import cdist
 from skimage.registration import phase_cross_correlation
 from sklearn.linear_model import LinearRegression
 from sklearn.pipeline import Pipeline, make_pipeline
 from sklearn.preprocessing import PolynomialFeatures
-
 
 # %-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 # | Spatial transformation functions

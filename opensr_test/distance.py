@@ -1,9 +1,12 @@
-from abc import ABC, abstractmethod
 from typing import List, Optional, Union
+
+from abc import ABC, abstractmethod
+
 import torch
 from opensr_test.config import Metric
 from opensr_test.utils import check_lpips, check_openclip
 from torchvision.transforms import Normalize
+
 
 class DistanceMetric(ABC):
     """ Metaclass to define the distance metrics

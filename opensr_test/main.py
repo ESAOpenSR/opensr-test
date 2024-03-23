@@ -1,27 +1,40 @@
-import warnings
 from typing import Any, Optional, Union
+
+import warnings
 
 import opensr_test.plot
 import torch
 from opensr_test.config import (
-    Auxiliar, Consistency, Distance,
-    Results, Correctness, Config
+    Auxiliar,
+    Config,
+    Consistency,
+    Correctness,
+    Distance,
+    Results,
 )
-from opensr_test.hallucinations import get_distances, tc_improvement, tc_omission, tc_hallucination
+from opensr_test.hallucinations import (
+    get_distances,
+    tc_hallucination,
+    tc_improvement,
+    tc_omission,
+)
 from opensr_test.kernels import apply_downsampling, apply_upsampling
 from opensr_test.reflectance import reflectance_metric
-from opensr_test.spatial import (SpatialMetric, spatial_aligment,
-                                 spatial_setup_model,
-                                 spatial_model_transform_pixel)
+from opensr_test.spatial import (
+    SpatialMetric,
+    spatial_aligment,
+    spatial_model_transform_pixel,
+    spatial_setup_model,
+)
 from opensr_test.spectral import spectral_metric
-from opensr_test.utils import hq_histogram_matching, seed_everything, get_zeros_at_edges
+from opensr_test.utils import get_zeros_at_edges, hq_histogram_matching, seed_everything
 
 
 class Metrics:
     def __init__(
         self,
-        device: Union[str, torch.device, None] = "cpu",
-        **kwargs: Any
+        params: Optional[Config] = None,
+        device: Union[str, torch.device, None] = "cpu",        
     ) -> None:
         """ A class to evaluate the performance of a image 
         enhancement algorithm considering the triplets: LR[input], 
@@ -38,10 +51,10 @@ class Metrics:
         
 
         # Set the parameters
-        if kwargs is None:
+        if params is None:
             self.params = Config()
         else:
-            self.params = Config(**kwargs)
+            self.params = params
         
         # If patch size is 1, then the aggregation method must be pixel
         if self.params.patch_size == 1:
@@ -126,9 +139,7 @@ class Metrics:
         lr: torch.Tensor,
         sr: torch.Tensor,
         hr: torch.Tensor,
-        landuse: Optional[torch.Tensor] = None,
-        downsample_method: Optional[str] = "classic",
-        upsample_method: Optional[str] = "classic",
+        landuse: Optional[torch.Tensor] = None
     ) -> None:
         """ Obtain the performance metrics of the SR image.
 
@@ -144,7 +155,7 @@ class Metrics:
         # If patch size is higher than the image size, then
         # return an error.
         if self.params.patch_size is not None:
-            if (self.params.patch_size > lr.shape[1]) or (self.params.patch_size > lr.shape[2]):
+            if (self.params.patch_size > sr.shape[1]) or (self.params.patch_size > sr.shape[2]):
                 raise ValueError("The patch size must be lower than the image size.")
 
         # Obtain the scale factor
@@ -165,16 +176,16 @@ class Metrics:
             self.lr_to_hr = self.apply_downsampling(
                 X=self.lr[None], 
                 scale=self.scale_factor, 
-                method=downsample_method
+                method=self.params.downsample_method
             ).squeeze(0)
         else:
             self.lr_to_hr = self.lr
 
         # Obtain the SR in the LR space
         self.sr_to_lr = self.apply_upsampling(
-            X=self.sr[None],
+            X=self.sr,
             scale=self.scale_factor,
-            method=upsample_method
+            method=self.params.upsample_method
         ).squeeze(0)
 
         # Obtain the RGB images
@@ -203,7 +214,7 @@ class Metrics:
         # Remove systematic reflectance error
         if self.params.harm_apply_spectral:
             sr_harm = hq_histogram_matching(self.sr, self.hr)
-        else:
+        else:            
             sr_harm = self.sr
 
         if self.params.harm_apply_spatial:
@@ -224,11 +235,11 @@ class Metrics:
         xmin, xmax, ymin, ymax = get_zeros_at_edges(sr_harm, self.scale_factor)
         self.sr_harm = sr_harm[:, xmin: xmax, ymin: ymax]
         self.lr_to_hr = self.lr_to_hr[:, xmin: xmax, ymin: ymax]
-        self.sr = self.sr[:, xmin: xmax, ymin: ymax]   
+        self.sr = self.sr[:, xmin: xmax, ymin: ymax]
         self.hr = self.hr[:, xmin: xmax, ymin: ymax]
         self.hr_RGB = self.hr[self.params.rgb_bands]
         self.lr = self.lr[:, xmin//self.scale_factor: xmax//self.scale_factor, ymin//self.scale_factor: ymax//self.scale_factor]
-        self.lr_RGB = self.lr[self.params.rgb_bands]    
+        self.lr_RGB = self.lr[self.params.rgb_bands]
 
         if self.lr.shape[0] >= 3:
             self.sr_harm_RGB = self.sr_harm[self.params.rgb_bands]
@@ -413,6 +424,10 @@ class Metrics:
 
     def compute(
         self,
+        lr: torch.Tensor,
+        sr: torch.Tensor,
+        hr: Optional[torch.Tensor] = None,
+        landuse: Optional[torch.Tensor] = None,
         stability_threshold: Optional[float] = 0.01,
         im_score: Optional[float] = 0.8,
         om_score: Optional[float] = 0.8,
@@ -435,15 +450,21 @@ class Metrics:
             dict: The performance metrics for the SR image.
         """
         seed_everything(42)
+        
+        # Run the setup
+        if hr is None:
+            self.setup(lr=lr, sr=sr, hr=sr, landuse=landuse)
+        else:
+            self.setup(lr=lr, sr=sr, hr=hr, landuse=landuse)
 
         # Obtain the RS metrics
         self._reflectance_metric()
         self._spectral_metric()
         self._spatial_metric()
-
+        
         # Create SR' without systematic error
-        self.sr_harm_setup()        
-
+        self.sr_harm_setup()
+        
         # Obtain the distance metrics
         self._distance_metric(stability_threshold)
 
@@ -459,7 +480,11 @@ class Metrics:
         # Prepare the results
         self._prepare()
 
-        return None
+        if hr is None:
+            methods = ["reflectance", "spectral", "spatial"]
+            return {k: self.summary()[k] for k in methods}
+        else:
+            return self.summary()
 
     def plot_triplets(self, stretch: Optional[str] = "linear"):
         return opensr_test.plot.triplets(
