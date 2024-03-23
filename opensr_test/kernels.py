@@ -1,5 +1,6 @@
-import torch
 from typing import List, Optional
+
+import torch
 
 
 def classic_upsampling(x: torch.Tensor, scale: int) -> torch.Tensor:
@@ -16,15 +17,15 @@ def classic_upsampling(x: torch.Tensor, scale: int) -> torch.Tensor:
     """
 
     x_ref = torch.nn.functional.interpolate(
-        input=x, scale_factor=1 / scale, mode="bilinear", antialias=True
-    )
+        input=x[None], scale_factor=1 / scale, mode="bilinear", antialias=True
+    ).squeeze()
 
     return x_ref
 
 
 def naip_upsampling(
         x: torch.Tensor,
-        params: Optional[List[float]] = [0.5291, 0.4943, 0.5110, 0.4771],
+        params: Optional[List[float]] = [2.28, 2.16, 2.10, 2.42],
         rgb_bands: Optional[List[int]] = [0, 1, 2]
 ) -> torch.Tensor:
     """ Upsampling a tensor (B, C, H, W) to a lower resolution 
@@ -52,10 +53,10 @@ def naip_upsampling(
     # Blur 5x5 kernel by band trained using the
     # curated dataset opensr-test-naip
     with torch.no_grad():
-        blur_R = GaussianBlur(kernel_size=7, params=[params[0]])
-        blur_G = GaussianBlur(kernel_size=7, params=[params[1]])
-        blur_B = GaussianBlur(kernel_size=7, params=[params[2]])
-        blur_N = GaussianBlur(kernel_size=7, params=[params[3]])
+        blur_R = GaussianBlur(kernel_size=13, params=[params[0]])
+        blur_G = GaussianBlur(kernel_size=13, params=[params[1]])
+        blur_B = GaussianBlur(kernel_size=13, params=[params[2]])
+        blur_N = GaussianBlur(kernel_size=13, params=[params[3]])
 
         # Apply the blur kernel to each band
         container = []
@@ -84,8 +85,8 @@ def naip_upsampling(
 def spot_upsampling(
     x: torch.Tensor,
     rgb_bands: Optional[List[int]] = [0, 1, 2],
-    params: Optional[List[float]] = [0.5795, 0.6057, 0.6451, 0.6145]
-) -> torch.Tensor:
+    params: Optional[List[float]] = [2.20, 2.18, 2.09, 2.76]
+) -> torch.Tensor: 
     """ Upsampling a tensor (B, C, H, W) to a lower resolution 
     (B, C, H', W') using a gaussian blur and upsampling
     withouth antialiasing. The blur kernel is trained using
@@ -111,10 +112,10 @@ def spot_upsampling(
     # Blur 5x5 kernel by band trained using the
     # curated dataset opensr-test-naip
     with torch.no_grad():
-        blur_R = GaussianBlur(kernel_size=7, params=[params[0]])
-        blur_G = GaussianBlur(kernel_size=7, params=[params[1]])
-        blur_B = GaussianBlur(kernel_size=7, params=[params[2]])
-        blur_N = GaussianBlur(kernel_size=7, params=[params[3]])
+        blur_R = GaussianBlur(kernel_size=13, params=[params[0]])
+        blur_G = GaussianBlur(kernel_size=13, params=[params[1]])
+        blur_B = GaussianBlur(kernel_size=13, params=[params[2]])
+        blur_N = GaussianBlur(kernel_size=13, params=[params[3]])
 
         # Apply the blur kernel to each band
         container = []
@@ -142,7 +143,7 @@ def spot_upsampling(
 
 def venus_upsampling(
     x: torch.Tensor,
-    params: Optional[List[float]] = [0.5180, 0.5305, 0.5468, 0.5645],
+    params: Optional[List[float]] = [0.4, 0.1, 0.1, 0.6],
     rgb_bands: Optional[List[int]] = [0, 1, 2]
 ) -> torch.Tensor:
     """ Upsampling a tensor (B, C, H, W) to a lower resolution

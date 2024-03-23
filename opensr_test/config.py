@@ -1,6 +1,8 @@
 from typing import Any, List, Optional, Union
+
 import torch
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_validator, model_validator
+
 
 class DatasetParams(BaseModel):
     blur_gaussian_sigma: Optional[List[float]]
@@ -82,6 +84,10 @@ class Config(BaseModel):
     mask: Optional[int] = 32
     patch_size: Optional[int] = None        
     rgb_bands: Optional[List[int]] = [0, 1, 2]
+
+    # downsample/upsample method
+    downsample_method: Optional[str] = "classic"
+    upsample_method: Optional[str] = "classic"
 
     # Spatial parameters
     spatial_features: str = "disk"
@@ -201,15 +207,22 @@ class Config(BaseModel):
     @field_validator("distance_method")
     @classmethod
     def check_unsys_method(cls, value) -> str:
-        valid_methods = ["psnr", "lpips", "clip", "sam", "l1", "l2", "kl", "pbias"]
+        valid_methods = ["ipsnr", "lpips", "clip", "sam", "l1", "l2", "kl", "pbias"]
         if value not in valid_methods:
             raise ValueError(f"Invalid unsys_method. Must be one of {valid_methods}")
         return value
 
+    @model_validator(mode='after')
+    def check_perceptual_metrics(cls, values):
+        if values.distance_method in ["lpips", "clip"]:
+            if values.agg_method == "pixel":
+                raise ValueError("agg_method must be image or patch for {values.distance_method}")
+        return values
+
 def create_param_config(dataset = "naip") -> DatasetParams:
     if dataset == "naip":
         params = DatasetParams(
-            blur_gaussian_sigma = [0.5291, 0.4943, 0.5110, 0.4771],
+            blur_gaussian_sigma = [2.28, 2.16, 2.10, 2.42],
             stability_threshold = [
                 0.02, 0.016, 0.025, 0.015, 0.023, 0.019,
                 0.021, 0.019, 0.012, 0.027, 0.016, 0.02,
@@ -223,7 +236,7 @@ def create_param_config(dataset = "naip") -> DatasetParams:
         )
     elif dataset == "spot":
         params = DatasetParams(
-            blur_gaussian_sigma = [0.5795, 0.6057, 0.6451, 0.6145],
+            blur_gaussian_sigma = [2.20, 2.18, 2.09, 2.76],
             stability_threshold = [
                 0.014, 0.016, 0.013, 0.010, 0.032,
                 0.040, 0.014, 0.037, 0.030, 0.036,

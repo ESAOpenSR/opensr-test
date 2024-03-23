@@ -1,7 +1,8 @@
-import collections.abc as collections
-from pathlib import Path
 from types import SimpleNamespace
 from typing import Callable, List, Optional, Tuple, Union
+
+import collections.abc as collections
+from pathlib import Path
 
 import cv2
 import kornia

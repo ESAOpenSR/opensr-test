@@ -1,20 +1,20 @@
-import itertools
-import warnings
-import random
 from typing import Dict, List, Optional, Tuple, Union
+
+import itertools
+import random
+import warnings
 
 import numpy as np
 import torch
 from opensr_test.config import Metric
 from opensr_test.distance import DistanceMetric
-from opensr_test.lightglue import LightGlue, SuperPoint, DISK, SIFT, ALIKED, DoGHardNet
+from opensr_test.lightglue import ALIKED, DISK, SIFT, DoGHardNet, LightGlue, SuperPoint
 from opensr_test.lightglue.utils import rbd
 from scipy.spatial.distance import cdist
 from skimage.registration import phase_cross_correlation
 from sklearn.linear_model import LinearRegression
 from sklearn.pipeline import Pipeline, make_pipeline
 from sklearn.preprocessing import PolynomialFeatures
-
 
 # %-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 # | Spatial transformation functions
@@ -213,7 +213,7 @@ def spatial_model_fit(
 
 
 def spatial_model_transform_pixel(
-    image1: torch.Tensor, spatial_offset: tuple
+    image1: torch.Tensor, spatial_offset: tuple, nan_value: float = 0.0
 ) -> torch.Tensor:
     """ Transform the image according to the spatial offset obtained by the
     spatial_model_fit function. This correction is done at pixel level.
@@ -222,6 +222,7 @@ def spatial_model_transform_pixel(
         image1 (torch.Tensor): The image 1 with shape (B, H, W)
         spatial_offset (tuple): The spatial offset estimated by the 
             spatial_model_fit function.
+        nan_value (float, optional): The value to replace the nan values.
     Returns:
         torch.Tensor: The transformed image
     """
@@ -232,7 +233,7 @@ def spatial_model_transform_pixel(
 
     # Add padding according to the offset
     image_pad = torch.nn.functional.pad(
-        image1, (moffs, moffs, moffs, moffs), mode="constant", value=0
+        image1, (moffs, moffs, moffs, moffs), mode="constant", value=nan_value
     )
 
     if x_offs < 0:
@@ -343,14 +344,14 @@ def spatial_aligment(
 
     if spatial_offset is False:
         warnings.warn("Not enough valid points to align the images")
-        return sr, matching_points
+        return sr, matching_points, spatial_offset
 
     # Fix the image according to the spatial offset
     offset_image = spatial_model_transform(
         lr_to_hr=sr, hr=hr, spatial_offset=spatial_offset
     )
 
-    return offset_image, matching_points
+    return offset_image, matching_points, spatial_offset
 
 
 # %-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-

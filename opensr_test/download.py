@@ -1,9 +1,11 @@
-import pathlib
 from typing import Optional
-from opensr_test.config import create_param_config
+
+import pathlib
+
 import numpy as np
 import requests
 import torch
+from opensr_test.config import create_param_config
 
 
 def download(url: str, save_path: str) -> str:
