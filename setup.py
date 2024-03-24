@@ -14,7 +14,7 @@ def read(filename):
 
 setup(
     name="opensr-test",
-    version="0.1.3",
+    version="0.1.9999",
     url="https://github.com/ESAOpenSR/opensr-test",
     license="MIT",
     author="Cesar Aybar Camacho",
