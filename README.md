@@ -41,9 +41,9 @@
 
 ## Overview
 
-In remote sensing, Image Super-Resolution (ISR) goal is to improve the ground sampling distance. However, two problems are common in the literature. Firstly, most models are **tested on synthetic data**, raising doubts about their real-world applicability and performance. Secondly, traditional evaluation metrics such as PSNR, LPIPS, and SSIM are not designed for assessing ISR performance. These metrics fall short, especially in conditions involving changes in luminance or spatial misalignments - scenarios that are frequently encountered in remote sensing imagery.
+In remote sensing, Image Super-Resolution (ISR) goal is to improve the ground sampling distance. However, two problems are common in the literature. First, most models are **tested on synthetic data**, raising doubts about their real-world applicability and performance. Second, traditional evaluation metrics such as PSNR, LPIPS, and SSIM are not designed for assessing ISR performance. These metrics fall short, especially in conditions involving changes in luminance or spatial misalignments - scenarios that are frequently encountered in remote sensing imagery.
 
-To address these challenges, 'opensr-test' provides a fresh and fair approach for ISR benchmark. On one front, we provide **three datasets** that were carefully crafted to minimize spatial and spectral misalignment. Besides, 'opensr-test' precisely assesses ISR algorithm performance across **three independent metrics groups** that measure *spectral and spatial consistency*, *the distance between the SR, HR and LR images*, and *overall correctness*.
+To address these challenges, 'opensr-test' provides a fair approach for ISR benchmark. We provide **three datasets** that were carefully crafted to minimize spatial and spectral misalignment. Besides, 'opensr-test' precisely assesses ISR algorithm performance across **three independent metrics groups** that measure *consistency*, *synthesis*, and *correctness*.
 
 ## How to use
 
@@ -58,9 +58,7 @@ hr = torch.rand(4, 256, 256)
 sr = torch.rand(4, 256, 256)
 
 metrics = opensr_test.Metrics()
-metrics.setup(lr=lr, sr=sr, hr=hr)
-metrics.compute()
-metrics.summary()
+metrics.compute(lr=lr, sr=sr, hr=hr)
 ```
 
 ## Installation
@@ -87,15 +85,13 @@ pip install git+https://github.com/ESAOpenSR/opensr-test
 
 The following examples show how to use `opensr-test` to benchmark your SR model.
 
-- Use `opensr-test` with a custom SR TensorFlow model [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1cAGDGlj5Kqt343inNni3ByLE1856z0gE#scrollTo=xaivkcD5Zfw1&uniqifier=1)
+- Use `opensr-test` with TensorFlow model [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1cAGDGlj5Kqt343inNni3ByLE1856z0gE#scrollTo=xaivkcD5Zfw1&uniqifier=1)
 
-- Use `opensr-test` with a custom PyTorch model [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1Db8-JSMTF-hNZQv2UyBDclxkO5hgP9VR#scrollTo=jVL7o6yOrJkY)
+- Use `opensr-test` with PyTorch model [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1Db8-JSMTF-hNZQv2UyBDclxkO5hgP9VR#scrollTo=jVL7o6yOrJkY)
 
 - Use `opensr-test` with a diffuser model [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1banDovG43c2OBh9MODPN4OXgaSCXu1Dc#scrollTo=zz4Aw7_52ulT)
 
 - Use `opensr-test` to test a multi-image SR model (Satlas Super Resolution) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1OlrYome8gcBH6Wu3SQhaw6mSlr2apWdV?usp=sharing#scrollTo=NOk0G3-BWonm)
-
-- Use `opensr-test` to create a animated GIF of the SR correctness [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1pixF3QLDjkwi6Li2ENpty_6857LXkYIx?usp=sharing)
 
 ## Visualizations
 
@@ -104,8 +100,9 @@ The `opensr-test` package provides a set of visualizations to help you understan
 ```python
 import torch
 import opensr_test
-from super_image import HanModel
 import matplotlib.pyplot as plt
+
+from super_image import HanModel
 
 # Define the SR model
 srmodel = HanModel.from_pretrained('eugenesiow/han', scale=4)
@@ -120,11 +117,16 @@ metrics = opensr_test.Metrics()
 idx = 0
 lr_img = torch.from_numpy(lr[idx, 0:3])
 hr_img = torch.from_numpy(hr[idx, 0:3])
-sr_img = srmodel(lr_img[None]).squeeze()
+sr_img = srmodel(lr_img[None]).squeeze().detach()
 
 # Compute the metrics
-metrics.setup(lr=lr_img, sr=sr_img, hr=hr_img)
-metrics.compute()
+metrics.compute(
+    lr=lr_img, sr=sr_img, hr=hr_img,
+    stability_threshold = parameters.stability_threshold[idx],
+    im_score = parameters.correctness_params[0],
+    om_score = parameters.correctness_params[1],
+    ha_score = parameters.correctness_params[2]
+)
 ```
 
 Now, we can visualize the results using the `opensr_test.visualize` module.
@@ -163,7 +165,7 @@ metrics.plot_spatial_matches()
 Display a summary of all the metrics:
 
 ```python
-metrics.plot_pixel_summary()
+metrics.plot_summary()
 ```
 
 <p align="center">
@@ -199,8 +201,4 @@ Coming soon!
 
 ## Acknowledgements
 
-This work was make with the support of the European Space Agency (ESA) under the project “Explainable AI: application to trustworthy super-resolution (OpenSR)”. Cesar Aybar acknowledges support by the National Council of Science, Technology, and Technological Innovation (CONCYTEC, Peru) through the “PROYECTOS DE INVESTIGACIÓN BÁSICA – 2023-01” program with contract number PE501083135-2023-PROCIENCIA.
-
-<center>
-    <a href=""><img src="docs/images/logo-adc.png" alt="opensr-test" width="40%"></a>    
-</center>
+This work was make with the support of the European Space Agency (ESA) under the project “Explainable AI: application to trustworthy super-resolution (OpenSR)”. Cesar Aybar acknowledges support by the National Council of Science, Technology, and Technological Innovation (CONCYTEC, Peru) through the “PROYECTOS DE INVESTIGACIÓN BÁSICA – 2023-01” program with contract number PE501083135-2023-PROCIENCIA. Luis Gómez-Chova acknowledges support from the Spanish Ministry of Science and Innovation (project PID2019-109026RB-I00 funded by MCIN/AEI/10.13039/501100011033).

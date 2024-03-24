@@ -50,13 +50,9 @@ nav:
     - Code of Conduct: docs/Code_of_Conduct.md
     - Changelog: docs/CHANGELOG.md
     - License: docs/LICENSE.md
-  - Properties:
-    - docs/Properties/main.md
   - API:
-    - Model parameters: docs/API/model_parameters.md
-    - Setup method: docs/API/setup_method.md
-    - Compute method: docs/API/compute_method.md
-    - Summary method: docs/API/summary_method.md
+    - Config: docs/API/config_pydantic.md
+    - Compute method: docs/API/compute_method.md    
     - Results attributes: docs/API/results_attributes.md
   - Dataset:
     - Home: docs/Dataset/main.md
@@ -66,16 +62,7 @@ nav:
   - Metrics:
     - Consistency metrics: docs/Metrics/consistency.md
     - Distance metrics: docs/Metrics/distance.md
-    - Correctness metrics: docs/Metrics/correctness.md    
-  - Examples:
-    - PyTorch models: docs/Examples/pytorch_models.md
-    - Tensorflow models: docs/Examples/tensorflow_models.md
-    - Diffuser models: docs/Examples/diffuser_models.md
-    - Multi-image SR model: docs/Examples/multi_image_sr_model.md
-    - Create correctness animation: docs/Examples/create_correctness_animation.md
-  - Benchmarks:
-    - docs/benchmarks.md
-
+    - Correctness metrics: docs/Metrics/correctness.md
 
 # Plugins
 plugins:

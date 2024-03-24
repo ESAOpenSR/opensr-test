@@ -1,3 +1,8 @@
+# 0.2.0
+
+- Several bugs have been fixed.
+
+
 # 0.1.2
 
 - Bug in visualization triplets and quads fixed.
