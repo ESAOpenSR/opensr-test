@@ -29,7 +29,7 @@
 
 **GitHub**: [https://github.com/ESAOpenSR/opensr-test](https://github.com/ESAOpenSR/opensr-test)
 
-**Documentation**: [https://opensr-test.readthedocs.io/](https://opensr-test.readthedocs.io/)
+**Documentation**: [https://esaopensr.github.io/opensr-test](https://esaopensr.github.io/opensr-test)
 
 **PyPI**: [https://pypi.org/project/opensr-test/](https://pypi.org/project/opensr-test/)
 
