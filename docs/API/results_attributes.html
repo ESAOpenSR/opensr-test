@@ -213,22 +213,6 @@
         
   
   
-
-
-  
-  
-  
-    <li class="md-tabs__item">
-      <a href="../Properties/main.html" class="md-tabs__link">
-        Properties
-      </a>
-    </li>
-  
-
-      
-        
-  
-  
     
   
 
@@ -237,7 +221,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="model_parameters.html" class="md-tabs__link md-tabs__link--active">
+      <a href="config_pydantic.html" class="md-tabs__link md-tabs__link--active">
         API
       </a>
     </li>
@@ -271,38 +255,6 @@
     <li class="md-tabs__item">
       <a href="../Metrics/consistency.html" class="md-tabs__link">
         Metrics
-      </a>
-    </li>
-  
-
-      
-        
-  
-  
-
-
-  
-  
-  
-    <li class="md-tabs__item">
-      <a href="../Examples/pytorch_models.html" class="md-tabs__link">
-        Examples
-      </a>
-    </li>
-  
-
-      
-        
-  
-  
-
-
-  
-  
-  
-    <li class="md-tabs__item">
-      <a href="../benchmarks.html" class="md-tabs__link">
-        Benchmarks
       </a>
     </li>
   
@@ -469,58 +421,6 @@
 
   
   
-  
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-      
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" data-md-state="indeterminate" type="checkbox" id="__nav_2" checked>
-      
-      
-      
-        
-          
-        
-      
-      
-        <label class="md-nav__link" for="__nav_2">
-          Properties
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" aria-label="Properties" data-md-level="1">
-        <label class="md-nav__title" for="__nav_2">
-          <span class="md-nav__icon md-icon"></span>
-          Properties
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../Properties/main.html" class="md-nav__link">
-        Main
-      </a>
-    </li>
-  
-
-            
-          
-        </ul>
-      </nav>
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
     
   
   
@@ -528,7 +428,7 @@
     <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" checked>
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" checked>
       
       
       
@@ -539,19 +439,15 @@
         
           
         
-          
-        
-          
-        
       
       
-        <label class="md-nav__link" for="__nav_3">
+        <label class="md-nav__link" for="__nav_2">
           API
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="API" data-md-level="1">
-        <label class="md-nav__title" for="__nav_3">
+        <label class="md-nav__title" for="__nav_2">
           <span class="md-nav__icon md-icon"></span>
           API
         </label>
@@ -563,22 +459,8 @@
   
   
     <li class="md-nav__item">
-      <a href="model_parameters.html" class="md-nav__link">
-        Model parameters
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="setup_method.html" class="md-nav__link">
-        Setup method
+      <a href="config_pydantic.html" class="md-nav__link">
+        Config
       </a>
     </li>
   
@@ -593,20 +475,6 @@
     <li class="md-nav__item">
       <a href="compute_method.html" class="md-nav__link">
         Compute method
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="summary_method.html" class="md-nav__link">
-        Summary method
       </a>
     </li>
   
@@ -657,6 +525,162 @@
     The results Attribute
   </a>
   
+    <nav class="md-nav" aria-label="The results Attribute">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#consistency" class="md-nav__link">
+    consistency
+  </a>
+  
+    <nav class="md-nav" aria-label="consistency">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#reflectance" class="md-nav__link">
+    reflectance
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#spectral" class="md-nav__link">
+    spectral
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#spatial" class="md-nav__link">
+    spatial
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#distance" class="md-nav__link">
+    distance
+  </a>
+  
+    <nav class="md-nav" aria-label="distance">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sr_to_lr-srharm-lr-distance" class="md-nav__link">
+    sr_to_lr (SRharm - LR Distance)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sr_to_hr-srharm-hr-distance" class="md-nav__link">
+    sr_to_hr (SRharm - HR Distance)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lr_to_hr-hr-lr-distance" class="md-nav__link">
+    lr_to_hr (HR - LR Distance)
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#correctness" class="md-nav__link">
+    correctness
+  </a>
+  
+    <nav class="md-nav" aria-label="correctness">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#improvement" class="md-nav__link">
+    improvement
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#omission" class="md-nav__link">
+    omission
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hallucination" class="md-nav__link">
+    hallucination
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#classification" class="md-nav__link">
+    classification
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#auxiliary" class="md-nav__link">
+    auxiliary
+  </a>
+  
+    <nav class="md-nav" aria-label="auxiliary">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sr_harm" class="md-nav__link">
+    sr_harm
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lr_to_hr" class="md-nav__link">
+    lr_to_hr
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#matching_points_lr" class="md-nav__link">
+    matching_points_lr
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#matching_points_hr" class="md-nav__link">
+    matching_points_hr
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
     </ul>
@@ -685,7 +709,7 @@
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" data-md-state="indeterminate" type="checkbox" id="__nav_4" checked>
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" data-md-state="indeterminate" type="checkbox" id="__nav_3" checked>
       
       
       
@@ -700,13 +724,13 @@
         
       
       
-        <label class="md-nav__link" for="__nav_4">
+        <label class="md-nav__link" for="__nav_3">
           Dataset
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="Dataset" data-md-level="1">
-        <label class="md-nav__title" for="__nav_4">
+        <label class="md-nav__title" for="__nav_3">
           <span class="md-nav__icon md-icon"></span>
           Dataset
         </label>
@@ -785,7 +809,7 @@
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" data-md-state="indeterminate" type="checkbox" id="__nav_5" checked>
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" data-md-state="indeterminate" type="checkbox" id="__nav_4" checked>
       
       
       
@@ -798,13 +822,13 @@
         
       
       
-        <label class="md-nav__link" for="__nav_5">
+        <label class="md-nav__link" for="__nav_4">
           Metrics
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="Metrics" data-md-level="1">
-        <label class="md-nav__title" for="__nav_5">
+        <label class="md-nav__title" for="__nav_4">
           <span class="md-nav__icon md-icon"></span>
           Metrics
         </label>
@@ -858,174 +882,6 @@
   
 
     
-      
-      
-      
-
-  
-  
-  
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-      
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6" data-md-state="indeterminate" type="checkbox" id="__nav_6" checked>
-      
-      
-      
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-      
-      
-        <label class="md-nav__link" for="__nav_6">
-          Examples
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" aria-label="Examples" data-md-level="1">
-        <label class="md-nav__title" for="__nav_6">
-          <span class="md-nav__icon md-icon"></span>
-          Examples
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../Examples/pytorch_models.html" class="md-nav__link">
-        PyTorch models
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../Examples/tensorflow_models.html" class="md-nav__link">
-        Tensorflow models
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../Examples/diffuser_models.html" class="md-nav__link">
-        Diffuser models
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../Examples/multi_image_sr_model.html" class="md-nav__link">
-        Multi-image SR model
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../Examples/create_correctness_animation.html" class="md-nav__link">
-        Create correctness animation
-      </a>
-    </li>
-  
-
-            
-          
-        </ul>
-      </nav>
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
-  
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-      
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_7" data-md-state="indeterminate" type="checkbox" id="__nav_7" checked>
-      
-      
-      
-        
-          
-        
-      
-      
-        <label class="md-nav__link" for="__nav_7">
-          Benchmarks
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" aria-label="Benchmarks" data-md-level="1">
-        <label class="md-nav__title" for="__nav_7">
-          <span class="md-nav__icon md-icon"></span>
-          Benchmarks
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../benchmarks.html" class="md-nav__link">
-        Benchmarks
-      </a>
-    </li>
-  
-
-            
-          
-        </ul>
-      </nav>
-    </li>
-  
-
-    
   </ul>
 </nav>
                   </div>
@@ -1057,6 +913,162 @@
     The results Attribute
   </a>
   
+    <nav class="md-nav" aria-label="The results Attribute">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#consistency" class="md-nav__link">
+    consistency
+  </a>
+  
+    <nav class="md-nav" aria-label="consistency">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#reflectance" class="md-nav__link">
+    reflectance
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#spectral" class="md-nav__link">
+    spectral
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#spatial" class="md-nav__link">
+    spatial
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#distance" class="md-nav__link">
+    distance
+  </a>
+  
+    <nav class="md-nav" aria-label="distance">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sr_to_lr-srharm-lr-distance" class="md-nav__link">
+    sr_to_lr (SRharm - LR Distance)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sr_to_hr-srharm-hr-distance" class="md-nav__link">
+    sr_to_hr (SRharm - HR Distance)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lr_to_hr-hr-lr-distance" class="md-nav__link">
+    lr_to_hr (HR - LR Distance)
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#correctness" class="md-nav__link">
+    correctness
+  </a>
+  
+    <nav class="md-nav" aria-label="correctness">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#improvement" class="md-nav__link">
+    improvement
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#omission" class="md-nav__link">
+    omission
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hallucination" class="md-nav__link">
+    hallucination
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#classification" class="md-nav__link">
+    classification
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#auxiliary" class="md-nav__link">
+    auxiliary
+  </a>
+  
+    <nav class="md-nav" aria-label="auxiliary">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sr_harm" class="md-nav__link">
+    sr_harm
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lr_to_hr" class="md-nav__link">
+    lr_to_hr
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#matching_points_lr" class="md-nav__link">
+    matching_points_lr
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#matching_points_hr" class="md-nav__link">
+    matching_points_hr
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
     </ul>
@@ -1079,7 +1091,7 @@
 
 <h1 id="_1"></h1>
 <h2 id="the-results-attribute">The <code>results</code> Attribute</h2>
-<p>The <code>results</code> attribute encapsulate all the metrics calculated at the <code>agg_method</code> level, along with the intermediate results produced by the <code>opensr-test</code> test. It organizes the output into four principal categories: <em>consistency</em>, <em>distance</em>, <em>correctness</em>, and <em>auxiliary</em>. The following example illustrates how to retrieve the outpus from the <code>results</code> attribute:</p>
+<p>The <code>results</code> attribute encapsulates all the metrics calculated at the <code>agg_method</code> level and the intermediate results produced by the <code>opensr-test</code> test. It organizes the output into four principal categories: <em>consistency</em>, <em>distance</em>, <em>correctness</em>, and <em>auxiliary</em>. The following example illustrates how to retrieve the outputs from the <code>results</code> attribute:</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Import necessary libraries</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">opensr_test</span>
@@ -1092,11 +1104,8 @@
 <span class="c1"># Initialize the Metrics object</span>
 <span class="n">metrics</span> <span class="o">=</span> <span class="n">opensr_test</span><span class="o">.</span><span class="n">Metrics</span><span class="p">()</span>
 
-<span class="c1"># Setup the evaluation environment</span>
-<span class="n">metrics</span><span class="o">.</span><span class="n">setup</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="n">lr</span><span class="p">,</span> <span class="n">sr</span><span class="o">=</span><span class="n">sr</span><span class="p">,</span> <span class="n">hr</span><span class="o">=</span><span class="n">hr</span><span class="p">)</span>
-
 <span class="c1"># Compute the metrics</span>
-<span class="n">metrics</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+<span class="n">metrics</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="n">lr</span><span class="p">,</span> <span class="n">sr</span><span class="o">=</span><span class="n">sr</span><span class="p">,</span> <span class="n">hr</span><span class="o">=</span><span class="n">hr</span><span class="p">)</span>
 
 <span class="c1"># Accessing Consistency Metrics</span>
 <span class="n">metrics</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">consistency</span>
@@ -1111,61 +1120,42 @@
 <span class="n">metrics</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">auxiliary</span>
 </code></pre></div>
 <p>Except the auxiliary field, the spatial resolution of all the results is determined by the <code>agg_method</code> parameter. For instance, if <code>agg_method</code> is set to "patch" with a patch_size of 32, then each metric in the results attribute will contain values aggregated over patches of size H/32 x W/32.</p>
-<details>
-  <summary><b>consistency</b></summary>
-    The consistency metrics within `opensr-test` play a crucial role in evaluating the harmony between LR and SR images prior to SR harmonization (SRharm). These metrics are calculated after resampling the SR images to match the dimensions of the LR (SRdown). There are three key metrics in this category: *reflectance*, *spectral*, and *spatial*.  
-  <summary><b>reflectance</b></summary>
-    This metric evaluates how well the SR image reflects the norm values of the LR image. The calculation of reflectance consistency utilizes the method defined by the reflectance_method parameter.  
-  <summary><b>spectral</b></summary>
-    This metric assesses the similarity in spectral characteristics between the LR and SR images. The computation of spectral consistency leverages the angle distance specified in the spectral_method parameter. This allows for a detailed comparison of the spectral profiles of the images, ensuring that the SR image preserves the original spectral properties of the LR image.
-  <summary><b>spatial</b></summary>
-    The spatial consistency metric is computed by calculating the difference between the matching points identified in the LR and HR images. This process evaluates the spatial alignment and structural integrity of the SR image compared to the LR image. If the agg_method parameter is set to pixel or patch, the grid is calculated applying a simple kernel interpolation method.
-</details>
-
-<details>
-    <summary><b>distance</b></summary>
-    distance metrics in `opensr-test` permit measure how far the SR image is from the LR and HR images. These metrics are computed post-harmonization (SRharm) to reduce the potential spatial and spectral bias introduced by the SR model. There are three distance metrics: <i>sr_lr</i>, <i>sr_hr</i> and <i>hr_lr</i>.
-    <summary><b>sr_to_lr (SRharm - LR Distance)</b></summary>
-    This metric quantifies the distance between SRharm and the LR image. It serves as an indicator of how close the SR image is to the LR image. The LR is upsampled (LRup) to the dimensions of the HR image using the method defined by the upsample_method parameter. We strongly advise opting for a method that does not require parameter tuning, such as bilinear interpolation or other similar techniques. This is crucial to prevent the introduction of hallucination artifacts, which can significantly bias the experimental results.
-    <summary><b>sr_to_hr (SRharm - HR Distance)</b></summary>
-    This metric measures the distance between the harmonized SR image (SRharm) and the HR image. It is essential for measure if the high-frequency details introduced by the SR model are consistent with the HR image (improvement) or if they are artificial (hallucination).
-    <summary><b>lr_to_hr (HR - LR Distance)</b></summary>
-    This metric calculates the distance between the HR and LR images. Although it doesn't directly involve the SR image, it offers a baseline understanding of the initial discrepancies between the HR and LR images, which can be useful for context and comparison.
-</details>
-
-<details>
-  <summary><b>correctness</b></summary>
-  The correctness metrics in `opensr-test` are crucial assessments conducted after the SR harmonization process and the evaluation of the triple distance. These metrics encompass four categories: <i>improvement</i>, <i>omission</i>, <i>hallucination</i>, and <i>classification</i>. All the correctness metrics are designed such that values closer to 0 indicate that the pixel, patch, or image is nearer to its respective target space.
-
-  <summary><b>improvement</b></summary>
-  The improvement matrix quantifies the extent of improvement space. It is a matrix of dimensions HxW. The `im_score` parameter, defined in the `compute` method, acts as a modulator, allowing for fine-tuning of the space. 
-
-  <summary><b>omission</b></summary>
-  The omission matrix, on the other hand, evaluates the extent of the omission space. This matrix provides insights into areas where the SR process might have failed to replicate crucial details from the HR image. 
-
-  <summary><b>hallucination</b></summary>
-  The hallucination matrix measures the extent of artificial details or 'hallucinations' introduced in the SR image. The definition of the improvement and omission spaces conditions the determination of the hallucination space.
-
-  <summary><b>classification</b></summary>
-  The classification matrix is computed by applying a np.argmin function across the aforementioned correctness matrices. This matrix forms the basis for categorizing each pixel into one of the three classes: improvement, omission, and hallucination.
-</details>
-
-<details>
-  <summary><b>auxiliary</b></summary>
-  The auxiliary results in opensr-test comprise a set of intermediate outputs generated during the execution of the compute method. These results are instrumental in understanding the internal workings and transformations applied during the computation process. There are four key auxiliary results: <b>sr_harm</b>, <b>lr_to_hr</b>, <b>matching_points_lr</b>, and <b>matching_points_hr</b>.
-
-  <summary><b>sr_harm</b></summary>
-  This is the SR product post-harmonization. The harmonization pipeline is influenced by the harm_apply_spectral and harm_apply_spatial parameters. When both parameters are enabled (set to True), the SR image undergoes a two-step enhancement: first, the reflectance values are corrected via histogram matching with the HR image; subsequently, spatial alignment is performed, aligning the SR image with the HR image based on the settings defined in the spatial_features and spatial_matcher parameters.
-
-  <summary><b>lr_to_hr</b></summary>
-  This represents the LR image resampled to match the dimensions of the HR image. In the absence of a specific upsample_method set during the setup phase, the lr_to_hr result is achieved using a classic method - bilinear interpolation complemented by an anti-aliasing kernel filter.
-
-  <summary><b>matching_points_lr</b></summary>  
-  These are the points of correspondence identified between the LR and HR images. This points help in understanding the spatial relationship and alignment between these two different tensor resolutions.
-
-  <summary><b>matching_points_hr</b></summary>  
-  These are the points of correspondence identified between the SRharm and HR images. It provides insights into how well the SR image aligns with the HR image after the harmonization process.
-</details>
+<h3 id="consistency">consistency</h3>
+<p>The consistency metrics within <code>opensr-test</code> play a crucial role in evaluating the harmony between LR and SR images prior to SR harmonization (SRharm). These metrics are calculated after resampling the SR images to match the dimensions of the LR (SRdown). There are three key metrics in this category: <em>reflectance</em>, <em>spectral</em>, and <em>spatial</em>.</p>
+<h4 id="reflectance">reflectance</h4>
+<p>This metric evaluates how well the SR image reflects the norm values of the LR image. The calculation of reflectance consistency utilizes the method defined by the reflectance_method parameter.  </p>
+<h4 id="spectral">spectral</h4>
+<p>This metric assesses the similarity in spectral characteristics between the LR and SR images. The computation of spectral consistency leverages the angle distance specified in the spectral_method parameter. This allows for a detailed comparison of the spectral profiles of the images, ensuring that the SR image preserves the original spectral properties of the LR image.</p>
+<h4 id="spatial">spatial</h4>
+<p>The spatial consistency metric is computed by calculating the difference between the matching points identified in the LR and HR images. This process evaluates the spatial alignment and structural integrity of the SR image compared to the LR image. If the agg_method parameter is set to pixel or patch, the grid is calculated applying a simple kernel interpolation method.</p>
+<h3 id="distance">distance</h3>
+<p>distance metrics in <code>opensr-test</code> permit measure how far the SR image is from the LR and HR images. These metrics are computed post-harmonization (SRharm) to reduce the potential spatial and spectral bias introduced by the SR model. There are three distance metrics: <em>sr_lr</em>, <em>sr_hr</em>, and <em>hr_lr</em>.</p>
+<h4 id="sr_to_lr-srharm-lr-distance">sr_to_lr (SRharm - LR Distance)</h4>
+<p>This metric quantifies the distance between SRharm and the LR image. It serves as an indicator of how close the SR image is to the LR image. The LR is upsampled (LRup) to the dimensions of the HR image using the method defined by the upsample_method parameter. We strongly advise opting for a method that does not require parameter tuning, such as bilinear interpolation or other similar techniques. This is crucial to prevent the introduction of hallucination artifacts, which can significantly bias the experimental results.</p>
+<h4 id="sr_to_hr-srharm-hr-distance">sr_to_hr (SRharm - HR Distance)</h4>
+<p>This metric measures the distance between the harmonized SR image (SRharm) and the HR image. It is essential for measure if the high-frequency details introduced by the SR model are consistent with the HR image (improvement) or if they are artificial (hallucination).</p>
+<h4 id="lr_to_hr-hr-lr-distance">lr_to_hr (HR - LR Distance)</h4>
+<p>This metric calculates the distance between the HR and LR images. Although it doesn't directly involve the SR image, it offers a baseline understanding of the initial discrepancies between the HR and LR images, which can be useful for context and comparison.</p>
+<h3 id="correctness">correctness</h3>
+<p>The correctness metrics in <code>opensr-test</code> are crucial assessments conducted after the SR harmonization process and the evaluation of the triple distance. These metrics encompass four categories: <em>improvement</em>, <em>omission</em>, <em>hallucination</em>, and <em>classification</em>. All the correctness metrics are designed such that values closer to 0 indicate that the pixel, patch, or image is nearer to its respective target space.</p>
+<h4 id="improvement">improvement</h4>
+<p>The improvement matrix quantifies the extent of improvement space. It is a matrix of dimensions HxW. The <code>im_score</code> parameter, defined in the <code>compute</code> method, acts as a modulator, allowing for fine-tuning of the space.</p>
+<h4 id="omission">omission</h4>
+<p>The omission matrix, on the other hand, evaluates the extent of the omission space. This matrix provides insights into areas where the SR process might have failed to replicate crucial details from the HR image.</p>
+<h4 id="hallucination">hallucination</h4>
+<p>The hallucination matrix measures the extent of artificial details or 'hallucinations' introduced in the SR image. The definition of the improvement and omission spaces conditions the determination of the hallucination space.</p>
+<h4 id="classification">classification</h4>
+<p>The classification matrix is computed by applying a np.argmin function across the aforementioned correctness matrices. This matrix forms the basis for categorizing each pixel into one of the three classes: improvement, omission, and hallucination.</p>
+<h3 id="auxiliary">auxiliary</h3>
+<p>The auxiliary results in opensr-test comprise a set of intermediate outputs generated during the execution of the compute method. These results are instrumental in understanding the internal workings and transformations applied during the computation process. There are four key auxiliary results: <em>sr_harm</em>, <em>lr_to_hr</em>, <em>matching_points_lr</em>, and <em>matching_points_hr</em>.</p>
+<h4 id="sr_harm">sr_harm</h4>
+<p>This is the SR product post-harmonization. The harmonization pipeline is influenced by the harm_apply_spectral and harm_apply_spatial parameters. When both parameters are enabled (set to True), the SR image undergoes a two-step enhancement: first, the reflectance values are corrected via histogram matching with the HR image; subsequently, spatial alignment is performed, aligning the SR image with the HR image based on the settings defined in the spatial_features and spatial_matcher parameters.</p>
+<h4 id="lr_to_hr">lr_to_hr</h4>
+<p>This represents the LR image resampled to match the dimensions of the HR image. In the absence of a specific upsample_method set during the setup phase, the lr_to_hr result is achieved using a classic method - bilinear interpolation complemented by an anti-aliasing kernel filter.</p>
+<h4 id="matching_points_lr">matching_points_lr</h4>
+<p>These are the points of correspondence identified between the LR and HR images. This points help in understanding the spatial relationship and alignment between these two different tensor resolutions.</p>
+<h4 id="matching_points_hr">matching_points_hr</h4>
+<p>These are the points of correspondence identified between the SRharm and HR images. It provides insights into how well the SR image aligns with the HR image after the harmonization process.</p>
 
               
             </article>
@@ -1184,7 +1174,7 @@
     <nav class="md-footer__inner md-grid" aria-label="Footer">
       
         
-        <a href="summary_method.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Summary method" rel="prev">
+        <a href="compute_method.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Compute method" rel="prev">
           <div class="md-footer__button md-icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
           </div>
@@ -1193,7 +1183,7 @@
               <span class="md-footer__direction">
                 Previous
               </span>
-              Summary method
+              Compute method
             </div>
           </div>
         </a>

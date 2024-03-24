@@ -12,14 +12,14 @@
         <meta name="author" content="Open SR test Contributors">
       
       
-        <link rel="canonical" href="https://github.com/ESAOpenSR/opensr-test/docs/Examples/pytorch_models.html">
+        <link rel="canonical" href="https://github.com/ESAOpenSR/opensr-test/docs/API/config_pydantic.html">
       
       <link rel="icon" href="../../resources/ms_icon.png">
       <meta name="generator" content="mkdocs-1.3.1, mkdocs-material-8.2.16">
     
     
       
-        <title>PyTorch models - OpenSR test</title>
+        <title>Config - OpenSR test</title>
       
     
     
@@ -70,6 +70,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#_1" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -98,7 +103,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              PyTorch models
+              Config
             
           </span>
         </div>
@@ -208,21 +213,7 @@
         
   
   
-
-
-  
-  
-  
-    <li class="md-tabs__item">
-      <a href="../Properties/main.html" class="md-tabs__link">
-        Properties
-      </a>
-    </li>
-  
-
-      
-        
-  
+    
   
 
 
@@ -230,7 +221,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../API/model_parameters.html" class="md-tabs__link">
+      <a href="config_pydantic.html" class="md-tabs__link md-tabs__link--active">
         API
       </a>
     </li>
@@ -264,40 +255,6 @@
     <li class="md-tabs__item">
       <a href="../Metrics/consistency.html" class="md-tabs__link">
         Metrics
-      </a>
-    </li>
-  
-
-      
-        
-  
-  
-    
-  
-
-
-  
-  
-  
-    <li class="md-tabs__item">
-      <a href="pytorch_models.html" class="md-tabs__link md-tabs__link--active">
-        Examples
-      </a>
-    </li>
-  
-
-      
-        
-  
-  
-
-
-  
-  
-  
-    <li class="md-tabs__item">
-      <a href="../benchmarks.html" class="md-tabs__link">
-        Benchmarks
       </a>
     </li>
   
@@ -464,29 +421,35 @@
 
   
   
+    
+  
   
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" data-md-state="indeterminate" type="checkbox" id="__nav_2" checked>
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" checked>
       
       
       
         
           
         
+          
+        
+          
+        
       
       
         <label class="md-nav__link" for="__nav_2">
-          Properties
+          API
           <span class="md-nav__icon md-icon"></span>
         </label>
       
-      <nav class="md-nav" aria-label="Properties" data-md-level="1">
+      <nav class="md-nav" aria-label="API" data-md-level="1">
         <label class="md-nav__title" for="__nav_2">
           <span class="md-nav__icon md-icon"></span>
-          Properties
+          API
         </label>
         <ul class="md-nav__list" data-md-scrollfix>
           
@@ -494,10 +457,113 @@
               
   
   
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Config
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="config_pydantic.html" class="md-nav__link md-nav__link--active">
+        Config
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#config" class="md-nav__link">
+    Config
+  </a>
+  
+    <nav class="md-nav" aria-label="Config">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#spectral-parameters" class="md-nav__link">
+    Spectral Parameters:
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#spatial-parameters" class="md-nav__link">
+    Spatial Parameters:
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#interpolation-parameters" class="md-nav__link">
+    Interpolation Parameters:
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#global-parameters" class="md-nav__link">
+    Global Parameters:
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
   
     <li class="md-nav__item">
-      <a href="../Properties/main.html" class="md-nav__link">
-        Main
+      <a href="compute_method.html" class="md-nav__link">
+        Compute method
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="results_attributes.html" class="md-nav__link">
+        Results attributes
       </a>
     </li>
   
@@ -534,131 +600,15 @@
         
           
         
-          
-        
       
       
         <label class="md-nav__link" for="__nav_3">
-          API
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" aria-label="API" data-md-level="1">
-        <label class="md-nav__title" for="__nav_3">
-          <span class="md-nav__icon md-icon"></span>
-          API
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../API/model_parameters.html" class="md-nav__link">
-        Model parameters
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../API/setup_method.html" class="md-nav__link">
-        Setup method
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../API/compute_method.html" class="md-nav__link">
-        Compute method
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../API/summary_method.html" class="md-nav__link">
-        Summary method
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../API/results_attributes.html" class="md-nav__link">
-        Results attributes
-      </a>
-    </li>
-  
-
-            
-          
-        </ul>
-      </nav>
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
-  
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-      
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" data-md-state="indeterminate" type="checkbox" id="__nav_4" checked>
-      
-      
-      
-        
-          
-        
-          
-        
-          
-        
-          
-        
-      
-      
-        <label class="md-nav__link" for="__nav_4">
           Dataset
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="Dataset" data-md-level="1">
-        <label class="md-nav__title" for="__nav_4">
+        <label class="md-nav__title" for="__nav_3">
           <span class="md-nav__icon md-icon"></span>
           Dataset
         </label>
@@ -737,7 +687,7 @@
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" data-md-state="indeterminate" type="checkbox" id="__nav_5" checked>
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" data-md-state="indeterminate" type="checkbox" id="__nav_4" checked>
       
       
       
@@ -750,13 +700,13 @@
         
       
       
-        <label class="md-nav__link" for="__nav_5">
+        <label class="md-nav__link" for="__nav_4">
           Metrics
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="Metrics" data-md-level="1">
-        <label class="md-nav__title" for="__nav_5">
+        <label class="md-nav__title" for="__nav_4">
           <span class="md-nav__icon md-icon"></span>
           Metrics
         </label>
@@ -810,184 +760,6 @@
   
 
     
-      
-      
-      
-
-  
-  
-    
-  
-  
-    
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
-      
-      
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6" type="checkbox" id="__nav_6" checked>
-      
-      
-      
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-      
-      
-        <label class="md-nav__link" for="__nav_6">
-          Examples
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" aria-label="Examples" data-md-level="1">
-        <label class="md-nav__title" for="__nav_6">
-          <span class="md-nav__icon md-icon"></span>
-          Examples
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
-          
-            
-              
-  
-  
-    
-  
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
-      
-      
-      
-      <a href="pytorch_models.html" class="md-nav__link md-nav__link--active">
-        PyTorch models
-      </a>
-      
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="tensorflow_models.html" class="md-nav__link">
-        Tensorflow models
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="diffuser_models.html" class="md-nav__link">
-        Diffuser models
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="multi_image_sr_model.html" class="md-nav__link">
-        Multi-image SR model
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="create_correctness_animation.html" class="md-nav__link">
-        Create correctness animation
-      </a>
-    </li>
-  
-
-            
-          
-        </ul>
-      </nav>
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
-  
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-      
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_7" data-md-state="indeterminate" type="checkbox" id="__nav_7" checked>
-      
-      
-      
-        
-          
-        
-      
-      
-        <label class="md-nav__link" for="__nav_7">
-          Benchmarks
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" aria-label="Benchmarks" data-md-level="1">
-        <label class="md-nav__title" for="__nav_7">
-          <span class="md-nav__icon md-icon"></span>
-          Benchmarks
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../benchmarks.html" class="md-nav__link">
-        Benchmarks
-      </a>
-    </li>
-  
-
-            
-          
-        </ul>
-      </nav>
-    </li>
-  
-
-    
   </ul>
 </nav>
                   </div>
@@ -1005,6 +777,57 @@
   
   
   
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#config" class="md-nav__link">
+    Config
+  </a>
+  
+    <nav class="md-nav" aria-label="Config">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#spectral-parameters" class="md-nav__link">
+    Spectral Parameters:
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#spatial-parameters" class="md-nav__link">
+    Spatial Parameters:
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#interpolation-parameters" class="md-nav__link">
+    Interpolation Parameters:
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#global-parameters" class="md-nav__link">
+    Global Parameters:
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
   
 </nav>
                   </div>
@@ -1016,15 +839,76 @@
             <article class="md-content__inner md-typeset">
               
                 
-  <a href="https://github.com/ESAOpenSR/opensr-test/edit/master/docs/docs/Examples/pytorch_models.md" title="Edit this page" class="md-content__button md-icon">
+  <a href="https://github.com/ESAOpenSR/opensr-test/edit/master/docs/docs/API/config_pydantic.md" title="Edit this page" class="md-content__button md-icon">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
   </a>
 
 
 
-  <h1>PyTorch models</h1>
+<h1 id="_1"></h1>
+<h2 id="config">Config</h2>
+<p>The Config class is a <a href="https://docs.pydantic.dev/latest/api/base_model/#pydantic.BaseModel"><code>pydantic.BaseModel</code></a> for defining model parameters, ensuring type safety and ease of configuration. The parameters are categorized into four groups, each catering to different aspects of the super-resolution (SR) evaluation process:</p>
+<h3 id="spectral-parameters">Spectral Parameters:</h3>
+<p>These parameters are specific to spectral analysis and alignment:</p>
+<ul>
+<li><strong>reflectance_method:</strong> The default method for reflectance estimation is "l1", with "kl", "l1", "l2", and "pbias" as alternatives.</li>
+</ul>
+<ul>
+<li><strong>spectral_method:</strong> For spectral alignment, "sad" is the default method.</li>
+</ul>
+<h3 id="spatial-parameters">Spatial Parameters:</h3>
+<p>These parameters fine-tune the spatial feature extraction and matching process:</p>
+<ul>
+<li><strong>spatial_features:</strong> The default feature extractor is "superpoint", with "disk" also available.</li>
+<li><strong>spatial_matcher:</strong> Sets the matcher for feature points, defaulting to "lightglue".</li>
+<li><strong>spatial_max_num_keypoints:</strong> Caps the number of keypoints for feature matching at 1000 by default.</li>
+<li><strong>spatial_threshold_distance:</strong> The maximum permissible distance between keypoints for a match, set to 5 pixels.</li>
+<li><strong>spatial_threshold_npoints:</strong> The minimum required keypoints for alignment, set to 5. Spatial alignment is skipped if keypoints fall below this threshold.</li>
+</ul>
+<h3 id="interpolation-parameters">Interpolation Parameters:</h3>
+<ul>
+<li><strong>upsample_method</strong>: The default method for downscaling is "classic", with "naip", "spot", and "venus" as alternatives.</li>
+</ul>
+<ul>
+<li><strong>downsample_method</strong>: The default method for upscaling is "bicubic" with antialias.</li>
+</ul>
+<h3 id="global-parameters">Global Parameters:</h3>
+<p>These parameters control the overall behavior of the SR assessment:</p>
+<ul>
+<li><strong>device:</strong> Selects the computation device for inference, defaulting to <code>cpu</code>. <code>cuda</code> is also supported for GPU acceleration.</li>
+</ul>
+<ul>
+<li><strong>distance_method:</strong> Specifies the distance metric between SR, LR, and HR images. Defaults to "l1", with support for other metrics like kl, l2, pbias, rmse, ipsnr, sad, clip and lpips. See section <a href="docs/Metrics/consistency.md">Metrics</a> for more details.</li>
+</ul>
+<ul>
+<li><strong>agg_method:</strong> Determines the granularity for distance metric application — pixel-wise by default ("pixel"), with "patch" and "image" level aggregations options.</li>
+<li><strong>patch_size:</strong> Relevant when <code>agg_method</code> is "patch", this defines the patch size for distance metric computation.</li>
+<li><strong>border_mask:</strong> Excludes image borders in metric calculations, ignoring the outer 16 pixels by default.</li>
+<li><strong>rgb_bands:</strong> Necessary for certain metrics like LPIPS and plot generation, assuming a default order of Red-Green-Blue ([0, 1, 2]).</li>
+<li><strong>harm_apply_spectral:</strong> Applies histogram matching before distance metric calculation, enabled by default.</li>
+<li><strong>harm_apply_spatial:</strong> Activates spatial alignment before distance metric calculation, enabled by default.</li>
+</ul>
+<p>Below is an illustrative example of how to instantiate <code>opensr-test</code> with user-defined parameters:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">opensr_test</span>
 
+<span class="c1"># Define the Low Resolution (LR), High Resolution (HR), and Super-Resolved (SR) images.</span>
+<span class="n">lr</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">)</span>
+<span class="n">hr</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">256</span><span class="p">)</span>
+<span class="n">sr</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">256</span><span class="p">)</span>
 
+<span class="c1"># Initialize the Metrics object with custom parameters.</span>
+<span class="n">config</span> <span class="o">=</span> <span class="n">opensr_test</span><span class="o">.</span><span class="n">Config</span><span class="p">(</span>
+    <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span>
+    <span class="n">spatial_features</span><span class="o">=</span><span class="s2">&quot;disk&quot;</span><span class="p">,</span>
+    <span class="n">spatial_max_num_keypoints</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span>
+    <span class="n">harm_apply_spectral</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">metrics</span> <span class="o">=</span> <span class="n">opensr_test</span><span class="o">.</span><span class="n">Metrics</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+
+<span class="c1"># Compute the metrics based on the provided images.</span>
+<span class="n">metrics</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="n">lr</span><span class="p">,</span> <span class="n">sr</span><span class="o">=</span><span class="n">sr</span><span class="p">,</span> <span class="n">hr</span><span class="o">=</span><span class="n">hr</span><span class="p">)</span>
+</code></pre></div>
 
               
             </article>
@@ -1043,7 +927,7 @@
     <nav class="md-footer__inner md-grid" aria-label="Footer">
       
         
-        <a href="../Metrics/correctness.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Correctness metrics" rel="prev">
+        <a href="../LICENSE.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: License" rel="prev">
           <div class="md-footer__button md-icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
           </div>
@@ -1052,20 +936,20 @@
               <span class="md-footer__direction">
                 Previous
               </span>
-              Correctness metrics
+              License
             </div>
           </div>
         </a>
       
       
         
-        <a href="tensorflow_models.html" class="md-footer__link md-footer__link--next" aria-label="Next: Tensorflow models" rel="next">
+        <a href="compute_method.html" class="md-footer__link md-footer__link--next" aria-label="Next: Compute method" rel="next">
           <div class="md-footer__title">
             <div class="md-ellipsis">
               <span class="md-footer__direction">
                 Next
               </span>
-              Tensorflow models
+              Compute method
             </div>
           </div>
           <div class="md-footer__button md-icon">

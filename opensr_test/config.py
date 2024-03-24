@@ -207,7 +207,7 @@ class Config(BaseModel):
     @field_validator("distance_method")
     @classmethod
     def check_unsys_method(cls, value) -> str:
-        valid_methods = ["ipsnr", "lpips", "clip", "sam", "l1", "l2", "kl", "pbias"]
+        valid_methods = ["ipsnr", "lpips", "clip", "sam", "l1", "l1", "l2", "kl", "pbias"]
         if value not in valid_methods:
             raise ValueError(f"Invalid unsys_method. Must be one of {valid_methods}")
         return value
@@ -231,8 +231,8 @@ def create_param_config(dataset = "naip") -> DatasetParams:
                 0.018, 0.017, 0.016, 0.015, 0.022, 0.016
             ],
             correctness_params=[0.80, 0.80, 0.40],
-            downsample_method = "naip",
-            upsample_method = "classic"
+            downsample_method = "classic",
+            upsample_method = "naip"
         )
     elif dataset == "spot":
         params = DatasetParams(
@@ -243,8 +243,8 @@ def create_param_config(dataset = "naip") -> DatasetParams:
                 0.026, 0.030
             ],
             correctness_params=[0.80, 0.80, 0.40],
-            downsample_method = "spot",
-            upsample_method = "classic"
+            downsample_method = "classic",
+            upsample_method = "spot"
         )
 
     elif dataset == "venus":
@@ -263,8 +263,8 @@ def create_param_config(dataset = "naip") -> DatasetParams:
                 0.013, 0.013, 0.014, 0.01, 0.011
             ],
             correctness_params=[0.80, 0.80, 0.40],
-            downsample_method = "venus",
-            upsample_method = "classic"
+            downsample_method = "classic",
+            upsample_method = "venus"
         )
     elif dataset == "general":
         params = DatasetParams(
