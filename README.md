@@ -303,7 +303,7 @@ metrics.plot_tc()
 
 ## Deeper understanding
 
-Explore the [API](/docs/API/model_parameters.md) section for more details about personalizing your benchmark experiments.
+Explore the [API](https://esaopensr.github.io/opensr-test/docs/API/config_pydantic.html) section for more details about personalizing your benchmark experiments.
 
 <p align="center">
     <a href="/docs/api.md"><img src="docs/images/image02.png" alt="opensr-test" width="30%"></a>
