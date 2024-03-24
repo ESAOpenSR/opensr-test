@@ -63,10 +63,9 @@ metrics.compute(lr=lr, sr=sr, hr=hr)
 
 ## Benchmark
 
-Here is the HTML representation of the LaTeX table you provided:
+Benchmark comparison of SR models. Downward arrows (↓) denote metrics in which lower values are preferable, and upward arrows (↑) indicate metrics in which higher values reflect better performance.
 
-<table border="1" style="width:100%; text-align:center;">
-    <caption>Benchmark comparison of SR models. Downward arrows (↓) denote metrics in which lower values are preferable, and upward arrows (↑) indicate metrics in which higher values reflect better performance.</caption>
+<table border="1" style="width:75%; text-align:center;">    
     <thead>
         <tr>
             <th colspan="2"></th>
