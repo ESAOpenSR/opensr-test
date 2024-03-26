@@ -41,9 +41,14 @@
 
 ## Overview
 
-In remote sensing, Image Super-Resolution (ISR) goal is to improve the ground sampling distance. However, two problems are common in the literature. First, most models are **tested on synthetic data**, raising doubts about their real-world applicability and performance. Second, traditional evaluation metrics such as PSNR, LPIPS, and SSIM are not designed for assessing ISR performance. These metrics fall short, especially in conditions involving changes in luminance or spatial misalignments - scenarios that are frequently encountered in remote sensing imagery.
+Image Super-Resolution (ISR) aims to improve the ground sampling distance. However, two problems are common in the literature. First, most models are **tested on synthetic data**, raising doubts about their real-world applicability and performance. Second, traditional evaluation metrics such as PSNR, LPIPS, and SSIM are not designed to assess ISR performance. These metrics fall short, especially in conditions involving changes in luminance or spatial misalignments - scenarios frequently encountered in remote sensing imagery.
 
-To address these challenges, 'opensr-test' provides a fair approach for ISR benchmark. We provide **three datasets** that were carefully crafted to minimize spatial and spectral misalignment. Besides, 'opensr-test' precisely assesses ISR algorithm performance across **three independent metrics groups** that measure *consistency*, *synthesis*, and *correctness*.
+To address these challenges, 'opensr-test' provides a fair approach to the ISR benchmark. We provide three datasets carefully crafted to minimize spatial and spectral misalignment. Besides, 'opensr-test' precisely assesses ISR algorithm performance across three independent metrics groups that measure consistency, synthesis, and correctness.
+
+<p align="center">
+  <img src="https://github.com/ESAOpenSR/opensr-test/assets/16768318/fb070ba5-56a5-4840-9095-99e8c806c0ac" alt="header">
+  A high-level summary of our workflow to estimate the consistency, synthesis, and correctness metrics. We propose three metrics to evaluate consistency and three more to assess synthesis and correctness. The dotted lines represent the optional harmonization step conducted before the triple distance process. The red line ($d_{LR\leftrightarrow HR}$) is used to normalize the distances $d_{SR\leftrightarrow LR}$ and $d_{SR\leftrightarrow HR}$.
+</p>
 
 ## How to use
 
