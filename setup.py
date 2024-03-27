@@ -14,7 +14,7 @@ def read(filename):
 
 setup(
     name="opensr-test",
-    version="0.2.0",
+    version="0.2.1",
     url="https://github.com/ESAOpenSR/opensr-test",
     license="MIT",
     author="Cesar Aybar Camacho",
@@ -29,6 +29,7 @@ setup(
         "torch>=1.9.0",
         "numpy",
         "matplotlib",
+        "torchvision",
         "scikit-image",
         "scikit-learn",
         "requests",

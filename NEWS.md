@@ -1,3 +1,7 @@
+# 0.2.1
+
+- torchvision dependency added to setup.py.
+
 # 0.2.0
 
 - Several bugs have been fixed.
