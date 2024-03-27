@@ -14,9 +14,6 @@
 <a href="https://opensource.org/licenses/MIT" target="_blank">
     <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License">
 </a>
-<a href='https://opensr-test.readthedocs.io/en/latest/?badge=main'>
-    <img src='https://readthedocs.org/projects/opensr-test/badge/?version=main' alt='Documentation Status' />
-</a>
 <a href="https://github.com/psf/black" target="_blank">
     <img src="https://img.shields.io/badge/code%20style-black-000000.svg" alt="Black">
 </a>
