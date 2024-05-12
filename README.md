@@ -8,9 +8,8 @@
 
 <p align="center">
 <a href='https://pypi.python.org/pypi/opensr-test'>
-    <img src='https://img.shields.io/pypi/v/opensr-test.svg' alt='PyPI' />
+<img src='https://img.shields.io/pypi/v/opensr-test.svg' alt='PyPI' />
 </a>
-
 <a href="https://opensource.org/licenses/MIT" target="_blank">
     <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License">
 </a>
@@ -30,7 +29,7 @@
 
 **PyPI**: [https://pypi.org/project/opensr-test/](https://pypi.org/project/opensr-test/)
 
-**Paper**: Coming soon!
+**Paper**: https://www.techrxiv.org/users/760184/articles/735467-a-comprehensive-benchmark-for-optical-remote-sensing-image-super-resolution
 
 ---
 
@@ -38,18 +37,18 @@
 
 ## Overview
 
-Image Super-Resolution (ISR) aims to improve the ground sampling distance. However, two problems are common in the literature. First, most models are **tested on synthetic data**, raising doubts about their real-world applicability and performance. Second, traditional evaluation metrics such as PSNR, LPIPS, and SSIM are not designed to assess ISR performance. These metrics fall short, especially in conditions involving changes in luminance or spatial misalignments - scenarios frequently encountered in remote sensing imagery.
+Super-Resolution (SR) aims to improve satellite imagery ground sampling distance. However, two problems are common in the literature. First, most models are **tested on synthetic data**, raising doubts about their real-world applicability and performance. Second, traditional evaluation metrics such as PSNR, LPIPS, and SSIM are not designed to assess SR performance. These metrics fall short, especially in conditions involving changes in luminance or spatial misalignments - scenarios frequently encountered in real world.
 
-To address these challenges, 'opensr-test' provides a fair approach to the ISR benchmark. We provide three datasets carefully crafted to minimize spatial and spectral misalignment. Besides, 'opensr-test' precisely assesses ISR algorithm performance across three independent metrics groups that measure consistency, synthesis, and correctness.
+To address these challenges, 'opensr-test' provides a fair approach for SR benchmark. We provide three datasets carefully crafted to minimize spatial and spectral misalignment. Besides, 'opensr-test' precisely assesses SR algorithm performance across three independent metrics groups that measure consistency, synthesis, and correctness.
 
 <p align="center">
-  <img src="https://github.com/ESAOpenSR/opensr-test/assets/16768318/fb070ba5-56a5-4840-9095-99e8c806c0ac" alt="header">
-  A high-level summary of our workflow to estimate the consistency, synthesis, and correctness metrics. We propose three metrics to evaluate consistency and three more to assess synthesis and correctness. The dotted lines represent the optional harmonization step conducted before the triple distance process. The red line ($d_{LR\leftrightarrow HR}$) is used to normalize the distances $d_{SR\leftrightarrow LR}$ and $d_{SR\leftrightarrow HR}$.
+  <img src="docs/images/diagram.png" alt="header">
 </p>
 
 ## How to use
 
 The example below shows how to use `opensr-test` to benchmark your SR model.
+
 
 ```python
 import torch
@@ -61,7 +60,24 @@ sr = torch.rand(4, 256, 256)
 
 metrics = opensr_test.Metrics()
 metrics.compute(lr=lr, sr=sr, hr=hr)
+>>> {'reflectance': 0.253, 'spectral': 26.967, 'spatial': 0.0, 'synthesis': 0.2870, 'ha_percent': 0.892, 'om_percent': 0.0613, 'im_percent': 0.04625}
 ```
+
+This model returns:
+
+- **reflectance**: The spectral consistency between the SR and HR images. By default, it uses MAE distance.
+
+- **spectral**: The spectral consistency between the SR and HR images. By default, it uses Spectral Angle Distance.
+
+- **spatial**: The spatial consistency between the SR and HR images. By default, it uses Enhanced Correlation Coefficient.
+
+- **synthesis**: The high-frequency content of the SR image.
+
+- **ha_percent**: The percentage of pixels in the SR image that are classified as hallucinations.
+
+- **om_percent**: The percentage of pixels in the SR image that are classified as omissions.
+
+- **im_percent**: The percentage of pixels in the SR image that are classified as improvements.
 
 ## Benchmark
 
@@ -207,11 +223,21 @@ pip install git+https://github.com/ESAOpenSR/opensr-test
 
 The following examples show how to use `opensr-test` to benchmark your SR model.
 
-- Use `opensr-test` with TensorFlow model [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1cAGDGlj5Kqt343inNni3ByLE1856z0gE#scrollTo=xaivkcD5Zfw1&uniqifier=1)
+- Use `opensr-test` with TensorFlow model (SR4RS) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1cAGDGlj5Kqt343inNni3ByLE1856z0gE#scrollTo=xaivkcD5Zfw1&uniqifier=1)
 
-- Use `opensr-test` with PyTorch model [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1Db8-JSMTF-hNZQv2UyBDclxkO5hgP9VR#scrollTo=jVL7o6yOrJkY)
+- Use `opensr-test` with PyTorch model (SuperImage) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1Db8-JSMTF-hNZQv2UyBDclxkO5hgP9VR#scrollTo=jVL7o6yOrJkY)
 
-- Use `opensr-test` with a diffuser model [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1banDovG43c2OBh9MODPN4OXgaSCXu1Dc#scrollTo=zz4Aw7_52ulT)
+- Use `opensr-test` with a diffuser model (LDMSuperResolutionPipeline) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1banDovG43c2OBh9MODPN4OXgaSCXu1Dc#scrollTo=zz4Aw7_52ulT)
+
+- Use `opensr-test` with a diffuser model (LDMSuperResolutionPipeline) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1banDovG43c2OBh9MODPN4OXgaSCXu1Dc#scrollTo=zz4Aw7_52ulT)
+
+
+- Use `opensr-test` with Pytorch (EvoLand) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1banDovG43c2OBh9MODPN4OXgaSCXu1Dc#scrollTo=zz4Aw7_52ulT)
+
+
+- Use `opensr-test` with Pytorch (SWIN2-MOSE) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1banDovG43c2OBh9MODPN4OXgaSCXu1Dc#scrollTo=zz4Aw7_52ulT)
+
+- Use `opensr-test` with Pytorch (synthetic dataset) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1banDovG43c2OBh9MODPN4OXgaSCXu1Dc#scrollTo=zz4Aw7_52ulT)
 
 ## Visualizations
 
@@ -228,7 +254,7 @@ from super_image import HanModel
 srmodel = HanModel.from_pretrained('eugenesiow/han', scale=4)
 
 # Load the data
-lr, hr, landuse, parameters = opensr_test.load("spot").values()
+lr, hr, parameters = opensr_test.load("spot").values()
 
 # Define the benchmark experiment
 metrics = opensr_test.Metrics()
@@ -242,10 +268,7 @@ sr_img = srmodel(lr_img[None]).squeeze().detach()
 # Compute the metrics
 metrics.compute(
     lr=lr_img, sr=sr_img, hr=hr_img,
-    stability_threshold = parameters.stability_threshold[idx],
-    im_score = parameters.correctness_params[0],
-    om_score = parameters.correctness_params[1],
-    ha_score = parameters.correctness_params[2]
+    gradient_threshold=parameters[idx]
 )
 ```
 
@@ -259,28 +282,6 @@ metrics.plot_triplets()
 <p align="center">
   <img src="docs/images/example01.png">
 </p>
-
-Display the quadruplets LR, SR, HR and landuse images:
-
-```python
-metrics.plot_quadruplets()
-```
-
-<p align="center">
-  <img src="docs/images/example02.png">
-</p>
-
-
-Display the matching points between the LR and SR images:
-
-```python
-metrics.plot_spatial_matches()
-```
-
-<p align="center">
-  <img src="docs/images/example03.png" width="70%">
-</p>
-
 
 Display a summary of all the metrics:
 
@@ -316,7 +317,13 @@ Explore the [API](https://esaopensr.github.io/opensr-test/docs/API/config_pydant
 If you use `opensr-test` in your research, please cite our paper:
 
 ```
-Coming soon!
+@article{aybar2024comprehensive,
+  title={A Comprehensive Benchmark for Optical Remote Sensing Image Super-Resolution},
+  author={Aybar, Cesar and Montero, David and Donike, Simon and Kalaitzis, Freddie and G{\'o}mez-Chova, Luis},
+  journal={Authorea Preprints},
+  year={2024},
+  publisher={Authorea}
+}
 ```
 
 ## Acknowledgements

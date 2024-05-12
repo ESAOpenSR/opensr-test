@@ -1,11 +1,10 @@
-from typing import Optional
+from typing import Optional, List
 
 import pathlib
 
 import numpy as np
 import requests
 import torch
-from opensr_test.config import create_param_config
 
 
 def download(url: str, save_path: str) -> str:
@@ -26,7 +25,9 @@ def download(url: str, save_path: str) -> str:
     return None
 
 def load(
-    dataset: str = "naip", model_dir: Optional[str] = None, force: bool = False
+    dataset: str = "naip",
+    model_dir: Optional[str] = None,
+    force: bool = False
 ) -> torch.Tensor:
     """ Load a dataset.
 
@@ -94,14 +95,9 @@ def load(
     hr_data = np.load(ROOT_FOLDER / dataset / "hr.npy") / 10000
     hr_data_torch = hr_data.astype(np.float32)
 
-    ## LandUse file
-    land_use = np.load(ROOT_FOLDER / dataset / "landuse2.npy")
-    land_use_torch = land_use
-
     return {
         "lr": lr_data_torch,
         "hr": hr_data_torch,
-        "landuse": land_use_torch,
         "params": create_param_config(dataset)
     }
 
@@ -110,3 +106,35 @@ def get_data_path() -> str:
     cred_path = pathlib.Path.home() / ".config/opensr_test/"
     cred_path.mkdir(parents=True, exist_ok=True)
     return cred_path
+
+
+def create_param_config(dataset = "naip") -> List:
+    if dataset == "naip":
+        gradient_threshold = [
+                0.02, 0.016, 0.025, 0.015, 0.023, 0.019,
+                0.021, 0.019, 0.012, 0.027, 0.016, 0.02,
+                0.018, 0.02, 0.018, 0.019, 0.019, 0.019,
+                0.013, 0.013, 0.013, 0.015, 0.015, 0.015,
+                0.018, 0.017, 0.016, 0.015, 0.022, 0.016
+        ]
+    elif dataset == "spot":
+        gradient_threshold = [
+                0.014, 0.016, 0.013, 0.010, 0.032,
+                0.040, 0.014, 0.037, 0.030, 0.036,
+                0.026, 0.030
+        ]
+
+    elif dataset == "venus":
+        gradient_threshold = [
+            0.015, 0.012, 0.012, 0.012, 0.013, 0.011,
+            0.01, 0.012, 0.011, 0.013, 0.01, 0.013,
+            0.013, 0.01, 0.017, 0.01, 0.012, 0.013,
+            0.011, 0.013, 0.017, 0.011, 0.01, 0.011,
+            0.012, 0.015, 0.012, 0.011, 0.01, 0.017,
+            0.016, 0.01, 0.011, 0.014, 0.012, 0.016,
+            0.01, 0.012, 0.013, 0.01, 0.016, 0.016, 
+            0.012, 0.011, 0.016, 0.01, 0.015, 0.016, 
+            0.016, 0.01, 0.015, 0.011, 0.016, 0.016, 
+            0.013, 0.013, 0.014, 0.01, 0.011
+        ]
+    return gradient_threshold
