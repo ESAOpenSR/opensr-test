@@ -1,6 +1,6 @@
 # 
 
-## The correctness scores
+## **The correctness scores**
 
 It evaluates the quality of high-frequency information introduced by the SR model. Three correctness scores are implemented in `opensr-test`: improvement, omission, and hallucination. The correctness scores depend on the distance metric set by the user.
 

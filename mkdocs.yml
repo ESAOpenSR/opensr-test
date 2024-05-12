@@ -55,9 +55,8 @@ nav:
     - Compute method: docs/API/compute_method.md    
     - Results attributes: docs/API/results_attributes.md
   - Metrics:
-    - Consistency metrics: docs/Metrics/consistency.md
     - Distance metrics: docs/Metrics/distance.md
-    - Correctness metrics: docs/Metrics/correctness.md
+    - Correctness scores: docs/Metrics/correctness.md
 
 # Plugins
 plugins:
