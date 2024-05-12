@@ -19,7 +19,7 @@
     
     
       
-        <title>Correctness metrics - OpenSR test</title>
+        <title>Correctness scores - OpenSR test</title>
       
     
     
@@ -103,7 +103,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Correctness metrics
+              Correctness scores
             
           </span>
         </div>
@@ -237,7 +237,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="consistency.md" class="md-tabs__link md-tabs__link--active">
+      <a href="distance.html" class="md-tabs__link md-tabs__link--active">
         Metrics
       </a>
     </li>
@@ -505,8 +505,6 @@
         
           
         
-          
-        
       
       
         <label class="md-nav__link" for="__nav_3">
@@ -520,20 +518,6 @@
           Metrics
         </label>
         <ul class="md-nav__list" data-md-scrollfix>
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="consistency.md" class="md-nav__link">
-        Consistency metrics
-      </a>
-    </li>
-  
-
-            
           
             
               
@@ -565,12 +549,12 @@
       
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
-          Correctness metrics
+          Correctness scores
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <a href="correctness.html" class="md-nav__link md-nav__link--active">
-        Correctness metrics
+        Correctness scores
       </a>
       
         
@@ -662,7 +646,7 @@
 
 
 <h1 id="_1"></h1>
-<h2 id="the-correctness-scores">The correctness scores</h2>
+<h2 id="the-correctness-scores"><strong>The correctness scores</strong></h2>
 <p>It evaluates the quality of high-frequency information introduced by the SR model. Three correctness scores are implemented in <code>opensr-test</code>: improvement, omission, and hallucination. The correctness scores depend on the distance metric set by the user.</p>
 <p>Each score reveals different aspects of the SR model performance:</p>
 <p><strong>Improvement</strong>: Low values represent a good match between the SR and HR images. The equation for calculating improvement is:</p>
