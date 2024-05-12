@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import numpy as np
 import torch
@@ -19,21 +19,19 @@ def get_distances(
     rgb_bands: Optional[List[int]] = [0, 1, 2],
     device: str = "cpu",
 ):
-    """ Obtain the distances between metrics in a 2D space.
-        In the 2D space the y-axis is the distance between the SR and HR
-        (error) and the x-axis is the distance between the LR and HR 
-        (high-frequency).
+    """ Obtain the distances between the LR, SR and HR images.
         
-
     Args:
         lr_to_hr (torch.Tensor): The LR image upscaled to HR.
         sr_harm (torch.Tensor): The SR image harmonized to HR.
         hr (torch.Tensor): The HR image.
-        distance_method (str, optional): The distance method to use. Defaults to 
-            "psnr". Available methods are: psnr, kl, l1, l2, psnr, sad, lpips.
+        distance_method (str, optional): The distance method to use. 
+            Defaults to "psnr". Available methods are: "kl", "l1", 
+            "l2", "pbias", "psnr", "sad", "mtf", "lpips", "clip".
 
     Returns:
-        torch.Tensor: The distances between the metrics.
+        Tuple[torch.Tensor, torch.Tensor, torch.Tensor]: The distances
+            between the LR and HR, SR and HR, and SR and LR images.
     """
 
     reference = get_distance(
@@ -45,7 +43,7 @@ def get_distances(
         device=device,
         scale=scale,
         rgb_bands=rgb_bands,
-    ).compute()
+    )
 
     dist_sr_to_hr = get_distance(
         x=sr_harm,
@@ -56,7 +54,7 @@ def get_distances(
         device=device,
         scale=scale,
         rgb_bands=rgb_bands,
-    ).compute()
+    )
 
     dist_sr_to_lr = get_distance(
         x=sr_harm,
@@ -67,9 +65,9 @@ def get_distances(
         device=device,
         scale=scale,
         rgb_bands=rgb_bands,
-    ).compute()
+    )
 
-    return reference.value, dist_sr_to_hr.value, dist_sr_to_lr.value
+    return reference, dist_sr_to_hr, dist_sr_to_lr
 
 
 def tc_improvement(
@@ -77,8 +75,7 @@ def tc_improvement(
     d_om: torch.Tensor,
     plambda: float = 0.85
 ) -> torch.Tensor:
-    """ Obtain the relative distance to the center
-    of the improvement space
+    """ Obtain the relative distance to the center of the improvement space
 
     Args:
         d_im (torch.Tensor): The distance to the improvement space
@@ -123,7 +120,7 @@ def tc_hallucination(
     plambda: float = 0.85
 ) -> torch.Tensor:
     """ Obtain the relative distance to the center
-    of the omission space
+    of the hallucination space
 
     Args:
         d_im (torch.Tensor): The distance to the improvement space

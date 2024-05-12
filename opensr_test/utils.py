@@ -1,91 +1,68 @@
-from typing import Literal, Optional
-
-import random
-
-import numpy as np
-import torch
+from typing import List, Optional
 from skimage.exposure import match_histograms
 
+import torch
+import random
+import numpy as np
 
-def spectral_reducer(
-    X: torch.Tensor, method: Literal["mean", "median", "max", "min"] = "mean"
-) -> torch.Tensor:
-    """ Reduce the number of channels of a tensor from (C, H, W) to 
-    (H, W) using a given method.
-    
+def apply_upsampling(x: torch.Tensor, scale: int) -> torch.Tensor:
+    """ Upsampling a tensor (B, C, H, W) to a lower resolution 
+    (B, C, H', W') using bilinear interpolation with antialiasing.
+
     Args:
-        X (torch.Tensor): The tensor to reduce.
-        
-        method (str, optional): The method used to reduce the number of 
-            channels. Must be one of "mean", "median", "max", "min", 
-            "luminosity". Defaults to "mean".
-            
-    Raises:
-        ValueError: If the method is not valid.
-    
+        x (torch.Tensor): The tensor to upsample.
+        scale (int, optional): The super-resolution scale. Defaults 
+            to 4.
+
     Returns:
-        torch.Tensor: The reduced tensor.
+        torch.Tensor: The upsampled tensor (B, C, H', W').
     """
-    if method == "mean":
-        return X.mean(dim=0)
-    elif method == "median":
-        return X.median(dim=0).values
-    elif method == "max":
-        return X.max(dim=0).values
-    elif method == "min":
-        return X.min(dim=0).values
-    else:
-        raise ValueError(
-            "Invalid method. Must be one of 'mean', 'median', 'max', 'min', 'luminosity'."
-        )
+
+    x_ref = torch.nn.functional.interpolate(
+        input=x[None], scale_factor=1 / scale, mode="bilinear", antialias=True
+    ).squeeze()
+
+    return x_ref
 
 
-def spatial_reducer(
-    x: torch.Tensor,
-    reduction: Literal[
-        "mean_abs", "mean", "median", "median_abs", "max", "max_abs", "min", "min_abs"
-    ],
-) -> torch.Tensor:
-    """Reduces a given tensor by a given reduction method.
-    
+def apply_downsampling(x: torch.Tensor, scale: int = 4) -> torch.Tensor:
+    """ Downsampling a tensor (B, C, H, W) to a upper resolution 
+    (B, C, H', W') using bilinear interpolation with antialiasing.
+
     Args:
-        x (torch.Tensor): The tensor to reduce
-        reduction (Literal["mean_abs", "mean", "median", 
-            "median_abs", "max","max_abs", "min", "min_abs"]): 
-            The reduction method to use.
-                
-    Return:
-        torch.Tensor: The reduced tensor
-        
-    Raise:
-        ValueError: If the reduction method is not supported.
-    """
-    if reduction == "mean":
-        return torch.nanmean(x)
-    if reduction == "mean_abs":
-        return torch.nanmean(torch.abs(x))
-    if reduction == "median":
-        return torch.nanmedian(x)
-    if reduction == "median_abs":
-        return torch.nanmedian(torch.abs(x))
-    if reduction == "max":
-        return torch.max(x[x == x])
-    if reduction == "max_abs":
-        xabs = torch.abs(x)
-        return torch.max(xabs[xabs == xabs])
-    if reduction == "min":
-        return torch.min(x[x == x])
-    if reduction == "min_abs":
-        xabs = torch.abs(x)
-        return torch.min(xabs[xabs == xabs])
-    if reduction == "sum":
-        return torch.nansum(x)
-    if reduction == "sum_abs":
-        return torch.nansum(torch.abs(x))
-    if reduction == "none" or reduction is None:
-        raise ValueError("None is not a valid reduction method.")
+        x (torch.Tensor): The tensor to downsampling.
+        scale (int, optional): The super-resolution scale. Defaults 
+            to 4.
 
-    raise ValueError("Reduction parameter unknown.")
+    Returns:
+        torch.Tensor: The downscaled tensor (B, C, H', W').
+    """
+
+    x_ref = torch.nn.functional.interpolate(
+        input=x, scale_factor=scale, mode="bilinear", antialias=True
+    )
+
+    return x_ref
+
+
+def apply_mask(x: torch.Tensor, mask: int) -> torch.Tensor:
+    """ Apply a mask to the tensor. Some deep learning models
+    underperform at the borders of the image. This function
+    crops the borders of the image to avoid this issue.
+
+    Args:
+        x (torch.Tensor): The tensor to apply the mask.
+        mask (int): The border mask. 
+
+    Returns:
+        torch.Tensor: The tensor with the mask applied.
+    """
+
+    if mask is None:
+        return x        
+    if mask == 0:
+        return x        
+    return x[:, mask: -mask, mask: -mask]
 
 
 def hq_histogram_matching(image1: torch.Tensor, image2: torch.Tensor) -> torch.Tensor:
@@ -117,157 +94,35 @@ def hq_histogram_matching(image1: torch.Tensor, image2: torch.Tensor) -> torch.T
     return image1_hat
 
 
-def estimate_medoid(tensor: torch.Tensor) -> torch.Tensor:
-    """ Estimate the medoid of a tensor."""
-    # Compute the pairwise distances between the elements of the tensor
-    distances = torch.cdist(tensor[:, None], tensor[:, None])
+def check_lpips() -> None:
+    """ Check if the LPIPS library is installed. """
 
-    # Compute the sum of distances for each element
-    sums = distances.sum(dim=1)
-
-    # Select the element with the smallest sum of distances
-    medoid_index = sums.argmin()
-    medoid = tensor[medoid_index]
-
-    return medoid
-
-
-def do_square(
-    tensor: torch.Tensor,
-    patch_size: Optional[int] = 32,
-    get_pad: bool = False,
-    constant_value: float = torch.nan,
-) -> torch.Tensor:
-    """ Split a tensor into n_patches x n_patches patches and return
-    the patches as a tensor.
-    
-    Args:
-        tensor (torch.Tensor): The tensor to split.
-        n_patches (int, optional): The number of patches to split the tensor into.
-            If None, the tensor is split into the smallest number of patches.
-
-    Returns:
-        torch.Tensor: The patches as a tensor.
-    """
-    # tensor = torch.rand(3, 100, 100)
-    # Check if it is a square tensor
-    if tensor.shape[-1] != tensor.shape[-2]:
-        raise ValueError("The tensor must be square.")
-
-    if patch_size is None:
-        patch_size = 1
-
-    # tensor (C, H, W)
-    xdim = tensor.shape[1]
-    ydim = tensor.shape[2]
-
-    minimages_x = int(torch.ceil(torch.tensor(xdim / patch_size)))
-    minimages_y = int(torch.ceil(torch.tensor(ydim / patch_size)))
-
-    pad_x_01 = int((minimages_x * patch_size - xdim) // 2)
-    pad_x_02 = int((minimages_x * patch_size - xdim) - pad_x_01)
-
-    pad_y_01 = int((minimages_y * patch_size - ydim) // 2)
-    pad_y_02 = int((minimages_y * patch_size - ydim) - pad_y_01)
-
-    padded_tensor = torch.nn.functional.pad(
-        input=tensor,
-        pad=(pad_x_01, pad_x_02, pad_y_01, pad_y_02),
-        mode="constant",
-        value=constant_value,
-    )
-
-    # split the tensor (C, H, W) into (n_patches, n_patches, C, H, W)
-    patches = padded_tensor.unfold(1, patch_size, patch_size).unfold(
-        2, patch_size, patch_size
-    )
-
-    # move the axes (C, n_patches, n_patches, H, W) -> (n_patches, n_patches, C, H, W)
-    patches = patches.permute(1, 2, 0, 3, 4)
-
-    # compress dimensions (n_patches, n_patches, C, H, W) -> (n_patches*n_patches, C, H, W)
-    patches = patches.reshape(-1, *patches.shape[2:])
-
-    if get_pad:
-        return patches, (pad_x_01, pad_x_02, pad_y_01, pad_y_02)
-
-    return patches
-
-
-def get_numbers(string: str) -> str:
-    """ Get the numbers from a string. """
-    n_patches = string.replace("patch", "")
-    if n_patches == "":
-        n_patches = 32
-    else:
-        try:
-            n_patches = int(n_patches)
-        except:
-            raise ValueError("Invalid patch name.")
-    return n_patches
-
-
-def check_lpips():
     try:
         import lpips
-    except ImportError as e:
+    except ImportError:
         raise ImportError(
-            "The extra requirement for perceptual metrics is not installed. "
-            "Please install it with `pip install opensr-test[perceptual]`."
-        ) from e
-
+            "The LPIPS library is not installed. Please install it with: pip install lpips"
+        )
+    
 def check_openclip():
+    """ Check if the open_clip library is installed. """
     try:
         import open_clip
     except ImportError as e:
         raise ImportError(
-            "The extra requirement for perceptual metrics is not installed. "
-            "Please install it with `pip install opensr-test[perceptual]`."
-        ) from e
+            "The open_clip library is not installed. Please install it with: pip install open_clip"
+        ) from e    
     
-    
+
 def seed_everything(seed: int):
+    """ Seed everything for reproducibility.
+
+    Args:
+        seed (int): The seed to use.
+    """
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = True
-
-
-def get_zeros_at_edges(img: torch.Tensor, scale_factor: int) -> tuple:
-    """ Obtain the zeros at the edges of the image
-
-    Args:
-        img (torch.Tensor): The input image.
-        threshold (float, optional): The threshold to consider a zero. 
-            Defaults to 50.
-
-    Returns:
-        tuple: The number of zeros at the edges
-    """
-
-    # Create a mask
-    reference = img.mean(axis=0)
-    x_threshold = reference.shape[0]//2
-    y_threshold = reference.shape[1]//2
-
-    # Get the zeros
-    x_reference = np.zeros(reference.shape[0])
-    for index in range(reference.shape[0]):
-        x_reference[index] = (reference[index] == 0).sum() > y_threshold
-    x_ref_min = np.where(x_reference==0)[0].min()
-    x_ref_max = np.where(x_reference==0)[0].max()
-
-    y_reference = np.zeros(reference.shape[1])
-    for index in range(reference.shape[1]):
-        y_reference[index] = (reference[:, index] == 0).sum() > x_threshold
-    y_ref_min = np.where(y_reference==0)[0].min()
-    y_ref_max = np.where(y_reference==0)[0].max()
-
-    # Check if the scale factor is too large
-    x_range = x_ref_max - x_ref_min
-    y_range = y_ref_max - y_ref_min
-    x_norm, y_norm = (x_range % scale_factor, y_range % scale_factor)
-    
-    return x_ref_min + x_norm, x_ref_max, y_ref_min + y_norm, y_ref_max

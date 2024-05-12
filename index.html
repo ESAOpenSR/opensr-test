@@ -740,8 +740,42 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#examples" class="md-nav__link">
-    Examples
+  <a href="#datasets" class="md-nav__link">
+    Datasets
+  </a>
+  
+    <nav class="md-nav" aria-label="Datasets">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#naip-x4-scale-factor" class="md-nav__link">
+    NAIP (X4 scale factor)
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#spot-x4-scale-factor" class="md-nav__link">
+    SPOT (X4 scale factor)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#vens-x2-scale-factor" class="md-nav__link">
+    Venµs (X2 scale factor)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example" class="md-nav__link">
+    Example
   </a>
   
 </li>
@@ -793,18 +827,19 @@
 
 
 <p align="center">
-  <a href="https://github.com/ESAOpenSR/opensr-test"><img src="docs/images/logo.png" alt="header" width="55%"></a>
+  <a href="https://github.com/ESAOpenSR/opensr-test"><img src="docs/images/logo.png" alt="header" width="50%"></a>
 </p>
 
 <p align="center">
-    <em>A comprehensive benchmark for real-world Sentinel-2 imagery super-resolution</em>
+    <em>
+    A comprehensive benchmark for real-world Sentinel-2 imagery super-resolution
+    </em>
 </p>
 
 <p align="center">
 <a href='https://pypi.python.org/pypi/opensr-test'>
-    <img src='https://img.shields.io/pypi/v/opensr-test.svg' alt='PyPI' />
+<img src='https://img.shields.io/pypi/v/opensr-test.svg' alt='PyPI' />
 </a>
-
 <a href="https://opensource.org/licenses/MIT" target="_blank">
     <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License">
 </a>
@@ -820,15 +855,14 @@
 <p><strong>GitHub</strong>: <a href="https://github.com/ESAOpenSR/opensr-test">https://github.com/ESAOpenSR/opensr-test</a></p>
 <p><strong>Documentation</strong>: <a href="https://esaopensr.github.io/opensr-test">https://esaopensr.github.io/opensr-test</a></p>
 <p><strong>PyPI</strong>: <a href="https://pypi.org/project/opensr-test/">https://pypi.org/project/opensr-test/</a></p>
-<p><strong>Paper</strong>: Coming soon!</p>
+<p><strong>Paper</strong>: https://www.techrxiv.org/users/760184/articles/735467-a-comprehensive-benchmark-for-optical-remote-sensing-image-super-resolution</p>
 <hr />
 <h1 id="_1"></h1>
 <h2 id="overview">Overview</h2>
-<p>Image Super-Resolution (ISR) aims to improve the ground sampling distance. However, two problems are common in the literature. First, most models are <strong>tested on synthetic data</strong>, raising doubts about their real-world applicability and performance. Second, traditional evaluation metrics such as PSNR, LPIPS, and SSIM are not designed to assess ISR performance. These metrics fall short, especially in conditions involving changes in luminance or spatial misalignments - scenarios frequently encountered in remote sensing imagery.</p>
-<p>To address these challenges, 'opensr-test' provides a fair approach to the ISR benchmark. We provide three datasets carefully crafted to minimize spatial and spectral misalignment. Besides, 'opensr-test' precisely assesses ISR algorithm performance across three independent metrics groups that measure consistency, synthesis, and correctness.</p>
+<p>Super-Resolution (SR) aims to improve satellite imagery ground sampling distance. However, two problems are common in the literature. First, most models are <strong>tested on synthetic data</strong>, raising doubts about their real-world applicability and performance. Second, traditional evaluation metrics such as PSNR, LPIPS, and SSIM are not designed to assess SR performance. These metrics fall short, especially in conditions involving changes in luminance or spatial misalignments - scenarios frequently encountered in real world.</p>
+<p>To address these challenges, 'opensr-test' provides a fair approach for SR benchmark. We provide three datasets carefully crafted to minimize spatial and spectral misalignment. Besides, 'opensr-test' precisely assesses SR algorithm performance across three independent metrics groups that measure consistency, synthesis, and correctness.</p>
 <p align="center">
-  <img src="https://github.com/ESAOpenSR/opensr-test/assets/16768318/fb070ba5-56a5-4840-9095-99e8c806c0ac" alt="header">
-  A high-level summary of our workflow to estimate the consistency, synthesis, and correctness metrics. We propose three metrics to evaluate consistency and three more to assess synthesis and correctness. The dotted lines represent the optional harmonization step conducted before the triple distance process. The red line ($d_{LR\leftrightarrow HR}$) is used to normalize the distances $d_{SR\leftrightarrow LR}$ and $d_{SR\leftrightarrow HR}$.
+  <img src="docs/images/diagram.png" alt="header">
 </p>
 
 <h2 id="how-to-use">How to use</h2>
@@ -842,125 +876,32 @@
 
 <span class="n">metrics</span> <span class="o">=</span> <span class="n">opensr_test</span><span class="o">.</span><span class="n">Metrics</span><span class="p">()</span>
 <span class="n">metrics</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="n">lr</span><span class="p">,</span> <span class="n">sr</span><span class="o">=</span><span class="n">sr</span><span class="p">,</span> <span class="n">hr</span><span class="o">=</span><span class="n">hr</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="p">{</span><span class="s1">&#39;reflectance&#39;</span><span class="p">:</span> <span class="mf">0.253</span><span class="p">,</span> <span class="s1">&#39;spectral&#39;</span><span class="p">:</span> <span class="mf">26.967</span><span class="p">,</span> <span class="s1">&#39;spatial&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s1">&#39;synthesis&#39;</span><span class="p">:</span> <span class="mf">0.2870</span><span class="p">,</span> <span class="s1">&#39;ha_percent&#39;</span><span class="p">:</span> <span class="mf">0.892</span><span class="p">,</span> <span class="s1">&#39;om_percent&#39;</span><span class="p">:</span> <span class="mf">0.0613</span><span class="p">,</span> <span class="s1">&#39;im_percent&#39;</span><span class="p">:</span> <span class="mf">0.04625</span><span class="p">}</span>
 </code></pre></div>
+<p>This model returns:</p>
+<ul>
+<li><strong>reflectance</strong>: The spectral consistency between the SR and LR images. By default, it uses MAE distance.</li>
+</ul>
+<ul>
+<li><strong>spectral</strong>: The spectral consistency between the SR and LR images. By default, it uses Spectral Angle Distance.</li>
+</ul>
+<ul>
+<li><strong>spatial</strong>: The spatial consistency between the SR and LR images. By default, it uses Enhanced Correlation Coefficient.</li>
+</ul>
+<ul>
+<li><strong>synthesis</strong>: The high-frequency content of the SR image, obtained by comparing the harmonized SR image with the HR image.</li>
+</ul>
+<ul>
+<li><strong>ha_percent</strong>: The percentage of pixels in the SR image that are classified as hallucinations.</li>
+</ul>
+<ul>
+<li><strong>om_percent</strong>: The percentage of pixels in the SR image that are classified as omissions.</li>
+</ul>
+<ul>
+<li><strong>im_percent</strong>: The percentage of pixels in the SR image that are classified as improvements.</li>
+</ul>
 <h2 id="benchmark">Benchmark</h2>
 <p>Benchmark comparison of SR models. Downward arrows (↓) denote metrics in which lower values are preferable, and upward arrows (↑) indicate metrics in which higher values reflect better performance.</p>
-<table border="1" style="width:75%; text-align:center;">    
-    <thead>
-        <tr>
-            <th colspan="2"></th>
-            <th colspan="3">Consistency</th>
-            <th>Synthesis</th>
-            <th colspan="3">Correctness</th>
-        </tr>
-        <tr>
-            <th colspan="2"></th>
-            <th>reflectance ↓</th>
-            <th>spectral ↓</th>
-            <th>spatial ↓</th>
-            <th>high-frequency ↑</th>
-            <th>ha ↓</th>
-            <th>om ↓</th>
-            <th>im ↑</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td rowspan="3"><b>NAIP</b></td>
-            <td><b>SuperImage</b></td>
-            <td><b>0.008</b></td>
-            <td><b>7.286</b></td>
-            <td><b>0.131</b></td>
-            <td>0.003</td>
-            <td><b>0.117</b></td>
-            <td><b>0.784</b></td>
-            <td><b>0.098</b></td>
-        </tr>
-        <tr>
-            <td><b>SR4RS</b></td>
-            <td>0.016</td>
-            <td><b>3.471</b></td>
-            <td>1.156</td>
-            <td>0.010</td>
-            <td>0.869</td>
-            <td>0.077</td>
-            <td>0.054</td>
-        </tr>
-        <tr>
-            <td><b>diffusers</b></td>
-            <td>0.463</td>
-            <td>12.437</td>
-            <td>2.88</td>
-            <td><b>0.013</b></td>
-            <td>0.905</td>
-            <td>0.055</td>
-            <td>0.040</td>
-        </tr>
-        <tr>
-            <td rowspan="3"><b>SPOT</b></td>
-            <td><b>SuperImage</b></td>
-            <td><b>0.009</b></td>
-            <td>3.512</td>
-            <td><b>0.062</b></td>
-            <td>0.006</td>
-            <td><b>0.160</b></td>
-            <td><b>0.794</b></td>
-            <td><b>0.046</b></td>
-        </tr>
-        <tr>
-            <td><b>SR4RS</b></td>
-            <td>0.039</td>
-            <td><b>3.232</b></td>
-            <td>1.151</td>
-            <td><b>0.023</b></td>
-            <td>0.834</td>
-            <td>0.115</td>
-            <td>0.051</td>
-        </tr>
-        <tr>
-            <td><b>diffusers</b></td>
-            <td>0.417</td>
-            <td>11.730</td>
-            <td>0.817</td>
-            <td>0.014</td>
-            <td>0.686</td>
-            <td>0.251</td>
-            <td>0.063</td>
-        </tr>
-        <tr>
-            <td rowspan="3"><b>VENµS</b></td>
-            <td><b>SuperImage</b></td>
-            <td><b>0.009</b></td>
-            <td>8.687</td>
-            <td><b>0.099</b></td>
-            <td>0.003</td>
-            <td><b>0.403</b></td>
-            <td><b>0.380</b></td>
-            <td><b>0.217</b></td>
-        </tr>
-        <tr>
-            <td><b>SR4RS</b></td>
-            <td>0.014</td>
-            <td><b>3.394</b></td>
-            <td>1.122</td>
-            <td><b>0.012</b></td>
-            <td>0.971</td>
-            <td>0.017</td>
-            <td>0.012</td>
-        </tr>
-        <tr>
-            <td><b>diffusers</b></td>
-            <td>0.467</td>
-            <td>13.303</td>
-            <td>0.806</td>
-            <td>0.009</td>
-            <td>0.933</td>
-            <td>0.043</td>
-            <td>0.024</td>
-        </tr>
-    </tbody>
-</table>
-
 <h2 id="installation">Installation</h2>
 <p>Install the latest version from PyPI:</p>
 <div class="highlight"><pre><span></span><code>pip install opensr-test
@@ -971,16 +912,60 @@
 <p>Install the latest dev version from GitHub by running:</p>
 <div class="highlight"><pre><span></span><code>pip install git+https://github.com/ESAOpenSR/opensr-test
 </code></pre></div>
-<h2 id="examples">Examples</h2>
+<h2 id="datasets">Datasets</h2>
+<p>The <code>opensr-test</code> package provides five datasets for benchmarking SR models. These datasets are carefully crafted to minimize spatial and spectral misalignment. See our Hugging Face repository for more details about the datasets. <a href="https://huggingface.co/datasets/isp-uv-es/opensr-test"><strong>https://huggingface.co/datasets/isp-uv-es/opensr-test</strong></a></p>
+<h3 id="naip-x4-scale-factor"><strong>NAIP (X4 scale factor)</strong></h3>
+<p>The National Agriculture Imagery Program (NAIP) dataset is a high-resolution aerial imagery dataset that covers the continental United States. The dataset consists of 2.5m resolution NAIP images captured in the visible and near-infrared spectrum (RGBNIR) and all Sentinel-2 L1C and L2A bands. The dataset focus in <strong>crop fields, forests, and bare soil areas</strong>.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">opensr_test</span>
+
+<span class="n">naip</span> <span class="o">=</span> <span class="n">opensr_test</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;naip&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p align="center">
+  <a href="https://github.com/ESAOpenSR/opensr-test"><img src="docs/images/NAIP.gif" alt="header" width="80%"></a>
+</p>
+
+<h2 id="spot-x4-scale-factor"><strong>SPOT (X4 scale factor)</strong></h2>
+<p>The SPOT imagery were obtained from the worldstat dataset. The dataset consists of 2.5m resolution resampled SPOT images captured in the visible and near-infrared spectrum (RGBNIR) and all Sentinel-2 L1C and L2A bands. The dataset focus in <strong>urban areas, crop fields, and bare soil areas</strong>.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">opensr_test</span>
+
+<span class="n">spot</span> <span class="o">=</span> <span class="n">opensr_test</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;spot&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p align="center">
+  <a href="https://github.com/ESAOpenSR/opensr-test"><img src="docs/images/SPOT.gif" alt="header" width="80%"></a>
+</p>
+
+<h2 id="vens-x2-scale-factor"><strong>Venµs (X2 scale factor)</strong></h2>
+<p>The Venµs images were obtained from the <a href="https://zenodo.org/records/6514159"><strong>Sen2Venµs dataset</strong></a>. The dataset consists of 5m resolution resampled Venµs images captured in the visible and near-infrared spectrum (RGBNIR) and all Sentinel-2 L1C and L2A bands. The dataset focus in <strong>crop fields, forests, urban areas, and bare soil areas</strong>.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">opensr_test</span>
+
+<span class="n">venus</span> <span class="o">=</span> <span class="n">opensr_test</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;venus&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p align="center">
+  <a href="https://github.com/ESAOpenSR/opensr-test"><img src="docs/images/VENUS.gif" alt="header" width="80%"></a>
+</p>
+
+<h2 id="example">Example</h2>
 <p>The following examples show how to use <code>opensr-test</code> to benchmark your SR model.</p>
 <ul>
-<li>Use <code>opensr-test</code> with TensorFlow model <a href="https://colab.research.google.com/drive/1cAGDGlj5Kqt343inNni3ByLE1856z0gE#scrollTo=xaivkcD5Zfw1&amp;uniqifier=1"><img alt="Open In Colab" src="https://colab.research.google.com/assets/colab-badge.svg" /></a></li>
+<li>Use <code>opensr-test</code> with TensorFlow model (SR4RS) <a href="https://colab.research.google.com/drive/1cAGDGlj5Kqt343inNni3ByLE1856z0gE#scrollTo=xaivkcD5Zfw1&amp;uniqifier=1"><img alt="Open In Colab" src="https://colab.research.google.com/assets/colab-badge.svg" /></a></li>
 </ul>
 <ul>
-<li>Use <code>opensr-test</code> with PyTorch model <a href="https://colab.research.google.com/drive/1Db8-JSMTF-hNZQv2UyBDclxkO5hgP9VR#scrollTo=jVL7o6yOrJkY"><img alt="Open In Colab" src="https://colab.research.google.com/assets/colab-badge.svg" /></a></li>
+<li>Use <code>opensr-test</code> with PyTorch model (SuperImage) <a href="https://colab.research.google.com/drive/1Db8-JSMTF-hNZQv2UyBDclxkO5hgP9VR#scrollTo=jVL7o6yOrJkY"><img alt="Open In Colab" src="https://colab.research.google.com/assets/colab-badge.svg" /></a></li>
 </ul>
 <ul>
-<li>Use <code>opensr-test</code> with a diffuser model <a href="https://colab.research.google.com/drive/1banDovG43c2OBh9MODPN4OXgaSCXu1Dc#scrollTo=zz4Aw7_52ulT"><img alt="Open In Colab" src="https://colab.research.google.com/assets/colab-badge.svg" /></a></li>
+<li>Use <code>opensr-test</code> with a diffuser model (LDMSuperResolutionPipeline) <a href="https://colab.research.google.com/drive/1banDovG43c2OBh9MODPN4OXgaSCXu1Dc#scrollTo=zz4Aw7_52ulT"><img alt="Open In Colab" src="https://colab.research.google.com/assets/colab-badge.svg" /></a></li>
+</ul>
+<ul>
+<li>Use <code>opensr-test</code> with a diffuser model (opensr-model) <a href="https://colab.research.google.com/drive/1banDovG43c2OBh9MODPN4OXgaSCXu1Dc#scrollTo=zz4Aw7_52ulT"><img alt="Open In Colab" src="https://colab.research.google.com/assets/colab-badge.svg" /></a></li>
+</ul>
+<ul>
+<li>Use <code>opensr-test</code> with Pytorch (EvoLand) <a href="https://colab.research.google.com/drive/1banDovG43c2OBh9MODPN4OXgaSCXu1Dc#scrollTo=zz4Aw7_52ulT"><img alt="Open In Colab" src="https://colab.research.google.com/assets/colab-badge.svg" /></a></li>
+</ul>
+<ul>
+<li>Use <code>opensr-test</code> with Pytorch (SWIN2-MOSE) <a href="https://colab.research.google.com/drive/1banDovG43c2OBh9MODPN4OXgaSCXu1Dc#scrollTo=zz4Aw7_52ulT"><img alt="Open In Colab" src="https://colab.research.google.com/assets/colab-badge.svg" /></a></li>
+</ul>
+<ul>
+<li>Use <code>opensr-test</code> with Pytorch (synthetic dataset) <a href="https://colab.research.google.com/drive/1banDovG43c2OBh9MODPN4OXgaSCXu1Dc#scrollTo=zz4Aw7_52ulT"><img alt="Open In Colab" src="https://colab.research.google.com/assets/colab-badge.svg" /></a></li>
 </ul>
 <h2 id="visualizations">Visualizations</h2>
 <p>The <code>opensr-test</code> package provides a set of visualizations to help you understand the performance of your SR model.</p>
@@ -994,7 +979,7 @@
 <span class="n">srmodel</span> <span class="o">=</span> <span class="n">HanModel</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="s1">&#39;eugenesiow/han&#39;</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 
 <span class="c1"># Load the data</span>
-<span class="n">lr</span><span class="p">,</span> <span class="n">hr</span><span class="p">,</span> <span class="n">landuse</span><span class="p">,</span> <span class="n">parameters</span> <span class="o">=</span> <span class="n">opensr_test</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;spot&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+<span class="n">lr</span><span class="p">,</span> <span class="n">hr</span><span class="p">,</span> <span class="n">parameters</span> <span class="o">=</span> <span class="n">opensr_test</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;spot&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
 
 <span class="c1"># Define the benchmark experiment</span>
 <span class="n">metrics</span> <span class="o">=</span> <span class="n">opensr_test</span><span class="o">.</span><span class="n">Metrics</span><span class="p">()</span>
@@ -1008,10 +993,7 @@
 <span class="c1"># Compute the metrics</span>
 <span class="n">metrics</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span>
     <span class="n">lr</span><span class="o">=</span><span class="n">lr_img</span><span class="p">,</span> <span class="n">sr</span><span class="o">=</span><span class="n">sr_img</span><span class="p">,</span> <span class="n">hr</span><span class="o">=</span><span class="n">hr_img</span><span class="p">,</span>
-    <span class="n">stability_threshold</span> <span class="o">=</span> <span class="n">parameters</span><span class="o">.</span><span class="n">stability_threshold</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span>
-    <span class="n">im_score</span> <span class="o">=</span> <span class="n">parameters</span><span class="o">.</span><span class="n">correctness_params</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-    <span class="n">om_score</span> <span class="o">=</span> <span class="n">parameters</span><span class="o">.</span><span class="n">correctness_params</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-    <span class="n">ha_score</span> <span class="o">=</span> <span class="n">parameters</span><span class="o">.</span><span class="n">correctness_params</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">gradient_threshold</span><span class="o">=</span><span class="n">parameters</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
 <span class="p">)</span>
 </code></pre></div>
 <p>Now, we can visualize the results using the <code>opensr_test.visualize</code> module.
@@ -1020,20 +1002,6 @@ fDisplay the triplets LR, SR and HR images:</p>
 </code></pre></div>
 <p align="center">
   <img src="docs/images/example01.png">
-</p>
-
-<p>Display the quadruplets LR, SR, HR and landuse images:</p>
-<div class="highlight"><pre><span></span><code><span class="n">metrics</span><span class="o">.</span><span class="n">plot_quadruplets</span><span class="p">()</span>
-</code></pre></div>
-<p align="center">
-  <img src="docs/images/example02.png">
-</p>
-
-<p>Display the matching points between the LR and SR images:</p>
-<div class="highlight"><pre><span></span><code><span class="n">metrics</span><span class="o">.</span><span class="n">plot_spatial_matches</span><span class="p">()</span>
-</code></pre></div>
-<p align="center">
-  <img src="docs/images/example03.png" width="70%">
 </p>
 
 <p>Display a summary of all the metrics:</p>
@@ -1058,7 +1026,13 @@ fDisplay the triplets LR, SR and HR images:</p>
 
 <h2 id="citation">Citation</h2>
 <p>If you use <code>opensr-test</code> in your research, please cite our paper:</p>
-<div class="highlight"><pre><span></span><code>Coming soon!
+<div class="highlight"><pre><span></span><code>@article{aybar2024comprehensive,
+  title={A Comprehensive Benchmark for Optical Remote Sensing Image Super-Resolution},
+  author={Aybar, Cesar and Montero, David and Donike, Simon and Kalaitzis, Freddie and G{\&#39;o}mez-Chova, Luis},
+  journal={Authorea Preprints},
+  year={2024},
+  publisher={Authorea}
+}
 </code></pre></div>
 <h2 id="acknowledgements">Acknowledgements</h2>
 <p>This work was make with the support of the European Space Agency (ESA) under the project “Explainable AI: application to trustworthy super-resolution (OpenSR)”. Cesar Aybar acknowledges support by the National Council of Science, Technology, and Technological Innovation (CONCYTEC, Peru) through the “PROYECTOS DE INVESTIGACIÓN BÁSICA – 2023-01” program with contract number PE501083135-2023-PROCIENCIA. Luis Gómez-Chova acknowledges support from the Spanish Ministry of Science and Innovation (project PID2019-109026RB-I00 funded by MCIN/AEI/10.13039/501100011033).</p>

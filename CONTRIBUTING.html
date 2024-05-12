@@ -12,14 +12,14 @@
         <meta name="author" content="Open SR test Contributors">
       
       
-        <link rel="canonical" href="https://github.com/ESAOpenSR/opensr-test/NEWS.html">
+        <link rel="canonical" href="https://github.com/ESAOpenSR/opensr-test/CONTRIBUTING.html">
       
       <link rel="icon" href="resources/ms_icon.png">
       <meta name="generator" content="mkdocs-1.3.1, mkdocs-material-8.2.16">
     
     
       
-        <title>0.2.1 - OpenSR test</title>
+        <title>Contributing to `opensr-test` - OpenSR test</title>
       
     
     
@@ -71,7 +71,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#021" class="md-skip">
+        <a href="#contributing-to-opensr-test" class="md-skip">
           Skip to content
         </a>
       
@@ -103,7 +103,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              0.2.1
+              Contributing to `opensr-test`
             
           </span>
         </div>
@@ -711,28 +711,121 @@
             <article class="md-content__inner md-typeset">
               
                 
-  <a href="https://github.com/ESAOpenSR/opensr-test/edit/master/docs/NEWS.md" title="Edit this page" class="md-content__button md-icon">
+  <a href="https://github.com/ESAOpenSR/opensr-test/edit/master/docs/CONTRIBUTING.md" title="Edit this page" class="md-content__button md-icon">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
   </a>
 
 
 
-<h1 id="021">0.2.1</h1>
+<h1 id="contributing-to-opensr-test">Contributing to <code>opensr-test</code></h1>
+<p>Contributions are welcome, and they are greatly appreciated!
+Every little bit helps, and credit will always be given.</p>
+<p>You can contribute in many ways:</p>
+<h1 id="types-of-contributions">Types of Contributions</h1>
+<h2 id="report-bugs">Report Bugs</h2>
+<p>Report bugs at https://github.com/csaybar/opensr-test/issues</p>
+<p>If you are reporting a bug, please include:</p>
 <ul>
-<li>torchvision dependency added to setup.py.</li>
+<li>Your operating system name and version.</li>
+<li>Any details about your local setup that might be helpful in troubleshooting.</li>
+<li>Detailed steps to reproduce the bug.</li>
 </ul>
-<h1 id="020">0.2.0</h1>
+<h2 id="fix-bugs">Fix Bugs</h2>
+<p>Look through the GitHub issues for bugs.
+Anything tagged with "bug" and "help wanted" is open to whoever wants to implement a fix for it.</p>
+<h2 id="implement-features">Implement Features</h2>
+<p>Look through the GitHub issues for features.
+Anything tagged with "enhancement" and "help wanted" is open to whoever wants to implement it.</p>
+<h2 id="write-documentation">Write Documentation</h2>
+<p>Cookiecutter PyPackage could always use more documentation, whether as part of the official docs, in docstrings, or even on the web in blog posts, articles, and such.</p>
+<h2 id="submit-feedback">Submit Feedback</h2>
+<p>The best way to send feedback is to file an issue at https://github.com/csaybar/opensr-test/issues.</p>
+<p>If you are proposing a new feature:</p>
 <ul>
-<li>Several bugs have been fixed.</li>
+<li>Explain in detail how it would work.</li>
+<li>Keep the scope as narrow as possible, to make it easier to implement.</li>
+<li>Remember that this is a volunteer-driven project, and that contributions
+  are welcome :)</li>
 </ul>
-<h1 id="012">0.1.2</h1>
-<ul>
-<li>Bug in visualization triplets and quads fixed.</li>
-</ul>
-<h1 id="010-initial-release">0.1.0 Initial release</h1>
-<ul>
-<li>First version of the package now available on pypi.</li>
-</ul>
+<h1 id="get-started">Get Started!</h1>
+<p>Ready to contribute? Here's how to set up <code>opensr-test</code> for local development.
+Please note this documentation assumes you already have <code>poetry</code> and <code>Git</code> installed and ready to go.</p>
+<ol>
+<li>
+<p>Fork the <code>opensr-test</code> repo on GitHub.</p>
+</li>
+<li>
+<p>Clone your fork locally:</p>
+</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="nb">cd</span><span class="w"> </span>&lt;directory_in_which_repo_should_be_created&gt;
+git<span class="w"> </span>clone<span class="w"> </span>git@github.com:YOUR_NAME/opensr-test.git
+</code></pre></div>
+<ol>
+<li>Now we need to install the environment. Navigate into the directory</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="nb">cd</span><span class="w"> </span>opensr-test
+</code></pre></div>
+<p>If you are using <code>pyenv</code>, select a version to use locally. (See installed versions with <code>pyenv versions</code>)</p>
+<div class="highlight"><pre><span></span><code>pyenv<span class="w"> </span><span class="nb">local</span><span class="w"> </span>&lt;x.y.z&gt;
+</code></pre></div>
+<p>Then, install and activate the environment with:</p>
+<div class="highlight"><pre><span></span><code>poetry<span class="w"> </span>install
+poetry<span class="w"> </span>shell
+</code></pre></div>
+<ol>
+<li>Install pre-commit to run linters/formatters at commit time:</li>
+</ol>
+<div class="highlight"><pre><span></span><code>poetry<span class="w"> </span>run<span class="w"> </span>pre-commit<span class="w"> </span>install
+</code></pre></div>
+<ol>
+<li>Create a branch for local development:</li>
+</ol>
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>checkout<span class="w"> </span>-b<span class="w"> </span>name-of-your-bugfix-or-feature
+</code></pre></div>
+<p>Now you can make your changes locally.</p>
+<ol>
+<li>
+<p>Don't forget to add test cases for your added functionality to the <code>tests</code> directory.</p>
+</li>
+<li>
+<p>When you're done making changes, check that your changes pass the formatting tests.</p>
+</li>
+</ol>
+<div class="highlight"><pre><span></span><code>make<span class="w"> </span>check
+</code></pre></div>
+<p>Now, validate that all unit tests are passing:</p>
+<div class="highlight"><pre><span></span><code>make<span class="w"> </span><span class="nb">test</span>
+</code></pre></div>
+<ol>
+<li>Before raising a pull request you should also run tox.
+   This will run the tests across different versions of Python:</li>
+</ol>
+<div class="highlight"><pre><span></span><code>tox
+</code></pre></div>
+<p>This requires you to have multiple versions of python installed.
+This step is also triggered in the CI/CD pipeline, so you could also choose to skip this step locally.</p>
+<ol>
+<li>Commit your changes and push your branch to GitHub:</li>
+</ol>
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>add<span class="w"> </span>.
+git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;Your detailed description of your changes.&quot;</span>
+git<span class="w"> </span>push<span class="w"> </span>origin<span class="w"> </span>name-of-your-bugfix-or-feature
+</code></pre></div>
+<ol>
+<li>Submit a pull request through the GitHub website.</li>
+</ol>
+<h1 id="pull-request-guidelines">Pull Request Guidelines</h1>
+<p>Before you submit a pull request, check that it meets these guidelines:</p>
+<ol>
+<li>
+<p>The pull request should include tests.</p>
+</li>
+<li>
+<p>If the pull request adds functionality, the docs should be updated.
+   Put your new functionality into a function with a docstring, and add the feature to the list in <code>README.md</code>.</p>
+</li>
+</ol>
 
               
             </article>
