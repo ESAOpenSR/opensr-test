@@ -764,25 +764,25 @@
 </code></pre></div>
 <p>This model returns:</p>
 <ul>
-<li><strong>reflectance</strong>: The spectral consistency between the SR and LR images. By default, it uses MAE distance.</li>
+<li><strong>reflectance</strong>: How SR affects the reflectance values of the LR image. By default, it uses the L1 norm. The lower the value, the better the reflectance consistency.</li>
 </ul>
 <ul>
-<li><strong>spectral</strong>: The spectral consistency between the SR and LR images. By default, it uses Spectral Angle Distance.</li>
+<li><strong>spectral</strong>: How SR affects the spectral signature of the LR image. By default, it uses the spectral angle distance (SAM). The lower the value, the better the spectral consistency. The angles are in degrees.</li>
 </ul>
 <ul>
-<li><strong>spatial</strong>: The spatial consistency between the SR and LR images. By default, it uses Enhanced Correlation Coefficient.</li>
+<li><strong>spatial</strong>: The spatial alignment between the SR and LR images. By default, it uses Phase Correlation Coefficient (PCC). Some SR models introduce spatial shift, which can be detected by this metric.</li>
 </ul>
 <ul>
-<li><strong>synthesis</strong>: The high-frequency content of the SR image, obtained by comparing the harmonized SR image with the HR image.</li>
+<li><strong>synthesis</strong>: The high-frequency details introduced by the SR model. By default, it uses the L1 norm. The lower the value, the better the synthesis quality.</li>
 </ul>
 <ul>
-<li><strong>ha_percent</strong>: The percentage of pixels in the SR image that are classified as hallucinations.</li>
+<li><strong>ha_percent</strong>: The percentage of pixels in the SR image that are classified as hallucinations. A hallucination is a detail in the SR image that <strong>is not present in the HR image.</strong></li>
 </ul>
 <ul>
-<li><strong>om_percent</strong>: The percentage of pixels in the SR image that are classified as omissions.</li>
+<li><strong>om_percent</strong>: The percentage of pixels in the SR image that are classified as omissions. An omission is a detail in the HR image that <strong>is not present in the SR image.</strong></li>
 </ul>
 <ul>
-<li><strong>im_percent</strong>: The percentage of pixels in the SR image that are classified as improvements.</li>
+<li><strong>im_percent</strong>: The percentage of pixels in the SR image that are classified as improvements. An improvement is a detail in the SR image that <strong>is present in the HR image and not in the LR image.</strong></li>
 </ul>
 <h2 id="benchmark"><strong>Benchmark</strong></h2>
 <p>Benchmark comparison of SR models. Downward arrows (↓) denote metrics in which lower values are preferable, and upward arrows (↑) indicate metrics in which higher values reflect better performance.</p>
@@ -799,7 +799,7 @@
 <h2 id="datasets"><strong>Datasets</strong></h2>
 <p>The <code>opensr-test</code> package provides five datasets for benchmarking SR models. These datasets are carefully crafted to minimize spatial and spectral misalignment. See our Hugging Face repository for more details about the datasets. <a href="https://huggingface.co/datasets/isp-uv-es/opensr-test"><strong>https://huggingface.co/datasets/isp-uv-es/opensr-test</strong></a></p>
 <h3 id="naip-x4-scale-factor"><strong>NAIP (X4 scale factor)</strong></h3>
-<p>The National Agriculture Imagery Program (NAIP) dataset is a high-resolution aerial imagery dataset that covers the continental United States. The dataset consists of 2.5m resolution NAIP images captured in the visible and near-infrared spectrum (RGBNIR) and all Sentinel-2 L1C and L2A bands. The dataset focus in <strong>crop fields, forests, and bare soil areas</strong>.</p>
+<p>The National Agriculture Imagery Program (NAIP) dataset is a high-resolution aerial imagery dataset that covers the continental United States. The dataset consists of 2.5m NAIP imagery captured in the visible and near-infrared spectrum (RGBNIR) and all Sentinel-2 L1C and L2A bands. The dataset focus in <strong>crop fields, forests, and bare soil areas</strong>.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">opensr_test</span>
 
 <span class="n">naip</span> <span class="o">=</span> <span class="n">opensr_test</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;naip&quot;</span><span class="p">)</span>
@@ -809,7 +809,7 @@
 </p>
 
 <h3 id="spot-x4-scale-factor"><strong>SPOT (X4 scale factor)</strong></h3>
-<p>The SPOT imagery were obtained from the worldstat dataset. The dataset consists of 2.5m resolution resampled SPOT images captured in the visible and near-infrared spectrum (RGBNIR) and all Sentinel-2 L1C and L2A bands. The dataset focus in <strong>urban areas, crop fields, and bare soil areas</strong>.</p>
+<p>The SPOT imagery were obtained from the worldstat dataset. The dataset consists of 2.5m SPOT imagery captured in the visible and near-infrared spectrum (RGBNIR) and all Sentinel-2 L1C and L2A bands. The dataset focus in <strong>urban areas, crop fields, and bare soil areas</strong>.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">opensr_test</span>
 
 <span class="n">spot</span> <span class="o">=</span> <span class="n">opensr_test</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;spot&quot;</span><span class="p">)</span>
@@ -819,7 +819,7 @@
 </p>
 
 <h3 id="vens-x2-scale-factor"><strong>Venµs (X2 scale factor)</strong></h3>
-<p>The Venµs images were obtained from the <a href="https://zenodo.org/records/6514159"><strong>Sen2Venµs dataset</strong></a>. The dataset consists of 5m resolution resampled Venµs images captured in the visible and near-infrared spectrum (RGBNIR) and all Sentinel-2 L1C and L2A bands. The dataset focus in <strong>crop fields, forests, urban areas, and bare soil areas</strong>.</p>
+<p>The Venµs images were obtained from the <a href="https://zenodo.org/records/6514159"><strong>Sen2Venµs dataset</strong></a>. The dataset consists of 5m Venµs imagery captured in the visible and near-infrared spectrum (RGBNIR) and all Sentinel-2 L1C and L2A bands. The dataset focus in <strong>crop fields, forests, urban areas, and bare soil areas</strong>.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">opensr_test</span>
 
 <span class="n">venus</span> <span class="o">=</span> <span class="n">opensr_test</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;venus&quot;</span><span class="p">)</span>
