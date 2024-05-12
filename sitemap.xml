@@ -46,11 +46,6 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://github.com/ESAOpenSR/opensr-test/docs/Metrics/consistency.html</loc>
-         <lastmod>2024-05-12</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
          <loc>https://github.com/ESAOpenSR/opensr-test/docs/Metrics/correctness.html</loc>
          <lastmod>2024-05-12</lastmod>
          <changefreq>daily</changefreq>
