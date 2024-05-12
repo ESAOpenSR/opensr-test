@@ -1,8 +1,10 @@
 # 
 
-## The correctness metrics
+## The correctness scores
 
-The correctness metrics evaluate the quality of high-frequency information introduced by the SR model. Three correctness metrics are implemented in `opensr-test`: improvement, omission, and hallucination. Each metric serves a specific purpose:
+It evaluates the quality of high-frequency information introduced by the SR model. Three correctness scores are implemented in `opensr-test`: improvement, omission, and hallucination. The correctness scores depend on the distance metric set by the user.
+
+Each score reveals different aspects of the SR model performance:
 
 **Improvement**: Low values represent a good match between the SR and HR images. The equation for calculating improvement is:
 
@@ -19,7 +21,7 @@ Where:
 - $d_{im}$ is the distance between the SR and HR images.
 - $d_{om}$ is the distance between the SR and LR images.
 
-**Omission**: Low values are related to the inability to represent the actual high-frequency information from the landscape and keep similar to the LR image. The equation for calculating improvement is:
+**Omission**: Low values are related to the inability to represent high-frequency information from the HR and keep similar to the LR image. The equation for calculating omission is:
 
 $H = d_{im} + d_{om} - 1$
 

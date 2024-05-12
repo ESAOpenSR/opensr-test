@@ -154,7 +154,7 @@ venus = opensr_test.load("venus")
 </p>
 
 
-### **Example**
+## **Examples**
 
 The following examples show how to use `opensr-test` to benchmark your SR model.
 
