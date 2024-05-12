@@ -17,8 +17,7 @@ from opensr_test import plot
 class Metrics:
     def __init__(
         self,
-        params: Optional[Config] = None,
-        device: Union[str, torch.device] = "cpu"
+        params: Optional[Config] = None
     ) -> None:
         """ A class to evaluate the performance of a super
         resolution algorithms considering the triplets: LR[input],
@@ -29,8 +28,6 @@ class Metrics:
                 setup the opensr-test experiment. Defaults to None.
                 If None, the default parameters are used. See 
                 config.py for more information.
-            device (Union[str, torch.device, None], optional): The
-                device to use. Defaults to "cpu".
         """
         
         # Set the parameters
@@ -455,7 +452,7 @@ class Metrics:
         lr: torch.Tensor,
         sr: torch.Tensor,
         hr: torch.Tensor,
-        gradient_threshold: Optional[float] = 0.1
+        gradient_threshold: Optional[float] = 0.01
     ) -> None:
         """ Obtain the performance metrics of the SR image.
 

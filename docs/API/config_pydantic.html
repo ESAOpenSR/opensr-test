@@ -237,22 +237,6 @@
   
   
     <li class="md-tabs__item">
-      <a href="../Dataset/main.html" class="md-tabs__link">
-        Dataset
-      </a>
-    </li>
-  
-
-      
-        
-  
-  
-
-
-  
-  
-  
-    <li class="md-tabs__item">
       <a href="../Metrics/consistency.html" class="md-tabs__link">
         Metrics
       </a>
@@ -501,8 +485,8 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#spectral-parameters" class="md-nav__link">
-    Spectral Parameters:
+  <a href="#global-parameters" class="md-nav__link">
+    Global Parameters:
   </a>
   
 </li>
@@ -515,15 +499,22 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#interpolation-parameters" class="md-nav__link">
-    Interpolation Parameters:
+  <a href="#spectral-and-reflectance-parameters" class="md-nav__link">
+    Spectral and reflectance Parameters:
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#global-parameters" class="md-nav__link">
-    Global Parameters:
+  <a href="#synthesis-parameters" class="md-nav__link">
+    Synthesis parameters
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#correctness-parameters" class="md-nav__link">
+    Correctness parameters
   </a>
   
 </li>
@@ -598,115 +589,15 @@
         
           
         
-          
-        
       
       
         <label class="md-nav__link" for="__nav_3">
-          Dataset
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" aria-label="Dataset" data-md-level="1">
-        <label class="md-nav__title" for="__nav_3">
-          <span class="md-nav__icon md-icon"></span>
-          Dataset
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../Dataset/main.html" class="md-nav__link">
-        Home
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../Dataset/NAIP.html" class="md-nav__link">
-        NAIP
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../Dataset/SPOT.html" class="md-nav__link">
-        SPOT
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../Dataset/Ven%C2%B5s.html" class="md-nav__link">
-        Venµs
-      </a>
-    </li>
-  
-
-            
-          
-        </ul>
-      </nav>
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
-  
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-      
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" data-md-state="indeterminate" type="checkbox" id="__nav_4" checked>
-      
-      
-      
-        
-          
-        
-          
-        
-          
-        
-      
-      
-        <label class="md-nav__link" for="__nav_4">
           Metrics
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="Metrics" data-md-level="1">
-        <label class="md-nav__title" for="__nav_4">
+        <label class="md-nav__title" for="__nav_3">
           <span class="md-nav__icon md-icon"></span>
           Metrics
         </label>
@@ -795,8 +686,8 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#spectral-parameters" class="md-nav__link">
-    Spectral Parameters:
+  <a href="#global-parameters" class="md-nav__link">
+    Global Parameters:
   </a>
   
 </li>
@@ -809,15 +700,22 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#interpolation-parameters" class="md-nav__link">
-    Interpolation Parameters:
+  <a href="#spectral-and-reflectance-parameters" class="md-nav__link">
+    Spectral and reflectance Parameters:
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#global-parameters" class="md-nav__link">
-    Global Parameters:
+  <a href="#synthesis-parameters" class="md-nav__link">
+    Synthesis parameters
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#correctness-parameters" class="md-nav__link">
+    Correctness parameters
   </a>
   
 </li>
@@ -846,47 +744,57 @@
 
 
 <h1 id="_1"></h1>
-<h2 id="config">Config</h2>
-<p>The Config class is a <a href="https://docs.pydantic.dev/latest/api/base_model/#pydantic.BaseModel"><code>pydantic.BaseModel</code></a> for defining model parameters, ensuring type safety and ease of configuration. The parameters are categorized into four groups, each catering to different aspects of the super-resolution (SR) evaluation process:</p>
-<h3 id="spectral-parameters">Spectral Parameters:</h3>
-<p>These parameters are specific to spectral analysis and alignment:</p>
-<ul>
-<li><strong>reflectance_method:</strong> The default method for reflectance estimation is "l1", with "kl", "l1", "l2", and "pbias" as alternatives.</li>
-</ul>
-<ul>
-<li><strong>spectral_method:</strong> For spectral alignment, "sad" is the default method.</li>
-</ul>
-<h3 id="spatial-parameters">Spatial Parameters:</h3>
-<p>These parameters fine-tune the spatial feature extraction and matching process:</p>
-<ul>
-<li><strong>spatial_features:</strong> The default feature extractor is "superpoint", with "disk" also available.</li>
-<li><strong>spatial_matcher:</strong> Sets the matcher for feature points, defaulting to "lightglue".</li>
-<li><strong>spatial_max_num_keypoints:</strong> Caps the number of keypoints for feature matching at 1000 by default.</li>
-<li><strong>spatial_threshold_distance:</strong> The maximum permissible distance between keypoints for a match, set to 5 pixels.</li>
-<li><strong>spatial_threshold_npoints:</strong> The minimum required keypoints for alignment, set to 5. Spatial alignment is skipped if keypoints fall below this threshold.</li>
-</ul>
-<h3 id="interpolation-parameters">Interpolation Parameters:</h3>
-<ul>
-<li><strong>upsample_method</strong>: The default method for downscaling is "classic", with "naip", "spot", and "venus" as alternatives.</li>
-</ul>
-<ul>
-<li><strong>downsample_method</strong>: The default method for upscaling is "bicubic" with antialias.</li>
-</ul>
-<h3 id="global-parameters">Global Parameters:</h3>
+<h2 id="config"><strong>Config</strong></h2>
+<p>The Config class is a <a href="https://docs.pydantic.dev/latest/api/base_model/#pydantic.BaseModel"><code>pydantic.BaseModel</code></a> that defines model parameters. The parameters are categorized into four groups, each catering to different aspects of the super-resolution (SR) evaluation process:</p>
+<h3 id="global-parameters"><strong>Global Parameters:</strong></h3>
 <p>These parameters control the overall behavior of the SR assessment:</p>
 <ul>
-<li><strong>device:</strong> Selects the computation device for inference, defaulting to <code>cpu</code>. <code>cuda</code> is also supported for GPU acceleration.</li>
+<li><strong>device:</strong> Selects the computation device for inference, defaulting to <code>cpu</code>. <code>cuda</code> is also supported.</li>
 </ul>
 <ul>
-<li><strong>distance_method:</strong> Specifies the distance metric between SR, LR, and HR images. Defaults to "l1", with support for other metrics like kl, l2, pbias, rmse, ipsnr, sad, clip and lpips. See section <a href="docs/Metrics/consistency.md">Metrics</a> for more details.</li>
+<li><strong>agg_method:</strong> Determines the granularity for distance metric application — pixel-wise by default ("pixel"), with "patch" and "image" level aggregations options. If "patch" is selected, the metric is computed on patches of size <code>patch_size</code> and then interpolated to the original image size using bicubic interpolation with anti-aliasing. If "image" is selected, the metric is computed on the entire image and output as a single value. If "pixel" is selected, the metric is computed on each pixel and output as a tensor of the same size as the input image.</li>
 </ul>
 <ul>
-<li><strong>agg_method:</strong> Determines the granularity for distance metric application — pixel-wise by default ("pixel"), with "patch" and "image" level aggregations options.</li>
 <li><strong>patch_size:</strong> Relevant when <code>agg_method</code> is "patch", this defines the patch size for distance metric computation.</li>
+</ul>
+<ul>
 <li><strong>border_mask:</strong> Excludes image borders in metric calculations, ignoring the outer 16 pixels by default.</li>
-<li><strong>rgb_bands:</strong> Necessary for certain metrics like LPIPS and plot generation, assuming a default order of Red-Green-Blue ([0, 1, 2]).</li>
-<li><strong>harm_apply_spectral:</strong> Applies histogram matching before distance metric calculation, enabled by default.</li>
-<li><strong>harm_apply_spatial:</strong> Activates spatial alignment before distance metric calculation, enabled by default.</li>
+</ul>
+<ul>
+<li><strong>rgb_bands:</strong> Necessary for certain metrics like LPIPS, CLIP and plot generation, assuming a default order of Red-Green-Blue ([0, 1, 2]).</li>
+</ul>
+<ul>
+<li><strong>harm_apply_spectral:</strong> Applies histogram matching before correctness metrics. This is enabled by default.</li>
+</ul>
+<ul>
+<li><strong>harm_apply_spatial:</strong> Activates spatial alignment before correctness metrics. This is enabled by default.</li>
+</ul>
+<h3 id="spatial-parameters"><strong>Spatial Parameters:</strong></h3>
+<p>These parameters set the spatial alignment pre-processing:</p>
+<ul>
+<li><strong>spatial_method:</strong> The default method for spatial alignment. By default, pcc (Phase Correlation Coefficient) is used. However, other methods like "ecc" (Enhanced Correlation Coefficient) and "lgm" (SuperPoint + LightGlue) are also available. ecc is more robust to noise and usually more precise than pcc, but it is slower. lgm is slower than ecc and pcc, but it is more robust to large translations.</li>
+</ul>
+<ul>
+<li><strong>spatial_threshold_distance</strong>: The maximum permissible translation distance for spatial alignment, set to 5 pixels by default. If the translation distance is greater than this threshold, the spatial alignment is skipped.</li>
+</ul>
+<ul>
+<li><strong>spatial_max_num_keypoints:</strong> Only relevant when the spatial method is "lgm". This parameter caps the number of keypoints for feature matching at 500 by default.</li>
+</ul>
+<h3 id="spectral-and-reflectance-parameters"><strong>Spectral and reflectance Parameters:</strong></h3>
+<p>These parameters are specific to spectral analysis and alignment:</p>
+<ul>
+<li><strong>reflectance_distance:</strong> The default method for reflectance distance estimation. Reflectance distance measure how the SR image affects the reflectance of the original image. By default, "l1" is used. See section <a href="docs/Metrics/consistency.md">Metrics</a> for more details and other options.</li>
+</ul>
+<ul>
+<li><strong>spectral_distance:</strong> The default method for spectral distance calculation.  The spectral distance measure how the SR image affects the spectral signature of the original image. By default, "sam" is used. See section <a href="docs/Metrics/consistency.md">Metrics</a> for more details and other options.</li>
+</ul>
+<h3 id="synthesis-parameters"><strong>Synthesis parameters</strong></h3>
+<ul>
+<li><strong>synthesis_distance:</strong> Specifies the distance metric between SR and LR after harmonization. By default, "l1" is used. See section <a href="docs/Metrics/consistency.md">Metrics</a> for more details and other options.</li>
+</ul>
+<h3 id="correctness-parameters"><strong>Correctness parameters</strong></h3>
+<ul>
+<li><strong>correctness_distance:</strong> Specifies the distance metric between harmonized SR, HR and LR. By default, "l1" is used. See section <a href="docs/Metrics/consistency.md">Metrics</a> for more details and other options.</li>
 </ul>
 <p>Below is an illustrative example of how to instantiate <code>opensr-test</code> with user-defined parameters:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">torch</span>
@@ -899,10 +807,10 @@
 
 <span class="c1"># Initialize the Metrics object with custom parameters.</span>
 <span class="n">config</span> <span class="o">=</span> <span class="n">opensr_test</span><span class="o">.</span><span class="n">Config</span><span class="p">(</span>
-    <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span>
-    <span class="n">spatial_features</span><span class="o">=</span><span class="s2">&quot;disk&quot;</span><span class="p">,</span>
-    <span class="n">spatial_max_num_keypoints</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span>
-    <span class="n">harm_apply_spectral</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">,</span>
+    <span class="n">spatial_features</span><span class="o">=</span><span class="s2">&quot;ecc&quot;</span><span class="p">,</span>
+    <span class="n">harm_apply_spatial</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">harm_apply_spectral</span><span class="o">=</span><span class="kc">False</span>
 <span class="p">)</span>
 <span class="n">metrics</span> <span class="o">=</span> <span class="n">opensr_test</span><span class="o">.</span><span class="n">Metrics</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
 

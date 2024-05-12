@@ -46,26 +46,6 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://github.com/ESAOpenSR/opensr-test/docs/Dataset/NAIP.html</loc>
-         <lastmod>2024-05-12</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://github.com/ESAOpenSR/opensr-test/docs/Dataset/SPOT.html</loc>
-         <lastmod>2024-05-12</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://github.com/ESAOpenSR/opensr-test/docs/Dataset/Ven%C2%B5s.html</loc>
-         <lastmod>2024-05-12</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://github.com/ESAOpenSR/opensr-test/docs/Dataset/main.html</loc>
-         <lastmod>2024-05-12</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
          <loc>https://github.com/ESAOpenSR/opensr-test/docs/Metrics/consistency.html</loc>
          <lastmod>2024-05-12</lastmod>
          <changefreq>daily</changefreq>
