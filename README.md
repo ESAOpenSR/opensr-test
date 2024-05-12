@@ -67,19 +67,19 @@ metrics.compute(lr=lr, sr=sr, hr=hr)
 
 This model returns:
 
-- **reflectance**: The spectral consistency between the SR and LR images. By default, it uses MAE distance.
+- **reflectance**: How SR affects the reflectance values of the LR image. By default, it uses the L1 norm. The lower the value, the better the reflectance consistency.
 
-- **spectral**: The spectral consistency between the SR and LR images. By default, it uses Spectral Angle Distance.
+- **spectral**: How SR affects the spectral signature of the LR image. By default, it uses the spectral angle distance (SAM). The lower the value, the better the spectral consistency. The angles are in degrees.
 
-- **spatial**: The spatial consistency between the SR and LR images. By default, it uses Enhanced Correlation Coefficient.
+- **spatial**: The spatial alignment between the SR and LR images. By default, it uses Phase Correlation Coefficient (PCC). Some SR models introduce spatial shift, which can be detected by this metric.
 
-- **synthesis**: The high-frequency content of the SR image, obtained by comparing the harmonized SR image with the HR image.
+- **synthesis**: The high-frequency details introduced by the SR model. By default, it uses the L1 norm. The lower the value, the better the synthesis quality.
 
-- **ha_percent**: The percentage of pixels in the SR image that are classified as hallucinations.
+- **ha_percent**: The percentage of pixels in the SR image that are classified as hallucinations. A hallucination is a detail in the SR image that **is not present in the HR image.**
 
-- **om_percent**: The percentage of pixels in the SR image that are classified as omissions.
+- **om_percent**: The percentage of pixels in the SR image that are classified as omissions. An omission is a detail in the HR image that **is not present in the SR image.**
 
-- **im_percent**: The percentage of pixels in the SR image that are classified as improvements.
+- **im_percent**: The percentage of pixels in the SR image that are classified as improvements. An improvement is a detail in the SR image that **is present in the HR image and not in the LR image.**
 
 ## **Benchmark**
 
@@ -112,7 +112,7 @@ The `opensr-test` package provides five datasets for benchmarking SR models. The
 
 ### **NAIP (X4 scale factor)**
 
-The National Agriculture Imagery Program (NAIP) dataset is a high-resolution aerial imagery dataset that covers the continental United States. The dataset consists of 2.5m resolution NAIP images captured in the visible and near-infrared spectrum (RGBNIR) and all Sentinel-2 L1C and L2A bands. The dataset focus in **crop fields, forests, and bare soil areas**.
+The National Agriculture Imagery Program (NAIP) dataset is a high-resolution aerial imagery dataset that covers the continental United States. The dataset consists of 2.5m NAIP imagery captured in the visible and near-infrared spectrum (RGBNIR) and all Sentinel-2 L1C and L2A bands. The dataset focus in **crop fields, forests, and bare soil areas**.
 
 ```python
 import opensr_test
@@ -126,7 +126,7 @@ naip = opensr_test.load("naip")
 
 ### **SPOT (X4 scale factor)**
 
-The SPOT imagery were obtained from the worldstat dataset. The dataset consists of 2.5m resolution resampled SPOT images captured in the visible and near-infrared spectrum (RGBNIR) and all Sentinel-2 L1C and L2A bands. The dataset focus in **urban areas, crop fields, and bare soil areas**.
+The SPOT imagery were obtained from the worldstat dataset. The dataset consists of 2.5m SPOT imagery captured in the visible and near-infrared spectrum (RGBNIR) and all Sentinel-2 L1C and L2A bands. The dataset focus in **urban areas, crop fields, and bare soil areas**.
 
 ```python
 import opensr_test
@@ -141,7 +141,7 @@ spot = opensr_test.load("spot")
 
 ### **Venµs (X2 scale factor)**
 
-The Venµs images were obtained from the [**Sen2Venµs dataset**](https://zenodo.org/records/6514159). The dataset consists of 5m resolution resampled Venµs images captured in the visible and near-infrared spectrum (RGBNIR) and all Sentinel-2 L1C and L2A bands. The dataset focus in **crop fields, forests, urban areas, and bare soil areas**.
+The Venµs images were obtained from the [**Sen2Venµs dataset**](https://zenodo.org/records/6514159). The dataset consists of 5m Venµs imagery captured in the visible and near-infrared spectrum (RGBNIR) and all Sentinel-2 L1C and L2A bands. The dataset focus in **crop fields, forests, urban areas, and bare soil areas**.
 
 ```python
 import opensr_test
