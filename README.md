@@ -65,13 +65,13 @@ metrics.compute(lr=lr, sr=sr, hr=hr)
 
 This model returns:
 
-- **reflectance**: The spectral consistency between the SR and HR images. By default, it uses MAE distance.
+- **reflectance**: The spectral consistency between the SR and LR images. By default, it uses MAE distance.
 
-- **spectral**: The spectral consistency between the SR and HR images. By default, it uses Spectral Angle Distance.
+- **spectral**: The spectral consistency between the SR and LR images. By default, it uses Spectral Angle Distance.
 
-- **spatial**: The spatial consistency between the SR and HR images. By default, it uses Enhanced Correlation Coefficient.
+- **spatial**: The spatial consistency between the SR and LR images. By default, it uses Enhanced Correlation Coefficient.
 
-- **synthesis**: The high-frequency content of the SR image.
+- **synthesis**: The high-frequency content of the SR image, obtained by comparing the harmonized SR image with the HR image.
 
 - **ha_percent**: The percentage of pixels in the SR image that are classified as hallucinations.
 
@@ -83,121 +83,6 @@ This model returns:
 
 Benchmark comparison of SR models. Downward arrows (↓) denote metrics in which lower values are preferable, and upward arrows (↑) indicate metrics in which higher values reflect better performance.
 
-<table border="1" style="width:75%; text-align:center;">    
-    <thead>
-        <tr>
-            <th colspan="2"></th>
-            <th colspan="3">Consistency</th>
-            <th>Synthesis</th>
-            <th colspan="3">Correctness</th>
-        </tr>
-        <tr>
-            <th colspan="2"></th>
-            <th>reflectance ↓</th>
-            <th>spectral ↓</th>
-            <th>spatial ↓</th>
-            <th>high-frequency ↑</th>
-            <th>ha ↓</th>
-            <th>om ↓</th>
-            <th>im ↑</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td rowspan="3"><b>NAIP</b></td>
-            <td><b>SuperImage</b></td>
-            <td><b>0.008</b></td>
-            <td><b>7.286</b></td>
-            <td><b>0.131</b></td>
-            <td>0.003</td>
-            <td><b>0.117</b></td>
-            <td><b>0.784</b></td>
-            <td><b>0.098</b></td>
-        </tr>
-        <tr>
-            <td><b>SR4RS</b></td>
-            <td>0.016</td>
-            <td><b>3.471</b></td>
-            <td>1.156</td>
-            <td>0.010</td>
-            <td>0.869</td>
-            <td>0.077</td>
-            <td>0.054</td>
-        </tr>
-        <tr>
-            <td><b>diffusers</b></td>
-            <td>0.463</td>
-            <td>12.437</td>
-            <td>2.88</td>
-            <td><b>0.013</b></td>
-            <td>0.905</td>
-            <td>0.055</td>
-            <td>0.040</td>
-        </tr>
-        <tr>
-            <td rowspan="3"><b>SPOT</b></td>
-            <td><b>SuperImage</b></td>
-            <td><b>0.009</b></td>
-            <td>3.512</td>
-            <td><b>0.062</b></td>
-            <td>0.006</td>
-            <td><b>0.160</b></td>
-            <td><b>0.794</b></td>
-            <td><b>0.046</b></td>
-        </tr>
-        <tr>
-            <td><b>SR4RS</b></td>
-            <td>0.039</td>
-            <td><b>3.232</b></td>
-            <td>1.151</td>
-            <td><b>0.023</b></td>
-            <td>0.834</td>
-            <td>0.115</td>
-            <td>0.051</td>
-        </tr>
-        <tr>
-            <td><b>diffusers</b></td>
-            <td>0.417</td>
-            <td>11.730</td>
-            <td>0.817</td>
-            <td>0.014</td>
-            <td>0.686</td>
-            <td>0.251</td>
-            <td>0.063</td>
-        </tr>
-        <tr>
-            <td rowspan="3"><b>VENµS</b></td>
-            <td><b>SuperImage</b></td>
-            <td><b>0.009</b></td>
-            <td>8.687</td>
-            <td><b>0.099</b></td>
-            <td>0.003</td>
-            <td><b>0.403</b></td>
-            <td><b>0.380</b></td>
-            <td><b>0.217</b></td>
-        </tr>
-        <tr>
-            <td><b>SR4RS</b></td>
-            <td>0.014</td>
-            <td><b>3.394</b></td>
-            <td>1.122</td>
-            <td><b>0.012</b></td>
-            <td>0.971</td>
-            <td>0.017</td>
-            <td>0.012</td>
-        </tr>
-        <tr>
-            <td><b>diffusers</b></td>
-            <td>0.467</td>
-            <td>13.303</td>
-            <td>0.806</td>
-            <td>0.009</td>
-            <td>0.933</td>
-            <td>0.043</td>
-            <td>0.024</td>
-        </tr>
-    </tbody>
-</table>
 
 ## Installation
 
@@ -219,7 +104,48 @@ Install the latest dev version from GitHub by running:
 pip install git+https://github.com/ESAOpenSR/opensr-test
 ```
 
-## Examples
+## Datasets
+
+The `opensr-test` package provides five datasets for benchmarking SR models. These datasets are carefully crafted to minimize spatial and spectral misalignment. See our Hugging Face repository for more details about the datasets. [**https://huggingface.co/datasets/isp-uv-es/opensr-test**](https://huggingface.co/datasets/isp-uv-es/opensr-test)
+
+## **NAIP (X4 scale factor)**
+
+The National Agriculture Imagery Program (NAIP) dataset is a high-resolution aerial imagery dataset that covers the continental United States. The dataset consists of 2.5m resolution NAIP images captured in the visible and near-infrared spectrum (RGBNIR) and all Sentinel-2 L1C and L2A bands. The dataset focus in **crop fields, forests, and bare soil areas**.
+
+```python
+import opensr_test
+
+naip = opensr_test.load("naip")
+```
+
+![alt text](docs/images/NAIP.gif)
+
+## **SPOT (X4 scale factor)**
+
+The SPOT imagery were obtained from the worldstat dataset. The dataset consists of 2.5m resolution resampled SPOT images captured in the visible and near-infrared spectrum (RGBNIR) and all Sentinel-2 L1C and L2A bands. The dataset focus in **urban areas, crop fields, and bare soil areas**.
+
+```python
+import opensr_test
+
+spot = opensr_test.load("spot")
+```
+
+![alt text](docs/images/SPOT.gif)
+
+## **Venµs (X2 scale factor)**
+
+The Venµs images were obtained from the [**Sen2Venµs dataset**](https://zenodo.org/records/6514159). The dataset consists of 5m resolution resampled Venµs images captured in the visible and near-infrared spectrum (RGBNIR) and all Sentinel-2 L1C and L2A bands. The dataset focus in **crop fields, forests, urban areas, and bare soil areas**.
+
+```python
+import opensr_test
+
+venus = opensr_test.load("venus")
+```
+
+![alt text](docs/images/VENUS.gif)
+
+
+## Example
 
 The following examples show how to use `opensr-test` to benchmark your SR model.
 
@@ -229,7 +155,7 @@ The following examples show how to use `opensr-test` to benchmark your SR model.
 
 - Use `opensr-test` with a diffuser model (LDMSuperResolutionPipeline) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1banDovG43c2OBh9MODPN4OXgaSCXu1Dc#scrollTo=zz4Aw7_52ulT)
 
-- Use `opensr-test` with a diffuser model (LDMSuperResolutionPipeline) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1banDovG43c2OBh9MODPN4OXgaSCXu1Dc#scrollTo=zz4Aw7_52ulT)
+- Use `opensr-test` with a diffuser model (opensr-model) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1banDovG43c2OBh9MODPN4OXgaSCXu1Dc#scrollTo=zz4Aw7_52ulT)
 
 
 - Use `opensr-test` with Pytorch (EvoLand) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1banDovG43c2OBh9MODPN4OXgaSCXu1Dc#scrollTo=zz4Aw7_52ulT)
