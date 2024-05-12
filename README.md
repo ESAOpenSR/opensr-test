@@ -1,9 +1,11 @@
 <p align="center">
-  <a href="https://github.com/ESAOpenSR/opensr-test"><img src="docs/images/logo.png" alt="header" width="55%"></a>
+  <a href="https://github.com/ESAOpenSR/opensr-test"><img src="docs/images/logo.png" alt="header" width="50%"></a>
 </p>
 
 <p align="center">
-    <em>A comprehensive benchmark for real-world Sentinel-2 imagery super-resolution</em>
+    <em>
+    A comprehensive benchmark for real-world Sentinel-2 imagery super-resolution
+    </em>
 </p>
 
 <p align="center">
@@ -108,7 +110,7 @@ pip install git+https://github.com/ESAOpenSR/opensr-test
 
 The `opensr-test` package provides five datasets for benchmarking SR models. These datasets are carefully crafted to minimize spatial and spectral misalignment. See our Hugging Face repository for more details about the datasets. [**https://huggingface.co/datasets/isp-uv-es/opensr-test**](https://huggingface.co/datasets/isp-uv-es/opensr-test)
 
-## **NAIP (X4 scale factor)**
+### **NAIP (X4 scale factor)**
 
 The National Agriculture Imagery Program (NAIP) dataset is a high-resolution aerial imagery dataset that covers the continental United States. The dataset consists of 2.5m resolution NAIP images captured in the visible and near-infrared spectrum (RGBNIR) and all Sentinel-2 L1C and L2A bands. The dataset focus in **crop fields, forests, and bare soil areas**.
 
@@ -118,7 +120,9 @@ import opensr_test
 naip = opensr_test.load("naip")
 ```
 
-![alt text](docs/images/NAIP.gif)
+<p align="center">
+  <a href="https://github.com/ESAOpenSR/opensr-test"><img src="docs/images/NAIP.gif" alt="header" width="80%"></a>
+</p>
 
 ## **SPOT (X4 scale factor)**
 
@@ -130,7 +134,10 @@ import opensr_test
 spot = opensr_test.load("spot")
 ```
 
-![alt text](docs/images/SPOT.gif)
+<p align="center">
+  <a href="https://github.com/ESAOpenSR/opensr-test"><img src="docs/images/SPOT.gif" alt="header" width="80%"></a>
+</p>
+
 
 ## **Venµs (X2 scale factor)**
 
@@ -142,7 +149,9 @@ import opensr_test
 venus = opensr_test.load("venus")
 ```
 
-![alt text](docs/images/VENUS.gif)
+<p align="center">
+  <a href="https://github.com/ESAOpenSR/opensr-test"><img src="docs/images/VENUS.gif" alt="header" width="80%"></a>
+</p>
 
 
 ## Example
