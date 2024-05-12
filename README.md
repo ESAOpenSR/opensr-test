@@ -31,13 +31,13 @@
 
 **PyPI**: [https://pypi.org/project/opensr-test/](https://pypi.org/project/opensr-test/)
 
-**Paper**: https://www.techrxiv.org/users/760184/articles/735467-a-comprehensive-benchmark-for-optical-remote-sensing-image-super-resolution
+**Paper**: [https://www.techrxiv.org/users/760184/articles/735467-a-comprehensive-benchmark-for-optical-remote-sensing-image-super-resolution](https://www.techrxiv.org/users/760184/articles/735467-a-comprehensive-benchmark-for-optical-remote-sensing-image-super-resolution)
 
 ---
 
 #
 
-## Overview
+## **Overview**
 
 Super-Resolution (SR) aims to improve satellite imagery ground sampling distance. However, two problems are common in the literature. First, most models are **tested on synthetic data**, raising doubts about their real-world applicability and performance. Second, traditional evaluation metrics such as PSNR, LPIPS, and SSIM are not designed to assess SR performance. These metrics fall short, especially in conditions involving changes in luminance or spatial misalignments - scenarios frequently encountered in real world.
 
@@ -47,7 +47,7 @@ To address these challenges, 'opensr-test' provides a fair approach for SR bench
   <img src="docs/images/diagram.png" alt="header">
 </p>
 
-## How to use
+## **How to use**
 
 The example below shows how to use `opensr-test` to benchmark your SR model.
 
@@ -81,12 +81,12 @@ This model returns:
 
 - **im_percent**: The percentage of pixels in the SR image that are classified as improvements.
 
-## Benchmark
+## **Benchmark**
 
 Benchmark comparison of SR models. Downward arrows (↓) denote metrics in which lower values are preferable, and upward arrows (↑) indicate metrics in which higher values reflect better performance.
 
 
-## Installation
+## **Installation**
 
 Install the latest version from PyPI:
 
@@ -106,7 +106,7 @@ Install the latest dev version from GitHub by running:
 pip install git+https://github.com/ESAOpenSR/opensr-test
 ```
 
-## Datasets
+## **Datasets**
 
 The `opensr-test` package provides five datasets for benchmarking SR models. These datasets are carefully crafted to minimize spatial and spectral misalignment. See our Hugging Face repository for more details about the datasets. [**https://huggingface.co/datasets/isp-uv-es/opensr-test**](https://huggingface.co/datasets/isp-uv-es/opensr-test)
 
@@ -124,7 +124,7 @@ naip = opensr_test.load("naip")
   <a href="https://github.com/ESAOpenSR/opensr-test"><img src="docs/images/NAIP.gif" alt="header" width="80%"></a>
 </p>
 
-## **SPOT (X4 scale factor)**
+### **SPOT (X4 scale factor)**
 
 The SPOT imagery were obtained from the worldstat dataset. The dataset consists of 2.5m resolution resampled SPOT images captured in the visible and near-infrared spectrum (RGBNIR) and all Sentinel-2 L1C and L2A bands. The dataset focus in **urban areas, crop fields, and bare soil areas**.
 
@@ -139,7 +139,7 @@ spot = opensr_test.load("spot")
 </p>
 
 
-## **Venµs (X2 scale factor)**
+### **Venµs (X2 scale factor)**
 
 The Venµs images were obtained from the [**Sen2Venµs dataset**](https://zenodo.org/records/6514159). The dataset consists of 5m resolution resampled Venµs images captured in the visible and near-infrared spectrum (RGBNIR) and all Sentinel-2 L1C and L2A bands. The dataset focus in **crop fields, forests, urban areas, and bare soil areas**.
 
@@ -154,7 +154,7 @@ venus = opensr_test.load("venus")
 </p>
 
 
-## Example
+### **Example**
 
 The following examples show how to use `opensr-test` to benchmark your SR model.
 
@@ -174,7 +174,7 @@ The following examples show how to use `opensr-test` to benchmark your SR model.
 
 - Use `opensr-test` with Pytorch (synthetic dataset) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1banDovG43c2OBh9MODPN4OXgaSCXu1Dc#scrollTo=zz4Aw7_52ulT)
 
-## Visualizations
+## **Visualizations**
 
 The `opensr-test` package provides a set of visualizations to help you understand the performance of your SR model.
 
@@ -239,7 +239,7 @@ metrics.plot_tc()
   <img src="docs/images/example05.png">
 </p>
 
-## Deeper understanding
+## **Deeper understanding**
 
 Explore the [API](https://esaopensr.github.io/opensr-test/docs/API/config_pydantic.html) section for more details about personalizing your benchmark experiments.
 
@@ -247,7 +247,7 @@ Explore the [API](https://esaopensr.github.io/opensr-test/docs/API/config_pydant
     <a href="/docs/api.md"><img src="docs/images/image02.png" alt="opensr-test" width="30%"></a>
 </p>
 
-## Citation
+## **Citation**
 
 If you use `opensr-test` in your research, please cite our paper:
 
@@ -261,6 +261,6 @@ If you use `opensr-test` in your research, please cite our paper:
 }
 ```
 
-## Acknowledgements
+## **Acknowledgements**
 
 This work was make with the support of the European Space Agency (ESA) under the project “Explainable AI: application to trustworthy super-resolution (OpenSR)”. Cesar Aybar acknowledges support by the National Council of Science, Technology, and Technological Innovation (CONCYTEC, Peru) through the “PROYECTOS DE INVESTIGACIÓN BÁSICA – 2023-01” program with contract number PE501083135-2023-PROCIENCIA. Luis Gómez-Chova acknowledges support from the Spanish Ministry of Science and Innovation (project PID2019-109026RB-I00 funded by MCIN/AEI/10.13039/501100011033).

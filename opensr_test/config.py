@@ -10,23 +10,24 @@ DistanceMetrics = Literal[
 
 class Config(BaseModel):
     # General parameters
+    device: Union[str, Any] = "cpu"
     agg_method: str = "pixel"  # pixel, image, patch
     patch_size: Optional[int] = None
     border_mask: Optional[int] = 16    
     rgb_bands: Optional[List[int]] = [0, 1, 2]
+    harm_apply_spectral: bool = True
+    harm_apply_spatial: bool = True
+
 
     # Spatial parameters
-    spatial_method: Literal["ecc", "pcc", "lightglue"] = "ecc"
-    spatial_threshold_distance: int = 3
-    spatial_max_num_keypoints: int = 100
+    spatial_method: Literal["ecc", "pcc", "lgm"] = "pcc"
+    spatial_threshold_distance: int = 5
+    spatial_max_num_keypoints: int = 500
 
     # Spectral parameters
     reflectance_distance: DistanceMetrics = "l1"
     spectral_distance: DistanceMetrics = "sad"
 
-    # Create SRharm
-    harm_apply_spectral: bool = True
-    harm_apply_spatial: bool = True
 
     # Synthesis parameters
     synthesis_distance: DistanceMetrics = "l1"
@@ -38,8 +39,11 @@ class Config(BaseModel):
     ha_score: Optional[float] = 0.40
 
     # General parameters - validator ----------------------------
+    @field_validator("device")
+    def check_device(cls, value) -> str:
+        return torch.device(value)
+
     @field_validator("agg_method")
-    @classmethod
     def check_agg_method(cls, value) -> str:
         valid_methods = ["pixel", "image", "patch"]
         if value not in valid_methods:
@@ -47,21 +51,18 @@ class Config(BaseModel):
         return value
 
     @field_validator("rgb_bands")
-    @classmethod
     def check_rgb_bands(cls, value) -> List[int]:
         if len(value) != 3:
             raise ValueError("rgb_bands must have 3 elements.")
         return value
 
     @field_validator("spatial_max_num_keypoints")
-    @classmethod
     def check_spatial_max_num_keypoints(cls, value) -> int:
         if value < 0:
             raise ValueError("spatial_max_num_keypoints must be positive.")
         return value
 
     @field_validator("spatial_threshold_distance")
-    @classmethod
     def check_spatial_threshold_distance(cls, value) -> int:
         if value < 0:
             raise ValueError("spatial_threshold_distance must be positive.")
@@ -70,14 +71,12 @@ class Config(BaseModel):
 
     # Create SRharm - validator ------------------------------------------
     @field_validator("harm_apply_spectral")
-    @classmethod
     def check_harm_apply_spectral(cls, value) -> bool:
         if not isinstance(value, bool):
             raise ValueError("harm_apply_spectral must be boolean.")
         return value
 
     @field_validator("harm_apply_spatial")
-    @classmethod
     def check_harm_apply_spatial(cls, value) -> bool:
         if not isinstance(value, bool):
             raise ValueError("harm_apply_spatial must be boolean.")

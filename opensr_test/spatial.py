@@ -44,8 +44,8 @@ class SpatialMetricAlign(pydantic.BaseModel):
                 reference=y,
                 max_translations=self.max_translations
             )
-        elif self.method == "lightglue":
-            align_model = satalign.LightGlue(
+        elif self.method == "lgm":
+            align_model = satalign.LGM(
                 datacube=x,
                 reference=y,
                 max_translations=self.max_translations,
