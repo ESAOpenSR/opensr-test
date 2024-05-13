@@ -42,7 +42,6 @@ class Metrics:
 
         # Global parameters
         self.method = self.params.agg_method
-        self.device = device
         self.run_setup = True
 
         # Set the spatial grid regulator
@@ -54,7 +53,7 @@ class Metrics:
             method=self.params.spatial_method,
             max_translations=self.params.spatial_threshold_distance,
             max_num_keypoints=self.params.spatial_max_num_keypoints,
-            device=self.device
+            device=self.params.device
         )
 
         # Initial triplets: LR[input], SR[enhanced], HR[ground truth]
@@ -141,9 +140,9 @@ class Metrics:
         self.scale_factor = int(scale_factor)
 
         # Move all the images to the same device
-        self.lr = apply_mask(lr.to(self.device), self.params.border_mask // self.scale_factor)
-        self.sr = apply_mask(sr.to(self.device), self.params.border_mask)
-        self.hr = apply_mask(hr.to(self.device), self.params.border_mask)
+        self.lr = apply_mask(lr.to(self.params.device), self.params.border_mask // self.scale_factor)
+        self.sr = apply_mask(sr.to(self.params.device), self.params.border_mask)
+        self.hr = apply_mask(hr.to(self.params.device), self.params.border_mask)
 
         # Obtain the LR in the HR space
         if self.scale_factor > 1:
@@ -390,7 +389,7 @@ class Metrics:
             scale=self.scale_factor,
             patch_size=self.params.patch_size,
             rgb_bands=self.params.rgb_bands,
-            device=self.device
+            device=self.params.device
         )
 
         # Apply the mask to remove the pixels with gradients 

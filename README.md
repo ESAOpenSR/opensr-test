@@ -154,6 +154,35 @@ venus = opensr_test.load("venus")
 </p>
 
 
+
+### **SPAIN CROPS (x4 scale factor)**
+
+The SPAIN CROPS dataset consists of 2.5m aerial imagery captured in the visible and near-infrared spectrum (RGBNIR) by the Spanish National Geographic Institute (IGN). The dataset includes all Sentinel-2 L1C and L2A bands. The dataset focus in **crop fields and forests**.
+
+```python
+import opensr_test
+
+spain_crops = opensr_test.load("spain_crops")
+```
+
+<p align="center">
+  <a href="https://github.com/ESAOpenSR/opensr-test"><img src="docs/images/SPAIN_CROPS.gif" alt="header" width="80%"></a>
+</p>
+
+### **SPAIN URBAN (x4 scale factor)**
+
+The SPAIN URBAN dataset consists of 2.5m aerial imagery captured in the visible and near-infrared spectrum (RGBNIR) by the Spanish National Geographic Institute (IGN). The dataset includes all Sentinel-2 L1C and L2A bands. The dataset focus in **urban areas**.
+
+```python
+
+spain_urban = opensr_test.load("spain_urban")
+```
+
+<p align="center">
+  <a href="https://github.com/ESAOpenSR/opensr-test"><img src="docs/images/SPAIN_URBAN.gif" alt="header" width="80%"></a>
+</p>
+
+
 ## **Examples**
 
 The following examples show how to use `opensr-test` to benchmark your SR model.

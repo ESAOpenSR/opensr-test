@@ -25,12 +25,14 @@ Unreleased changes here.
 
 - Logo changed.
 - The `lightglue` submodule has been replaced with a new package called `satalign`.
-- Two new models have been added: `EvoLand` and `SWIN2-MOSE`.
+- Two new models have been added to the benchmark: `EvoLand` and `SWIN2-MOSE`.
 - A new example has been added on how to run `opensr-test` on synthetic data.
 - The documentation has been updated.
-- The harmonization module has been added.
-- The `opensr-test` package is now available on PyPI.
-- We have added two new datasets: `spain_cities` and `satellogic`.
+- The harmonization module has been updated to include the `satalign` package.
+- We have added two new datasets: `spain_crops` and `spain_urban`.
+- A nex example about how to run all the metrics simultaneously has been added.
+
+
 
 
 ## [0.2.0] - 2023-12-20
