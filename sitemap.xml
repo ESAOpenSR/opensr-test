@@ -2,57 +2,57 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://github.com/ESAOpenSR/opensr-test/index.html</loc>
-         <lastmod>2024-05-12</lastmod>
+         <lastmod>2024-05-13</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://github.com/ESAOpenSR/opensr-test/CONTRIBUTING.html</loc>
-         <lastmod>2024-05-12</lastmod>
+         <lastmod>2024-05-13</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://github.com/ESAOpenSR/opensr-test/docs/CHANGELOG.html</loc>
-         <lastmod>2024-05-12</lastmod>
+         <lastmod>2024-05-13</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://github.com/ESAOpenSR/opensr-test/docs/CONTRIBUTING.html</loc>
-         <lastmod>2024-05-12</lastmod>
+         <lastmod>2024-05-13</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://github.com/ESAOpenSR/opensr-test/docs/Code_of_Conduct.html</loc>
-         <lastmod>2024-05-12</lastmod>
+         <lastmod>2024-05-13</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://github.com/ESAOpenSR/opensr-test/docs/LICENSE.html</loc>
-         <lastmod>2024-05-12</lastmod>
+         <lastmod>2024-05-13</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://github.com/ESAOpenSR/opensr-test/docs/API/compute_method.html</loc>
-         <lastmod>2024-05-12</lastmod>
+         <lastmod>2024-05-13</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://github.com/ESAOpenSR/opensr-test/docs/API/config_pydantic.html</loc>
-         <lastmod>2024-05-12</lastmod>
+         <lastmod>2024-05-13</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://github.com/ESAOpenSR/opensr-test/docs/API/results_attributes.html</loc>
-         <lastmod>2024-05-12</lastmod>
+         <lastmod>2024-05-13</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://github.com/ESAOpenSR/opensr-test/docs/Metrics/correctness.html</loc>
-         <lastmod>2024-05-12</lastmod>
+         <lastmod>2024-05-13</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://github.com/ESAOpenSR/opensr-test/docs/Metrics/distance.html</loc>
-         <lastmod>2024-05-12</lastmod>
+         <lastmod>2024-05-13</lastmod>
          <changefreq>daily</changefreq>
     </url>
 </urlset>
