@@ -31,6 +31,7 @@ Unreleased changes here.
 - The harmonization module has been updated to include the `satalign` package.
 - We have added two new datasets: `spain_crops` and `spain_urban`.
 - A nex example about how to run all the metrics simultaneously has been added.
+- We add a new argument to the `compute
 
 
 

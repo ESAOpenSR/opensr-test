@@ -2,6 +2,7 @@ from typing import List, Optional
 from skimage.exposure import match_histograms
 
 import torch
+import pathlib
 import random
 import numpy as np
 
@@ -112,7 +113,18 @@ def check_openclip():
         raise ImportError(
             "The open_clip library is not installed. Please install it with: pip install open_clip"
         ) from e    
-    
+
+def check_huggingface_hub():
+    """ Check if the huggingface library is installed. """    
+
+    try:
+        import huggingface_hub
+    except ImportError:
+        raise ImportError(
+            "The huggingface_hub library is not installed. Please "
+            "install it with: pip install huggingface_hub"
+        )
+
 
 def seed_everything(seed: int):
     """ Seed everything for reproducibility.
@@ -126,3 +138,14 @@ def seed_everything(seed: int):
     torch.cuda.manual_seed(seed)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = True
+
+
+def get_data_path() -> str:
+    """ Get the path of the opensr-test dataset
+
+    Returns:
+        str: _description_
+    """
+    cred_path = pathlib.Path.home() / ".config/opensr_test/"
+    cred_path.mkdir(parents=True, exist_ok=True)
+    return cred_path

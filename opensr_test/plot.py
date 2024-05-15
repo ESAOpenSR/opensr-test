@@ -234,34 +234,40 @@ def display_results(
     axs[0, 4].set_title("HR", fontsize=20, fontweight="bold")
 
     # Display the local reflectance map error
-    axs[1, 0].imshow(e1)
+    axs[1, 0].imshow(e1.cpu().clone())
     axs[1, 0].set_title(
         "%s \n %s: %s" % (r"$\bf{Reflectance\ Consistency \downarrow}$", e1_title, e1_subtitle)
     )
 
     # Display the spectral map error
-    axs[1, 1].imshow(e2)
+    axs[1, 1].imshow(e2.cpu().clone())
     axs[1, 1].set_title(
         "%s \n %s: %s" % (r"$\bf{Spectral\ Consistency \downarrow}$", e2_title, e2_subtitle)
     )
 
-    # Display the Spatial consistency
-    axs[1, 2].imshow(e3)
+    # Display the distance to the omission space
+    e3p = e3[~torch.isnan(e3)]
+    p5, p95 = np.percentile(e3p.flatten().cpu().clone().numpy(), [2, 98])
+    axs[1, 2].imshow(e3, vmin=p5, vmax=p95)
     axs[1, 2].set_title(
         "%s \n %s: %s"
         % (r"$\bf{Distance\ to\ Omission\ Space \uparrow}$", e3_title, e3_subtitle)
     )
 
-    # Display the Hallucination error
-    axs[1, 3].imshow(e5)
+    # Display the distance to the hallucination space
+    e5p = e5[~torch.isnan(e5)]
+    p5, p95 = np.percentile(e5p.flatten().cpu().clone().numpy(), [2, 98])
+    axs[1, 3].imshow(e5, vmin=p5, vmax=p95)
     axs[1, 3].set_title(
         "%s \n %s: %s"
         % (r"$\bf{Distance\ to\ Hallucination\ Space \uparrow}$", e5_title, e5_subtitle)
     )
 
 
-    # Display the distance to the ommission space
-    axs[1, 4].imshow(e4)
+    # Display the distance to the improvement space
+    e4p = e4[~torch.isnan(e4)]
+    p5, p95 = np.percentile(e4p.flatten().cpu().clone().numpy(), [2, 98])
+    axs[1, 4].imshow(e4, vmin=p5, vmax=p95)
     axs[1, 4].set_title(
         "%s \n %s: %s"
         % (r"$\bf{Distance\ to\ Improvement\ Space \downarrow}$", e4_title, e4_subtitle)
@@ -292,13 +298,13 @@ def display_tc_score(
     norm = colors.BoundaryNorm(bounds, categorical_map.N)
 
     # Define triplets
-    p1 = d_im_ref.ravel()
+    p1 = d_im_ref.ravel().cpu().clone()
     p1 = p1[~torch.isnan(p1)]
 
-    p2 = d_om_ref.ravel()
+    p2 = d_om_ref.ravel().cpu().clone()
     p2 = p2[~torch.isnan(p2)]
     
-    p3 = tc_score.ravel()
+    p3 = tc_score.ravel().cpu().clone()
     p3 = p3[~torch.isnan(p3)]
     
     if log_scale:
