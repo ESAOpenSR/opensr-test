@@ -17,7 +17,8 @@ from opensr_test import plot
 class Metrics:
     def __init__(
         self,
-        params: Optional[Config] = None
+        params: Optional[Config] = None,
+        **kwargs
     ) -> None:
         """ A class to evaluate the performance of a super
         resolution algorithms considering the triplets: LR[input],
@@ -32,9 +33,15 @@ class Metrics:
         
         # Set the parameters
         if params is None:
-            self.params = Config()
+            if kwargs:
+                self.params = Config(**kwargs)
+            else:
+                self.params = Config()
         else:
             self.params = params
+
+        
+            
         
         # If patch size is 1, then the aggregation method must be pixel
         if self.params.patch_size == 1:
@@ -249,7 +256,13 @@ class Metrics:
             self.lr_RGB, self.sr_to_lr_RGB
         )[1]
 
-    def _create_mask(self, gradient_threshold: float = 0.05) -> None:
+    def _create_mask(
+        self,
+        d_ref: torch.Tensor,
+        d_im: torch.Tensor,
+        d_om: torch.Tensor,
+        gradient_threshold: Union[float, str] = "auto"
+    ) -> None:
         """ The goal of this mask is to avoid the pixels with
         gradients below a certain threshold. This mask is always
         created using l1 distance at pixel level.
@@ -264,13 +277,15 @@ class Metrics:
             torch.Tensor: The mask to avoid the pixels with gradients
                 below a certain threshold.
         """
-        d_ref, d_im, d_om = get_distances(
-            lr_to_hr=self.lr_to_hr,
-            sr_harm=self.sr_harm,
-            hr=self.hr,
-            distance_method="l1",
-            agg_method="pixel"
-        )
+
+        # Get the optimal threshold based on quantiles
+        if isinstance(gradient_threshold, str):
+            if gradient_threshold == "auto":
+                gradient_threshold = "auto75"
+            t1 = int(gradient_threshold.replace("auto", ""))/100
+            gradient_threshold = d_ref.flatten().kthvalue(
+                int(t1 * d_ref.numel())
+            ).values.item()
 
         # create mask
         mask1 = (d_ref > gradient_threshold)*1
@@ -393,9 +408,12 @@ class Metrics:
         )
 
         # Apply the mask to remove the pixels with gradients 
-        # below the threshold
-        #mask = (torch.rand_like(self.hr) > 0.5)*1.; mask[mask==0] = torch.nan
-        mask = self._create_mask(gradient_threshold)
+        mask = self._create_mask(
+            d_ref=d_ref,
+            d_im=d_im,
+            d_om=d_om,
+            gradient_threshold=gradient_threshold
+        )
         self.potential_pixels = torch.nansum(mask)
         self.d_ref = d_ref * mask
         self.d_im =  d_im * mask
@@ -404,7 +422,6 @@ class Metrics:
         # Compute relative distance
         self.d_im_ref = self.d_im / self.d_ref
         self.d_om_ref = self.d_om / self.d_ref
-        
 
         # Estimate Hallucination
         self.hallucination = tc_hallucination(
@@ -451,7 +468,7 @@ class Metrics:
         lr: torch.Tensor,
         sr: torch.Tensor,
         hr: torch.Tensor,
-        gradient_threshold: Optional[float] = 0.01
+        gradient_threshold: Optional[Union[float, str]] = "auto"
     ) -> None:
         """ Obtain the performance metrics of the SR image.
 
@@ -460,7 +477,9 @@ class Metrics:
             sr (torch.Tensor): The SR image as a tensor (C, H, W).
             hr (torch.Tensor): The HR image as a tensor (C, H, W).
             gradient_threshold (float, optional): Ignore the pixels
-                with gradients below this threshold. Defaults to 0.1.
+                with gradients below this threshold. Defaults "auto",
+                which means that the threshold is automatically
+                generated based on LR-HR distance.
         """
         # Make the experiment reproducible
         seed_everything(42)
@@ -515,9 +534,9 @@ class Metrics:
     
     def plot_triplets(self, stretch: Optional[str] = "linear"):
         return plot.triplets(
-            lr_img=self.lr_RGB,
-            sr_img=self.sr_harm_RGB,
-            hr_img=self.hr_RGB,
+            lr_img=self.lr_RGB.to("cpu"),
+            sr_img=self.sr_harm_RGB.to("cpu"),
+            hr_img=self.hr_RGB.to("cpu"),
             stretch=stretch,
         )
     
@@ -557,16 +576,16 @@ class Metrics:
 
         # Plot high frequency
         fig, axs = plot.display_results(
-            lr=self.lr_RGB,
-            lrdown=self.lr_to_hr_RGB,
-            sr=self.sr_RGB,
-            srharm=self.sr_harm_RGB,
-            hr=self.hr_RGB,
-            e1=e1,
-            e2=e2,
-            e3=e3,
-            e4=e4,
-            e5=e5,
+            lr=self.lr_RGB.to("cpu"),
+            lrdown=self.lr_to_hr_RGB.to("cpu"),
+            sr=self.sr_RGB.to("cpu"),
+            srharm=self.sr_harm_RGB.to("cpu"),
+            hr=self.hr_RGB.to("cpu"),
+            e1=e1.to("cpu"),
+            e2=e2.to("cpu"),
+            e3=e3.to("cpu"),
+            e4=e4.to("cpu"),
+            e5=e5.to("cpu"),
             e1_title=e1_title,
             e2_title=e2_title,
             e3_title=e3_title,
@@ -587,10 +606,10 @@ class Metrics:
         stretch: Optional[str] = "linear"
     ):
         return plot.display_tc_score(
-            sr_rgb=self.sr_harm_RGB,
-            d_im_ref=self.d_im_ref,
-            d_om_ref=self.d_om_ref,
-            tc_score=self.classification,
+            sr_rgb=self.sr_harm_RGB.to("cpu"),
+            d_im_ref=self.d_im_ref.to("cpu"),
+            d_om_ref=self.d_om_ref.to("cpu"),
+            tc_score=self.classification.to("cpu"),
             log_scale=log_scale,
             stretch=stretch
         )

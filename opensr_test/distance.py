@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import List, Optional, Union
 
 import torch
-from opensr_test.utils import check_lpips, check_openclip
+from opensr_test.utils import check_lpips, check_openclip, check_huggingface_hub
 
 
 class DistanceMetric(ABC):
@@ -151,17 +151,17 @@ class KL(DistanceMetric):
         self.large_number = 1e2
         self.epsilon = 1e-8
 
+    def _compute_image(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
         pbias_d = torch.abs(x / (y + self.epsilon))
         pbias_d[pbias_d > self.large_number] = self.large_number
         pbias_d[pbias_d < 1 / self.large_number] = 1 / self.large_number
-
-        self.pbias_d = pbias_d
-
-    def _compute_image(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
-        return torch.mean(x) * torch.log(torch.mean(self.pbias_d))
+        return torch.mean(x) * torch.log(torch.mean(pbias_d))
 
     def _compute_pixel(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
-        return torch.mean(x, axis=0) * torch.log(torch.mean(self.pbias_d, axis=0))
+        pbias_d = torch.abs(x / (y + self.epsilon))
+        pbias_d[pbias_d > self.large_number] = self.large_number
+        pbias_d[pbias_d < 1 / self.large_number] = 1 / self.large_number
+        return torch.mean(x, axis=0) * torch.log(torch.mean(pbias_d, axis=0))
 
 
 class L1(DistanceMetric):
@@ -216,18 +216,18 @@ class PBIAS(DistanceMetric):
         
         self.large_number = 1e2
         self.epsilon = 1e-8
-
+        
+    def _compute_image(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
         ratio = torch.abs((x - y) / (y + self.epsilon))
         ratio[ratio > self.large_number] = self.large_number
         ratio[ratio < 1 / self.large_number] = 1 / self.large_number
-        self.ratio = ratio
-
-
-    def _compute_image(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
-        return torch.nanmean(self.ratio)
+        return torch.nanmean(ratio)
 
     def _compute_pixel(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
-        return torch.nanmean(self.ratio, axis=0)
+        ratio = torch.abs((x - y) / (y + self.epsilon))
+        ratio[ratio > self.large_number] = self.large_number
+        ratio[ratio < 1 / self.large_number] = 1 / self.large_number
+        return torch.nanmean(ratio, axis=0)
 
 
 class IPSNR(DistanceMetric):
@@ -295,6 +295,10 @@ class LPIPS(DistanceMetric):
         patch_size: int = 32,
         device: Union[str, torch.device] = "cpu",
     ):
+        if method == "patch":
+            if patch_size < 32:
+                raise ValueError("The patch size must be at least 32.")
+
         # if extra_requires (setup.py) is not fulfilled, raise error
         check_lpips()
         import lpips
@@ -334,15 +338,19 @@ class CLIP(DistanceMetric):
         patch_size: int = 32,
         device: Union[str, torch.device] = "cpu",
     ):
+        if method == "patch":
+            if patch_size < 32:
+                raise ValueError("The patch size must be at least 32.")
+                    
         # if extra_requires (setup.py) is not fulfilled, raise error
         check_openclip()
+        check_huggingface_hub()
 
         import open_clip
         from huggingface_hub import hf_hub_download
 
         # Set the model
         # Copy the pretrained model in the current directory
-        # TODO: Implement a better way to download the model
         checkpoint_path = hf_hub_download(
             "chendelong/RemoteCLIP",
             f"RemoteCLIP-RN50.pt",
@@ -357,12 +365,11 @@ class CLIP(DistanceMetric):
         for param in model.parameters():
             param.requires_grad = False
 
-
         # Scale the tensors values to [0, 1]
         # we found better results with this normalization
         x_norm = (x - x.min()) / (x.max() - x.min())
         y_norm = (y - y.min()) / (y.max() - y.min())
-
+        self.model = model
         super().__init__(
             x=x_norm, y=y_norm, method=method, patch_size=patch_size
         )
@@ -376,7 +383,7 @@ class CLIP(DistanceMetric):
                 size=224,
                 mode="bilinear",
                 antialias=True
-            ).squeeze()
+            )
         
         if y.shape != (3, 224, 224):
             y = torch.nn.functional.interpolate(
@@ -384,7 +391,7 @@ class CLIP(DistanceMetric):
                 size=224,
                 mode="bilinear",
                 antialias=True
-            ).squeeze()
+            )
         
         # Run the CLIP model
         with torch.no_grad():
@@ -419,7 +426,10 @@ class MTF(DistanceMetric):
         self.scale = scale
 
     def _compute_image(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
-        
+        # do computation in cpu to avoid problems with fft
+        x = x.cpu()
+        y = y.cpu()
+
         # Compute mask
         freq = torch.fft.fftfreq(x.shape[-1])
         freq = torch.fft.fftshift(freq)

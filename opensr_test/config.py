@@ -17,6 +17,7 @@ class Config(BaseModel):
     rgb_bands: Optional[List[int]] = [0, 1, 2]
     harm_apply_spectral: bool = True
     harm_apply_spatial: bool = True
+    clip_model_path: Optional[str] = None
 
 
     # Spatial parameters

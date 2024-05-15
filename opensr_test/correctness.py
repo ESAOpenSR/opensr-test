@@ -33,7 +33,6 @@ def get_distances(
         Tuple[torch.Tensor, torch.Tensor, torch.Tensor]: The distances
             between the LR and HR, SR and HR, and SR and LR images.
     """
-
     reference = get_distance(
         x=lr_to_hr,
         y=hr,
@@ -89,7 +88,7 @@ def tc_improvement(
         of the improvement space
     """
     H = d_im + d_om -1  
-    return d_im + d_om*(1 - np.exp(-H*plambda))
+    return d_im + d_om*(1 - torch.exp(-H*plambda))
 
 def tc_omission(
     d_im: torch.Tensor,
@@ -111,7 +110,7 @@ def tc_omission(
         of the improvement space
     """
     H = d_im + d_om -1  
-    return d_om + d_im*(1 - np.exp(-H*plambda))
+    return d_om + d_im*(1 - torch.exp(-H*plambda))
 
 
 def tc_hallucination(
@@ -133,5 +132,6 @@ def tc_hallucination(
         torch.Tensor: The relative distance to the center 
         of the improvement space
     """
-    Q = np.exp(-d_im * d_om * plambda)
+    Q = torch.exp(-d_im * d_om * plambda)
     return Q
+
