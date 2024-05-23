@@ -11,7 +11,7 @@ from opensr_test.utils import (
 from opensr_test.spatial import SpatialMetricAlign
 from opensr_test.config import Config, Results, Consistency, Synthesis, Correctness, Auxiliar
 from opensr_test.distance import get_distance
-from opensr_test.correctness import get_distances, tc_improvement, tc_omission, tc_hallucination
+from opensr_test.correctness import get_distances, tc_improvement, tc_omission, tc_hallucination, get_correctness_stats
 from opensr_test import plot
 
 class Metrics:
@@ -407,14 +407,13 @@ class Metrics:
             device=self.params.device
         )
 
-        # Apply the mask to remove the pixels with gradients 
+        # Apply the mask to remove the pixels with low gradients
         mask = self._create_mask(
             d_ref=d_ref,
             d_im=d_im,
             d_om=d_om,
             gradient_threshold=gradient_threshold
         )
-        self.potential_pixels = torch.nansum(mask)
         self.d_ref = d_ref * mask
         self.d_im =  d_im * mask
         self.d_om =  d_om * mask
@@ -444,19 +443,21 @@ class Metrics:
             plambda=self.params.im_score
         )
 
-        # Classify the pixels based on the distance
-        tensor_stack = torch.stack([
-            self.improvement,
-            self.omission,
-            self.hallucination
-        ], dim=0)
-        self.classification = torch.argmin(tensor_stack, dim=0) * mask
-
-        # Get the percentage of omission, improvement, and hallucination
-        self.im_percentage = torch.sum(self.classification==0) / self.potential_pixels
-        self.om_percentage = torch.sum(self.classification==1) / self.potential_pixels
-        self.ha_percentage = torch.sum(self.classification==2) / self.potential_pixels        
-            
+        #  Get stats
+        total_stats = get_correctness_stats(
+            im_tensor=self.improvement,
+            om_tensor=self.omission,
+            ha_tensor=self.hallucination,
+            mask=mask,
+            correctness_norm=self.params.correctness_norm
+        )
+        
+        self.classification = total_stats["classification"]
+        self.improvement, self.omission, self.hallucination = total_stats["tensor_stack"]
+        self.im_percentage = total_stats["stats"][0]
+        self.om_percentage = total_stats["stats"][1]
+        self.ha_percentage = total_stats["stats"][2]
+        
         return {
             "ha_percent": self.ha_percentage.item(),
             "om_percent": self.om_percentage.item(),

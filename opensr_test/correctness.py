@@ -72,7 +72,7 @@ def get_distances(
 def tc_improvement(
     d_im: torch.Tensor,
     d_om: torch.Tensor,
-    plambda: float = 0.85
+    plambda: float = 0.8
 ) -> torch.Tensor:
     """ Obtain the relative distance to the center of the improvement space
 
@@ -81,19 +81,20 @@ def tc_improvement(
         d_om (torch.Tensor): The distance to the omission space
         plambda (float): The parameter calibrated according to the
             human perception of the quality of the super-resolved
-            image. Defaults to 0.85.
+            image. Defaults to 0.8.
 
     Returns:
         torch.Tensor: The relative distance to the center 
         of the improvement space
     """
+    print("improvement:", plambda)
     H = d_im + d_om -1  
     return d_im + d_om*(1 - torch.exp(-H*plambda))
 
 def tc_omission(
     d_im: torch.Tensor,
     d_om: torch.Tensor,
-    plambda: float = 0.85
+    plambda: float = 0.8
 ) -> torch.Tensor:
     """ Obtain the relative distance to the center
     of the omission space
@@ -103,12 +104,13 @@ def tc_omission(
         d_om (torch.Tensor): The distance to the omission space
         plambda (float): The parameter calibrated according to the
             human perception of the quality of the super-resolved
-            image. Defaults to 0.85.
+            image. Defaults to 0.8.
 
     Returns:
         torch.Tensor: The relative distance to the center 
         of the improvement space
     """
+    print("omission:", plambda)
     H = d_im + d_om -1  
     return d_om + d_im*(1 - torch.exp(-H*plambda))
 
@@ -116,7 +118,7 @@ def tc_omission(
 def tc_hallucination(
     d_im: torch.Tensor,
     d_om: torch.Tensor,
-    plambda: float = 0.85
+    plambda: float = 0.4
 ) -> torch.Tensor:
     """ Obtain the relative distance to the center
     of the hallucination space
@@ -132,6 +134,64 @@ def tc_hallucination(
         torch.Tensor: The relative distance to the center 
         of the improvement space
     """
+    print("hallucination:", plambda)
     Q = torch.exp(-d_im * d_om * plambda)
     return Q
 
+
+def get_correctness_stats(
+    im_tensor: torch.Tensor,
+    om_tensor: torch.Tensor,
+    ha_tensor: torch.Tensor,
+    mask: torch.Tensor,
+    correctness_norm: str = "softmin",
+) -> dict:
+    """ Compute the correctness statistics.
+
+    Args:
+        im_tensor (torch.Tensor): The tensor for the im class.
+        om_tensor (torch.Tensor): The tensor for the om class.
+        ha_tensor (torch.Tensor): The tensor for the ha class.
+        mask (torch.Tensor): The mask to apply.
+        correctness_norm (str, optional): The normalization method.
+            Defaults to "softmax".
+
+    Returns:
+        dict: A dictionary with the tensor stack, the classification
+            and the statistics.
+    """
+    
+    # Stack the tensors
+    tensor_stack = torch.stack([
+        im_tensor,
+        om_tensor,
+        ha_tensor
+    ], dim=0)
+    
+    # Classify the tensor
+    classification = torch.argmin(tensor_stack, dim=0) * mask
+    potential_pixels = torch.nansum(mask)
+
+    if correctness_norm == "softmin":
+        tensor_stack = softmin(tensor_stack)
+        im_metric = tensor_stack[0].nanmean()
+        om_metric = tensor_stack[1].nanmean()
+        ha_metric = tensor_stack[2].nanmean()
+
+    if correctness_norm == "percent":
+        im_metric = torch.sum(classification==0) / potential_pixels
+        om_metric = torch.sum(classification==1) / potential_pixels
+        ha_metric = torch.sum(classification==2) / potential_pixels
+        
+    return {
+        "tensor_stack": tensor_stack,
+        "classification": classification,
+        "stats": [im_metric, om_metric, ha_metric]   
+    }
+
+
+def softmin(x):
+    e_neg_x = torch.exp(-x)
+    sum_e_neg_x = torch.sum(e_neg_x, axis=0)
+    softmin_x = e_neg_x / sum_e_neg_x    
+    return softmin_x
