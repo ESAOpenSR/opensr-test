@@ -645,7 +645,7 @@ class Metrics:
             im=im.cpu().numpy()
         )
     
-    def plot_stats(self):
+    def plot_histogram(self):
         return plot.display_stats(self)
 
     def __call__(self) -> Any:

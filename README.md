@@ -201,12 +201,10 @@ The following examples show how to use `opensr-test` to benchmark your SR model.
 |-------|-----------|------|
 | SR4RS | TensorFlow | [![Model on HF](https://huggingface.co/datasets/huggingface/badges/resolve/main/model-on-hf-md.svg)](https://huggingface.co/isp-uv-es/superIX/blob/main/sr4rs/run.py) |
 | SuperImage | PyTorch | [![Model on HF](https://huggingface.co/datasets/huggingface/badges/resolve/main/model-on-hf-md.svg)](https://huggingface.co/isp-uv-es/superIX/blob/main/superimage/run.py) |
-| LDMSuperResolutionPipeline | Diffuser | [![Model on HF](https://huggingface.co/datasets/huggingface/badges/resolve/main/model-on-hf-md.svg)](https://huggingface.co/isp-uv-es/superIX/blob/main/ldm/run.py) |
-| opensr-model | Pytorch | [![Model on HF](https://huggingface.co/datasets/huggingface/badges/resolve/main/model-on-hf-md.svg)](https://huggingface.co/isp-uv-es/superIX/blob/main/opensr/run.py) |
+| LDMSuperResolutionPipeline | Diffuser | [![Model on HF](https://huggingface.co/datasets/huggingface/badges/resolve/main/model-on-hf-md.svg)](https://huggingface.co/isp-uv-es/superIX/blob/main/ldm_baseline/run.py) |
+| opensr-model | Pytorch | [![Model on HF](https://huggingface.co/datasets/huggingface/badges/resolve/main/model-on-hf-md.svg)](https://huggingface.co/isp-uv-es/superIX/blob/main/opensrmodel/run.py) |
 | EvoLand | Pytorch | [![Model on HF](https://huggingface.co/datasets/huggingface/badges/resolve/main/model-on-hf-md.svg)](https://huggingface.co/isp-uv-es/superIX/blob/main/evoland/run.py) |
-| SWIN2-MOSE | Pytorch | [![Model on HF](https://huggingface.co/datasets/huggingface/badges/resolve/main/model-on-hf-md.svg)](https://huggingface.co/isp-uv-es/superIX/blob/main/swin2mose/run.py) |
-| Synthetic | Pytorch | [![Model on HF](https://huggingface.co/datasets/huggingface/badges/resolve/main/model-on-hf-md.svg)](https://huggingface.co/isp-uv-es/superIX/blob/main/synthetic/run.py) |
-
+| SWIN2-MOSE | Pytorch | [![Model on HF](https://huggingface.co/datasets/huggingface/badges/resolve/main/model-on-hf-md.svg)](https://huggingface.co/isp-uv-es/superIX/blob/main/swin2_mose/run.py) |
 
 ## **Visualizations**
 
@@ -277,7 +275,7 @@ metrics.plot_tc()
 </p>
 
 
-Display the histogram of the metrics:
+Display the histogram of the distances:
 
 ```python
 metrics.plot_stats()

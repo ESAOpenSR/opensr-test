@@ -10,8 +10,7 @@ The `compute` method calculate the suite of metrics in the `opensr-test` framewo
 
 - **hr** (*torch.Tensor*): The High Resolution (HR) image tensor (ground truth). The shape of the tensor should be `(channel, height, width)`.
 
-- **gradient_threshold** (default=0.01): Ignore the pixels with gradients below this threshold. This parameter is used to filter out pixels with insignificant differences between the SR and HR images. The default value is set to 0.01, which is optimized for balanced assessment. However, this parameter can be adjusted to each image. Based on the expert judgment of three remote sensing specialists, the optimal value of this parameter has been determined for each image within the opensr-test datasets, allowing for a more tailored and precise evaluation for each specific dataset.
-
+- **gradient_threshold** (default=0.01): Ignore the pixels with distances below this threshold. This parameter is used to filter out pixels with insignificant differences between the SR, HR, and LR images. The default value is set to "auto75". The "auto75" value is calculated as 75-percentile of the gradient values between the LR and HR images. As the distance, between the LR and HR images, is always constant, we ensure that the threshold is the same independently of the SR model. If you want to use a different threshold, you can set it manually by passing a value between 0 and 100, i.e., `gradient_threshold="auto90"`. Manual thresholding is also supported, i.e., `gradient_threshold=0.01`.
 
 Below is an example that demonstrates the usage of the `compute` method with the aforementioned parameters:
 
@@ -31,7 +30,6 @@ metrics = opensr_test.Metrics()
 
 # Compute the metrics with specified parameters
 metrics.compute( 
-    lr=lr, sr=sr, hr=hr,
-    stability_threshold=0.03
+    lr=lr, sr=sr, hr=hr, gradient_threshold="auto90"
 )
 ```

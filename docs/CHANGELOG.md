@@ -25,13 +25,12 @@ Unreleased changes here.
 
 - Logo changed.
 - The `lightglue` submodule has been replaced with a new package called `satalign`.
-- Two new models have been added to the benchmark: `EvoLand` and `SWIN2-MOSE`.
 - A new example has been added on how to run `opensr-test` on synthetic data.
 - The documentation has been updated.
 - The harmonization module has been updated to include the `satalign` package.
 - We have added two new datasets: `spain_crops` and `spain_urban`.
-- A nex example about how to run all the metrics simultaneously has been added.
-- We add a new argument to the `compute
+- We add a new plot function: `plot_ternary`.
+- We add a new plot function: `plot_histogram`.
 
 
 
