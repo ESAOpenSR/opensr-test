@@ -67,23 +67,23 @@ metrics.compute(lr=lr, sr=sr, hr=hr)
 
 This model returns:
 
-- **reflectance**: How SR affects the reflectance norm of the LR image. By default, it uses the L1 norm. The lower the value, the better the reflectance consistency.
+- **reflectance**: How SR affects the reflectance norm of the LR image. By default, it uses the L1 distance. The lower the value, the better the reflectance consistency.
 
-- **spectral**: How SR affects the spectral signature of the LR image. By default, it uses the spectral angle distance (SAM). The lower the value, the better the spectral consistency. The angles are in degrees.
+- **spectral**: How SR affects the spectral signature of the LR image. By default, it uses the spectral angle distance (SAD). The lower the value, the better the spectral consistency. The angles are in degrees.
 
 - **spatial**: The spatial alignment between the SR and LR images. By default, it uses Phase Correlation Coefficient (PCC). Some SR models introduce spatial shift, which can be detected by this metric.
 
-- **synthesis**: The high-frequency details introduced by the SR model. By default, it uses the L1 norm. The higher the value, the better the synthesis quality.
+- **synthesis**: The high-frequency details introduced by the SR model. By default, it uses the L1 distance. The higher the value, the better the synthesis quality.
 
 - **ha_metric**: The amount of hallucinations in the SR image. A hallucination is a detail (high-gradient) in the SR image that **is not present in the HR image.** The lower the value, the better the correctness of the SR image.
 
-- **om_metric**: The amount of omissions in the SR image. An omission is a detail in the HR image that **is not present in the SR image.** An omission is a detail in the HR image that **is not present in the SR image.** The lower the value, the better the correctness of the SR image.
+- **om_metric**: The amount of omissions in the SR image. An omission is a detail in the HR image that **is not present in the SR image.** The lower the value, the better the correctness of the SR image.
 
 - **im_metric**: The amount of improvements in the SR image. An improvement is a detail in the SR image that **is present in the HR image and not in the LR image.** The higher the value, the better the correctness of the SR image.
 
 ## **Benchmark**
 
-Benchmark comparison of SR models. Downward arrows (↓) denote metrics in which lower values are preferable, and upward arrows (↑) indicate metrics in which higher values reflect better performance.
+Benchmark comparison of SR models. Downward arrows (↓) denote metrics in which lower values are preferable, and upward arrows (↑) indicate that higher values reflect better performance. This table is an improved version of the one presented in the paper, reflecting the enhancements applied to the datasets. To get the datasets used in the paper, set the `dataset` parameter to `version=020`.
 
 
 ## **Installation**
@@ -92,6 +92,7 @@ Install the latest version from PyPI:
 
 ```
 pip install opensr-test
+pip install opensr-test[perceptual] # Install to test perceptual metrics
 ```
 
 Upgrade `opensr-test` by running:
@@ -220,18 +221,22 @@ from super_image import HanModel
 
 # Define the SR model
 srmodel = HanModel.from_pretrained('eugenesiow/han', scale=4)
+srmodel.eval()
 
 # Load the data
-lr, hr, parameters = opensr_test.load("spot").values()
+dataset = opensr_test.load("spot")
+lr, hr = dataset["L2A"], dataset["HRharm"]
 
 # Define the benchmark experiment
-metrics = opensr_test.Metrics()
+config = opensr_test.Config()
+metrics = opensr_test.Metrics(config=config)
 
 # Define the image to be tested
 idx = 0
-lr_img = torch.from_numpy(lr[idx, 0:3])
-hr_img = torch.from_numpy(hr[idx, 0:3])
-sr_img = srmodel(lr_img[None]).squeeze().detach()
+lr_img = torch.from_numpy(lr[idx, 0:3]) / 10000
+hr_img = torch.from_numpy(hr[idx, 0:3]) / 10000
+with torch.no_grad():
+    sr_img = srmodel(lr_img[None]).squeeze()
 
 # Compute the metrics
 metrics.compute(
@@ -247,7 +252,7 @@ metrics.plot_triplets()
 ```
 
 <p align="center">
-  <img src="docs/images/example01.png">
+  <img src="docs/images/img_01.png">
 </p>
 
 Display a summary of all the metrics:
@@ -257,7 +262,7 @@ metrics.plot_summary()
 ```
 
 <p align="center">
-  <img src="docs/images/example04.png">
+  <img src="docs/images/img_02.png">
 </p>
 
 
@@ -268,7 +273,18 @@ metrics.plot_tc()
 ```
 
 <p align="center">
-  <img src="docs/images/example05.png">
+  <img src="docs/images/img_03.png">
+</p>
+
+
+Display the histogram of the metrics:
+
+```python
+metrics.plot_stats()
+```
+
+<p align="center">
+  <img src="docs/images/img_04.png">
 </p>
 
 Display a ternary plot of the metrics:
@@ -278,7 +294,7 @@ metrics.plot_ternary()
 ```
 
 <p align="center">
-  <img src="docs/images/example05.png">
+  <img src="docs/images/img_05.png">
 </p>
 
 ## **Deeper understanding**

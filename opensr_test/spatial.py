@@ -62,7 +62,8 @@ class SpatialMetricAlign(pydantic.BaseModel):
 
         # Get the spatial error from the affine matrix
         spatial_error = np.sqrt(warp[0][0, 2]**2 + warp[0][1, 2]**2)
-
+        if align_model.warning_status:
+            spatial_error = np.nan
         return image_fixed_to_torch[0], torch.tensor(spatial_error).type(torch.float32)
     
     @pydantic.field_validator("device")

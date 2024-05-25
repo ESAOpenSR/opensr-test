@@ -370,7 +370,10 @@ def display_ternary(
     ax = fig.add_subplot(projection='ternary')
 
     # Generate data
-    ax.hexbin(im, om, ha, edgecolors="none", gridsize=50, cmap='viridis', bins='log')
+    pc = ax.hexbin(im, om, ha, edgecolors="none", gridsize=50, cmap='viridis', bins='log')
+    cax = ax.inset_axes([1.1, 0.1, 0.05, 0.9], transform=ax.transAxes)
+    colorbar = fig.colorbar(pc, cax=cax)
+    colorbar.set_label("Count", rotation=270, va="baseline")
 
     # Set labels with formatting
     ax.set_tlabel('Im', fontsize=15, color='blue', weight='bold')
@@ -443,7 +446,7 @@ def display_ternary(
     ax.text(*tpos, 'Improvement'  , color='blue', rotation=-60, **kwargs_label)
     ax.text(*lpos, 'Omission' , color='green', rotation= 60, **kwargs_label)
     ax.text(*rpos, 'Hallucination', color='red', rotation=  0, **kwargs_label)
-
+    
     return fig, ax
 
 
@@ -468,15 +471,15 @@ def display_stats(object):
 
     omission = object.omission.cpu().numpy().flatten()
     axs[3].hist(omission, bins=25, alpha=0.5, label='lower is better')
-    axs[3].set_title("Omission - norm distance [0-1]", fontsize=12, fontweight="bold")
+    axs[3].set_title("Omission - reference distance [0-1]", fontsize=12, fontweight="bold")
     axs[3].legend()
 
     axs[4].hist(object.improvement.cpu().numpy().flatten(), bins=25, alpha=0.5, label='higher is better')
-    axs[4].set_title("Improvement - norm distance [0-1]", fontsize=12, fontweight="bold")
+    axs[4].set_title("Improvement - reference distance [0-1]", fontsize=12, fontweight="bold")
     axs[4].legend()
 
     axs[5].hist(object.hallucination.cpu().numpy().flatten(), bins=25, alpha=0.5, label='lower is better')
-    axs[5].set_title("Hallucination - norm distance [0-1]", fontsize=12, fontweight="bold")
+    axs[5].set_title("Hallucination - reference distance [0-1]", fontsize=12, fontweight="bold")
     axs[5].legend()    
     
     return fig, axs

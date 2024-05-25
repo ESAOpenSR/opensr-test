@@ -461,9 +461,9 @@ class Metrics:
         self.ha_percentage = total_stats["stats"][2]
         
         return {
-            "ha_percent": self.ha_percentage.item(),
-            "om_percent": self.om_percentage.item(),
-            "im_percent": self.im_percentage.item()
+            "ha_metric": self.ha_percentage.item(),
+            "om_metric": self.om_percentage.item(),
+            "im_metric": self.im_percentage.item()
         }
 
     def compute(
@@ -608,6 +608,9 @@ class Metrics:
         log_scale: Optional[bool] = False,
         stretch: Optional[str] = "linear"
     ):
+        self.d_im_ref[self.d_im_ref > 5] = 5
+        self.d_om_ref[self.d_om_ref > 5] = 5
+
         return plot.display_tc_score(
             sr_rgb=self.sr_harm_RGB.to("cpu"),
             hr_rgb=self.hr_RGB.to("cpu"),
