@@ -407,6 +407,7 @@ class Metrics:
             device=self.params.device
         )
 
+
         # Apply the mask to remove the pixels with low gradients
         mask = self._create_mask(
             d_ref=d_ref,
@@ -449,7 +450,8 @@ class Metrics:
             om_tensor=self.omission,
             ha_tensor=self.hallucination,
             mask=mask,
-            correctness_norm=self.params.correctness_norm
+            correctness_norm=self.params.correctness_norm,
+            temperature=self.params.correctness_temperature
         )
         
         self.classification = total_stats["classification"]
@@ -603,17 +605,45 @@ class Metrics:
 
     def plot_tc(
         self,
-        log_scale: Optional[bool] = True,
+        log_scale: Optional[bool] = False,
         stretch: Optional[str] = "linear"
     ):
         return plot.display_tc_score(
             sr_rgb=self.sr_harm_RGB.to("cpu"),
+            hr_rgb=self.hr_RGB.to("cpu"),
             d_im_ref=self.d_im_ref.to("cpu"),
             d_om_ref=self.d_om_ref.to("cpu"),
             tc_score=self.classification.to("cpu"),
             log_scale=log_scale,
             stretch=stretch
         )
+
+    def plot_ternary(
+        self,
+        ha: torch.Tensor = None,
+        om: torch.Tensor = None,
+        im: torch.Tensor = None
+    ):
+        if ha is None:
+            ha = self.hallucination.flatten()
+            ha = ha[~torch.isnan(ha)]
+
+        if om is None:
+            om = self.omission.flatten()
+            om = om[~torch.isnan(om)]
+
+        if im is None:
+            im = self.improvement.flatten()
+            im = im[~torch.isnan(im)]
+
+        return plot.display_ternary(
+            ha=ha.cpu().numpy(),
+            om=om.cpu().numpy(),
+            im=im.cpu().numpy()
+        )
+    
+    def plot_stats(self):
+        return plot.display_stats(self)
 
     def __call__(self) -> Any:
         return self.compute()

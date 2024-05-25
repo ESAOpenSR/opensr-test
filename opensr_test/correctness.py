@@ -87,7 +87,6 @@ def tc_improvement(
         torch.Tensor: The relative distance to the center 
         of the improvement space
     """
-    print("improvement:", plambda)
     H = d_im + d_om -1  
     return d_im + d_om*(1 - torch.exp(-H*plambda))
 
@@ -110,7 +109,6 @@ def tc_omission(
         torch.Tensor: The relative distance to the center 
         of the improvement space
     """
-    print("omission:", plambda)
     H = d_im + d_om -1  
     return d_om + d_im*(1 - torch.exp(-H*plambda))
 
@@ -134,7 +132,6 @@ def tc_hallucination(
         torch.Tensor: The relative distance to the center 
         of the improvement space
     """
-    print("hallucination:", plambda)
     Q = torch.exp(-d_im * d_om * plambda)
     return Q
 
@@ -145,6 +142,7 @@ def get_correctness_stats(
     ha_tensor: torch.Tensor,
     mask: torch.Tensor,
     correctness_norm: str = "softmin",
+    temperature: float = 0.5
 ) -> dict:
     """ Compute the correctness statistics.
 
@@ -155,6 +153,8 @@ def get_correctness_stats(
         mask (torch.Tensor): The mask to apply.
         correctness_norm (str, optional): The normalization method.
             Defaults to "softmax".
+        temperature (float, optional): The temperature parameter.
+            Defaults to 0.5.
 
     Returns:
         dict: A dictionary with the tensor stack, the classification
@@ -169,11 +169,11 @@ def get_correctness_stats(
     ], dim=0)
     
     # Classify the tensor
-    classification = torch.argmin(tensor_stack, dim=0) * mask
+    tensor_stack = softmin(tensor_stack, T=temperature)
+    classification = torch.argmax(tensor_stack, dim=0) * mask
     potential_pixels = torch.nansum(mask)
 
     if correctness_norm == "softmin":
-        tensor_stack = softmin(tensor_stack)
         im_metric = tensor_stack[0].nanmean()
         om_metric = tensor_stack[1].nanmean()
         ha_metric = tensor_stack[2].nanmean()
@@ -186,12 +186,20 @@ def get_correctness_stats(
     return {
         "tensor_stack": tensor_stack,
         "classification": classification,
-        "stats": [im_metric, om_metric, ha_metric]   
+        "stats": [im_metric, om_metric, ha_metric]
     }
 
 
-def softmin(x):
-    e_neg_x = torch.exp(-x)
-    sum_e_neg_x = torch.sum(e_neg_x, axis=0)
-    softmin_x = e_neg_x / sum_e_neg_x    
-    return softmin_x
+def softmin(x: torch.Tensor, T: float=0.75) -> torch.Tensor:
+    """
+    Compute the softmin of vector x with temperature T.
+    
+    Parameters:
+        x (torch.Tensor): The input tensor.
+        T (float): The temperature parameter. Defaults to 0.5.
+
+    Returns:
+        torch.Tensor: The softmin of x.
+    """
+    exp_neg_x_over_T = torch.exp(-x / T)
+    return exp_neg_x_over_T / torch.sum(exp_neg_x_over_T, axis=0)

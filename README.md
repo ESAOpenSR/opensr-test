@@ -31,7 +31,7 @@
 
 **PyPI**: [https://pypi.org/project/opensr-test/](https://pypi.org/project/opensr-test/)
 
-**Paper**: [https://www.techrxiv.org/users/760184/articles/735467-a-comprehensive-benchmark-for-optical-remote-sensing-image-super-resolution](https://www.techrxiv.org/users/760184/articles/735467-a-comprehensive-benchmark-for-optical-remote-sensing-image-super-resolution)
+**Paper**: [https://ieeexplore.ieee.org/document/10530998](https://ieeexplore.ieee.org/document/10530998)
 
 ---
 
@@ -62,24 +62,24 @@ sr = torch.rand(4, 256, 256)
 
 metrics = opensr_test.Metrics()
 metrics.compute(lr=lr, sr=sr, hr=hr)
->>> {'reflectance': 0.253, 'spectral': 26.967, 'spatial': 0.0, 'synthesis': 0.2870, 'ha_percent': 0.892, 'om_percent': 0.0613, 'im_percent': 0.04625}
+>>> {'reflectance': 0.253, 'spectral': 26.967, 'spatial': 1.0, 'synthesis': 0.2870, 'ha_percent': 0.892, 'om_percent': 0.0613, 'im_percent': 0.04625}
 ```
 
 This model returns:
 
-- **reflectance**: How SR affects the reflectance values of the LR image. By default, it uses the L1 norm. The lower the value, the better the reflectance consistency.
+- **reflectance**: How SR affects the reflectance norm of the LR image. By default, it uses the L1 norm. The lower the value, the better the reflectance consistency.
 
 - **spectral**: How SR affects the spectral signature of the LR image. By default, it uses the spectral angle distance (SAM). The lower the value, the better the spectral consistency. The angles are in degrees.
 
 - **spatial**: The spatial alignment between the SR and LR images. By default, it uses Phase Correlation Coefficient (PCC). Some SR models introduce spatial shift, which can be detected by this metric.
 
-- **synthesis**: The high-frequency details introduced by the SR model. By default, it uses the L1 norm. The lower the value, the better the synthesis quality.
+- **synthesis**: The high-frequency details introduced by the SR model. By default, it uses the L1 norm. The higher the value, the better the synthesis quality.
 
-- **ha_percent**: The percentage of pixels in the SR image that are classified as hallucinations. A hallucination is a detail in the SR image that **is not present in the HR image.**
+- **ha_metric**: The amount of hallucinations in the SR image. A hallucination is a detail (high-gradient) in the SR image that **is not present in the HR image.** The lower the value, the better the correctness of the SR image.
 
-- **om_percent**: The percentage of pixels in the SR image that are classified as omissions. An omission is a detail in the HR image that **is not present in the SR image.**
+- **om_metric**: The amount of omissions in the SR image. An omission is a detail in the HR image that **is not present in the SR image.** An omission is a detail in the HR image that **is not present in the SR image.** The lower the value, the better the correctness of the SR image.
 
-- **im_percent**: The percentage of pixels in the SR image that are classified as improvements. An improvement is a detail in the SR image that **is present in the HR image and not in the LR image.**
+- **im_metric**: The amount of improvements in the SR image. An improvement is a detail in the SR image that **is present in the HR image and not in the LR image.** The higher the value, the better the correctness of the SR image.
 
 ## **Benchmark**
 
@@ -109,6 +109,15 @@ pip install git+https://github.com/ESAOpenSR/opensr-test
 ## **Datasets**
 
 The `opensr-test` package provides five datasets for benchmarking SR models. These datasets are carefully crafted to minimize spatial and spectral misalignment. See our Hugging Face repository for more details about the datasets. [**https://huggingface.co/datasets/isp-uv-es/opensr-test**](https://huggingface.co/datasets/isp-uv-es/opensr-test)
+
+| Dataset | Scale factor | Number of images | HR patch size |
+|---------|--------------|-------------------|--------------|
+| NAIP    | x4           | 62               | 484x484       |
+| SPOT    | x4           | 9               | 512x512       |
+| Venµs   | x2           | 59               | 256x256       |
+| SPAIN CROPS | x4       | 28               | 512x512       |
+| SPAIN URBAN | x4       | 20               | 512x512       |
+
 
 ### **NAIP (X4 scale factor)**
 
@@ -187,21 +196,16 @@ spain_urban = opensr_test.load("spain_urban")
 
 The following examples show how to use `opensr-test` to benchmark your SR model.
 
-- Use `opensr-test` with TensorFlow model (SR4RS) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1cAGDGlj5Kqt343inNni3ByLE1856z0gE#scrollTo=xaivkcD5Zfw1&uniqifier=1)
+| Model | Framework | Link |
+|-------|-----------|------|
+| SR4RS | TensorFlow | [![Model on HF](https://huggingface.co/datasets/huggingface/badges/resolve/main/model-on-hf-md.svg)](https://huggingface.co/isp-uv-es/superIX/blob/main/sr4rs/run.py) |
+| SuperImage | PyTorch | [![Model on HF](https://huggingface.co/datasets/huggingface/badges/resolve/main/model-on-hf-md.svg)](https://huggingface.co/isp-uv-es/superIX/blob/main/superimage/run.py) |
+| LDMSuperResolutionPipeline | Diffuser | [![Model on HF](https://huggingface.co/datasets/huggingface/badges/resolve/main/model-on-hf-md.svg)](https://huggingface.co/isp-uv-es/superIX/blob/main/ldm/run.py) |
+| opensr-model | Pytorch | [![Model on HF](https://huggingface.co/datasets/huggingface/badges/resolve/main/model-on-hf-md.svg)](https://huggingface.co/isp-uv-es/superIX/blob/main/opensr/run.py) |
+| EvoLand | Pytorch | [![Model on HF](https://huggingface.co/datasets/huggingface/badges/resolve/main/model-on-hf-md.svg)](https://huggingface.co/isp-uv-es/superIX/blob/main/evoland/run.py) |
+| SWIN2-MOSE | Pytorch | [![Model on HF](https://huggingface.co/datasets/huggingface/badges/resolve/main/model-on-hf-md.svg)](https://huggingface.co/isp-uv-es/superIX/blob/main/swin2mose/run.py) |
+| Synthetic | Pytorch | [![Model on HF](https://huggingface.co/datasets/huggingface/badges/resolve/main/model-on-hf-md.svg)](https://huggingface.co/isp-uv-es/superIX/blob/main/synthetic/run.py) |
 
-- Use `opensr-test` with PyTorch model (SuperImage) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1Db8-JSMTF-hNZQv2UyBDclxkO5hgP9VR#scrollTo=jVL7o6yOrJkY)
-
-- Use `opensr-test` with a diffuser model (LDMSuperResolutionPipeline) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1banDovG43c2OBh9MODPN4OXgaSCXu1Dc#scrollTo=zz4Aw7_52ulT)
-
-- Use `opensr-test` with a diffuser model (opensr-model) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1banDovG43c2OBh9MODPN4OXgaSCXu1Dc#scrollTo=zz4Aw7_52ulT)
-
-
-- Use `opensr-test` with Pytorch (EvoLand) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1banDovG43c2OBh9MODPN4OXgaSCXu1Dc#scrollTo=zz4Aw7_52ulT)
-
-
-- Use `opensr-test` with Pytorch (SWIN2-MOSE) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1banDovG43c2OBh9MODPN4OXgaSCXu1Dc#scrollTo=zz4Aw7_52ulT)
-
-- Use `opensr-test` with Pytorch (synthetic dataset) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1banDovG43c2OBh9MODPN4OXgaSCXu1Dc#scrollTo=zz4Aw7_52ulT)
 
 ## **Visualizations**
 
@@ -231,8 +235,7 @@ sr_img = srmodel(lr_img[None]).squeeze().detach()
 
 # Compute the metrics
 metrics.compute(
-    lr=lr_img, sr=sr_img, hr=hr_img,
-    gradient_threshold=parameters[idx]
+    lr=lr_img, sr=sr_img, hr=hr_img
 )
 ```
 
@@ -268,26 +271,35 @@ metrics.plot_tc()
   <img src="docs/images/example05.png">
 </p>
 
-## **Deeper understanding**
+Display a ternary plot of the metrics:
 
-Explore the [API](https://esaopensr.github.io/opensr-test/docs/API/config_pydantic.html) section for more details about personalizing your benchmark experiments.
+```python
+metrics.plot_ternary()
+```
 
 <p align="center">
-    <a href="/docs/api.md"><img src="docs/images/image02.png" alt="opensr-test" width="30%"></a>
+  <img src="docs/images/example05.png">
 </p>
+
+## **Deeper understanding**
+
+Explore the [**API**](https://esaopensr.github.io/opensr-test/docs/API/config_pydantic.html) section for more details about personalizing your benchmark experiments.
 
 ## **Citation**
 
 If you use `opensr-test` in your research, please cite our paper:
 
 ```
-@article{aybar2024comprehensive,
-  title={A Comprehensive Benchmark for Optical Remote Sensing Image Super-Resolution},
-  author={Aybar, Cesar and Montero, David and Donike, Simon and Kalaitzis, Freddie and G{\'o}mez-Chova, Luis},
-  journal={Authorea Preprints},
+@ARTICLE{10530998,
+  author={Aybar, Cesar and Montero, David and Donike, Simon and Kalaitzis, Freddie and Gómez-Chova, Luis},
+  journal={IEEE Geoscience and Remote Sensing Letters}, 
+  title={A Comprehensive Benchmark for Optical Remote Sensing Image Super-Resolution}, 
   year={2024},
-  publisher={Authorea}
-}
+  volume={21},
+  number={},
+  pages={1-5},
+  keywords={Measurement;Remote sensing;Spatial resolution;Superresolution;Reflectivity;Protocols;Inspection;Benchmarking;datasets;deep learning;NAIP;Sentinel-2 (S2);SPOT;super-resolution (SR)},
+  doi={10.1109/LGRS.2024.3401394}}
 ```
 
 ## **Acknowledgements**
