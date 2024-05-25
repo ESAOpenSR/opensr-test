@@ -911,12 +911,12 @@ pip install opensr-test[perceptual] # Install to test perceptual metrics
 <tr>
 <td>LDMSuperResolutionPipeline</td>
 <td>Diffuser</td>
-<td><a href="https://huggingface.co/isp-uv-es/superIX/blob/main/ldm/run.py"><img alt="Model on HF" src="https://huggingface.co/datasets/huggingface/badges/resolve/main/model-on-hf-md.svg" /></a></td>
+<td><a href="https://huggingface.co/isp-uv-es/superIX/blob/main/ldm_baseline/run.py"><img alt="Model on HF" src="https://huggingface.co/datasets/huggingface/badges/resolve/main/model-on-hf-md.svg" /></a></td>
 </tr>
 <tr>
 <td>opensr-model</td>
 <td>Pytorch</td>
-<td><a href="https://huggingface.co/isp-uv-es/superIX/blob/main/opensr/run.py"><img alt="Model on HF" src="https://huggingface.co/datasets/huggingface/badges/resolve/main/model-on-hf-md.svg" /></a></td>
+<td><a href="https://huggingface.co/isp-uv-es/superIX/blob/main/opensrmodel/run.py"><img alt="Model on HF" src="https://huggingface.co/datasets/huggingface/badges/resolve/main/model-on-hf-md.svg" /></a></td>
 </tr>
 <tr>
 <td>EvoLand</td>
@@ -926,12 +926,7 @@ pip install opensr-test[perceptual] # Install to test perceptual metrics
 <tr>
 <td>SWIN2-MOSE</td>
 <td>Pytorch</td>
-<td><a href="https://huggingface.co/isp-uv-es/superIX/blob/main/swin2mose/run.py"><img alt="Model on HF" src="https://huggingface.co/datasets/huggingface/badges/resolve/main/model-on-hf-md.svg" /></a></td>
-</tr>
-<tr>
-<td>Synthetic</td>
-<td>Pytorch</td>
-<td><a href="https://huggingface.co/isp-uv-es/superIX/blob/main/synthetic/run.py"><img alt="Model on HF" src="https://huggingface.co/datasets/huggingface/badges/resolve/main/model-on-hf-md.svg" /></a></td>
+<td><a href="https://huggingface.co/isp-uv-es/superIX/blob/main/swin2_mose/run.py"><img alt="Model on HF" src="https://huggingface.co/datasets/huggingface/badges/resolve/main/model-on-hf-md.svg" /></a></td>
 </tr>
 </tbody>
 </table>
@@ -989,7 +984,7 @@ fDisplay the triplets LR, SR and HR images:</p>
   <img src="docs/images/img_03.png">
 </p>
 
-<p>Display the histogram of the metrics:</p>
+<p>Display the histogram of the distances:</p>
 <div class="highlight"><pre><span></span><code><span class="n">metrics</span><span class="o">.</span><span class="n">plot_stats</span><span class="p">()</span>
 </code></pre></div>
 <p align="center">
