@@ -35,9 +35,12 @@ class Config(BaseModel):
 
     # Correctness parameters
     correctness_distance: DistanceMetrics = "l1"
+    correctness_norm: Literal["softmin", "percent"] = "softmin"
     im_score: Optional[float] = 0.80
     om_score: Optional[float] = 0.80
-    ha_score: Optional[float] = 0.40
+    ha_score: Optional[float] = 0.40 # be quiet conservative about hallucinations
+    correctness_temperature: Optional[float] = 1.5
+
 
     # General parameters - validator ----------------------------
     @field_validator("device")

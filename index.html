@@ -737,7 +737,7 @@
 <p><strong>GitHub</strong>: <a href="https://github.com/ESAOpenSR/opensr-test">https://github.com/ESAOpenSR/opensr-test</a></p>
 <p><strong>Documentation</strong>: <a href="https://esaopensr.github.io/opensr-test">https://esaopensr.github.io/opensr-test</a></p>
 <p><strong>PyPI</strong>: <a href="https://pypi.org/project/opensr-test/">https://pypi.org/project/opensr-test/</a></p>
-<p><strong>Paper</strong>: <a href="https://www.techrxiv.org/users/760184/articles/735467-a-comprehensive-benchmark-for-optical-remote-sensing-image-super-resolution">https://www.techrxiv.org/users/760184/articles/735467-a-comprehensive-benchmark-for-optical-remote-sensing-image-super-resolution</a></p>
+<p><strong>Paper</strong>: <a href="https://ieeexplore.ieee.org/document/10530998">https://ieeexplore.ieee.org/document/10530998</a></p>
 <hr />
 <h1 id="_1"></h1>
 <h2 id="overview"><strong>Overview</strong></h2>
@@ -758,35 +758,36 @@
 
 <span class="n">metrics</span> <span class="o">=</span> <span class="n">opensr_test</span><span class="o">.</span><span class="n">Metrics</span><span class="p">()</span>
 <span class="n">metrics</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="n">lr</span><span class="p">,</span> <span class="n">sr</span><span class="o">=</span><span class="n">sr</span><span class="p">,</span> <span class="n">hr</span><span class="o">=</span><span class="n">hr</span><span class="p">)</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="p">{</span><span class="s1">&#39;reflectance&#39;</span><span class="p">:</span> <span class="mf">0.253</span><span class="p">,</span> <span class="s1">&#39;spectral&#39;</span><span class="p">:</span> <span class="mf">26.967</span><span class="p">,</span> <span class="s1">&#39;spatial&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s1">&#39;synthesis&#39;</span><span class="p">:</span> <span class="mf">0.2870</span><span class="p">,</span> <span class="s1">&#39;ha_percent&#39;</span><span class="p">:</span> <span class="mf">0.892</span><span class="p">,</span> <span class="s1">&#39;om_percent&#39;</span><span class="p">:</span> <span class="mf">0.0613</span><span class="p">,</span> <span class="s1">&#39;im_percent&#39;</span><span class="p">:</span> <span class="mf">0.04625</span><span class="p">}</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="p">{</span><span class="s1">&#39;reflectance&#39;</span><span class="p">:</span> <span class="mf">0.253</span><span class="p">,</span> <span class="s1">&#39;spectral&#39;</span><span class="p">:</span> <span class="mf">26.967</span><span class="p">,</span> <span class="s1">&#39;spatial&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span> <span class="s1">&#39;synthesis&#39;</span><span class="p">:</span> <span class="mf">0.2870</span><span class="p">,</span> <span class="s1">&#39;ha_percent&#39;</span><span class="p">:</span> <span class="mf">0.892</span><span class="p">,</span> <span class="s1">&#39;om_percent&#39;</span><span class="p">:</span> <span class="mf">0.0613</span><span class="p">,</span> <span class="s1">&#39;im_percent&#39;</span><span class="p">:</span> <span class="mf">0.04625</span><span class="p">}</span>
 </code></pre></div>
 <p>This model returns:</p>
 <ul>
-<li><strong>reflectance</strong>: How SR affects the reflectance values of the LR image. By default, it uses the L1 norm. The lower the value, the better the reflectance consistency.</li>
+<li><strong>reflectance</strong>: How SR affects the reflectance norm of the LR image. By default, it uses the L1 distance. The lower the value, the better the reflectance consistency.</li>
 </ul>
 <ul>
-<li><strong>spectral</strong>: How SR affects the spectral signature of the LR image. By default, it uses the spectral angle distance (SAM). The lower the value, the better the spectral consistency. The angles are in degrees.</li>
+<li><strong>spectral</strong>: How SR affects the spectral signature of the LR image. By default, it uses the spectral angle distance (SAD). The lower the value, the better the spectral consistency. The angles are in degrees.</li>
 </ul>
 <ul>
 <li><strong>spatial</strong>: The spatial alignment between the SR and LR images. By default, it uses Phase Correlation Coefficient (PCC). Some SR models introduce spatial shift, which can be detected by this metric.</li>
 </ul>
 <ul>
-<li><strong>synthesis</strong>: The high-frequency details introduced by the SR model. By default, it uses the L1 norm. The lower the value, the better the synthesis quality.</li>
+<li><strong>synthesis</strong>: The high-frequency details introduced by the SR model. By default, it uses the L1 distance. The higher the value, the better the synthesis quality.</li>
 </ul>
 <ul>
-<li><strong>ha_percent</strong>: The percentage of pixels in the SR image that are classified as hallucinations. A hallucination is a detail in the SR image that <strong>is not present in the HR image.</strong></li>
+<li><strong>ha_metric</strong>: The amount of hallucinations in the SR image. A hallucination is a detail (high-gradient) in the SR image that <strong>is not present in the HR image.</strong> The lower the value, the better the correctness of the SR image.</li>
 </ul>
 <ul>
-<li><strong>om_percent</strong>: The percentage of pixels in the SR image that are classified as omissions. An omission is a detail in the HR image that <strong>is not present in the SR image.</strong></li>
+<li><strong>om_metric</strong>: The amount of omissions in the SR image. An omission is a detail in the HR image that <strong>is not present in the SR image.</strong> The lower the value, the better the correctness of the SR image.</li>
 </ul>
 <ul>
-<li><strong>im_percent</strong>: The percentage of pixels in the SR image that are classified as improvements. An improvement is a detail in the SR image that <strong>is present in the HR image and not in the LR image.</strong></li>
+<li><strong>im_metric</strong>: The amount of improvements in the SR image. An improvement is a detail in the SR image that <strong>is present in the HR image and not in the LR image.</strong> The higher the value, the better the correctness of the SR image.</li>
 </ul>
 <h2 id="benchmark"><strong>Benchmark</strong></h2>
-<p>Benchmark comparison of SR models. Downward arrows (↓) denote metrics in which lower values are preferable, and upward arrows (↑) indicate metrics in which higher values reflect better performance.</p>
+<p>Benchmark comparison of SR models. Downward arrows (↓) denote metrics in which lower values are preferable, and upward arrows (↑) indicate that higher values reflect better performance. This table is an improved version of the one presented in the paper, reflecting the enhancements applied to the datasets. To get the datasets used in the paper, set the <code>dataset</code> parameter to <code>version=020</code>.</p>
 <h2 id="installation"><strong>Installation</strong></h2>
 <p>Install the latest version from PyPI:</p>
 <div class="highlight"><pre><span></span><code>pip install opensr-test
+pip install opensr-test[perceptual] # Install to test perceptual metrics
 </code></pre></div>
 <p>Upgrade <code>opensr-test</code> by running:</p>
 <div class="highlight"><pre><span></span><code>pip install -U opensr-test
@@ -796,6 +797,48 @@
 </code></pre></div>
 <h2 id="datasets"><strong>Datasets</strong></h2>
 <p>The <code>opensr-test</code> package provides five datasets for benchmarking SR models. These datasets are carefully crafted to minimize spatial and spectral misalignment. See our Hugging Face repository for more details about the datasets. <a href="https://huggingface.co/datasets/isp-uv-es/opensr-test"><strong>https://huggingface.co/datasets/isp-uv-es/opensr-test</strong></a></p>
+<table>
+<thead>
+<tr>
+<th>Dataset</th>
+<th>Scale factor</th>
+<th>Number of images</th>
+<th>HR patch size</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>NAIP</td>
+<td>x4</td>
+<td>62</td>
+<td>484x484</td>
+</tr>
+<tr>
+<td>SPOT</td>
+<td>x4</td>
+<td>9</td>
+<td>512x512</td>
+</tr>
+<tr>
+<td>Venµs</td>
+<td>x2</td>
+<td>59</td>
+<td>256x256</td>
+</tr>
+<tr>
+<td>SPAIN CROPS</td>
+<td>x4</td>
+<td>28</td>
+<td>512x512</td>
+</tr>
+<tr>
+<td>SPAIN URBAN</td>
+<td>x4</td>
+<td>20</td>
+<td>512x512</td>
+</tr>
+</tbody>
+</table>
 <h3 id="naip-x4-scale-factor"><strong>NAIP (X4 scale factor)</strong></h3>
 <p>The National Agriculture Imagery Program (NAIP) dataset is a high-resolution aerial imagery dataset that covers the continental United States. The dataset consists of 2.5m NAIP imagery captured in the visible and near-infrared spectrum (RGBNIR) and all Sentinel-2 L1C and L2A bands. The dataset focus in <strong>crop fields, forests, and bare soil areas</strong>.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">opensr_test</span>
@@ -846,27 +889,52 @@
 
 <h2 id="examples"><strong>Examples</strong></h2>
 <p>The following examples show how to use <code>opensr-test</code> to benchmark your SR model.</p>
-<ul>
-<li>Use <code>opensr-test</code> with TensorFlow model (SR4RS) <a href="https://colab.research.google.com/drive/1cAGDGlj5Kqt343inNni3ByLE1856z0gE#scrollTo=xaivkcD5Zfw1&amp;uniqifier=1"><img alt="Open In Colab" src="https://colab.research.google.com/assets/colab-badge.svg" /></a></li>
-</ul>
-<ul>
-<li>Use <code>opensr-test</code> with PyTorch model (SuperImage) <a href="https://colab.research.google.com/drive/1Db8-JSMTF-hNZQv2UyBDclxkO5hgP9VR#scrollTo=jVL7o6yOrJkY"><img alt="Open In Colab" src="https://colab.research.google.com/assets/colab-badge.svg" /></a></li>
-</ul>
-<ul>
-<li>Use <code>opensr-test</code> with a diffuser model (LDMSuperResolutionPipeline) <a href="https://colab.research.google.com/drive/1banDovG43c2OBh9MODPN4OXgaSCXu1Dc#scrollTo=zz4Aw7_52ulT"><img alt="Open In Colab" src="https://colab.research.google.com/assets/colab-badge.svg" /></a></li>
-</ul>
-<ul>
-<li>Use <code>opensr-test</code> with a diffuser model (opensr-model) <a href="https://colab.research.google.com/drive/1banDovG43c2OBh9MODPN4OXgaSCXu1Dc#scrollTo=zz4Aw7_52ulT"><img alt="Open In Colab" src="https://colab.research.google.com/assets/colab-badge.svg" /></a></li>
-</ul>
-<ul>
-<li>Use <code>opensr-test</code> with Pytorch (EvoLand) <a href="https://colab.research.google.com/drive/1banDovG43c2OBh9MODPN4OXgaSCXu1Dc#scrollTo=zz4Aw7_52ulT"><img alt="Open In Colab" src="https://colab.research.google.com/assets/colab-badge.svg" /></a></li>
-</ul>
-<ul>
-<li>Use <code>opensr-test</code> with Pytorch (SWIN2-MOSE) <a href="https://colab.research.google.com/drive/1banDovG43c2OBh9MODPN4OXgaSCXu1Dc#scrollTo=zz4Aw7_52ulT"><img alt="Open In Colab" src="https://colab.research.google.com/assets/colab-badge.svg" /></a></li>
-</ul>
-<ul>
-<li>Use <code>opensr-test</code> with Pytorch (synthetic dataset) <a href="https://colab.research.google.com/drive/1banDovG43c2OBh9MODPN4OXgaSCXu1Dc#scrollTo=zz4Aw7_52ulT"><img alt="Open In Colab" src="https://colab.research.google.com/assets/colab-badge.svg" /></a></li>
-</ul>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Framework</th>
+<th>Link</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SR4RS</td>
+<td>TensorFlow</td>
+<td><a href="https://huggingface.co/isp-uv-es/superIX/blob/main/sr4rs/run.py"><img alt="Model on HF" src="https://huggingface.co/datasets/huggingface/badges/resolve/main/model-on-hf-md.svg" /></a></td>
+</tr>
+<tr>
+<td>SuperImage</td>
+<td>PyTorch</td>
+<td><a href="https://huggingface.co/isp-uv-es/superIX/blob/main/superimage/run.py"><img alt="Model on HF" src="https://huggingface.co/datasets/huggingface/badges/resolve/main/model-on-hf-md.svg" /></a></td>
+</tr>
+<tr>
+<td>LDMSuperResolutionPipeline</td>
+<td>Diffuser</td>
+<td><a href="https://huggingface.co/isp-uv-es/superIX/blob/main/ldm/run.py"><img alt="Model on HF" src="https://huggingface.co/datasets/huggingface/badges/resolve/main/model-on-hf-md.svg" /></a></td>
+</tr>
+<tr>
+<td>opensr-model</td>
+<td>Pytorch</td>
+<td><a href="https://huggingface.co/isp-uv-es/superIX/blob/main/opensr/run.py"><img alt="Model on HF" src="https://huggingface.co/datasets/huggingface/badges/resolve/main/model-on-hf-md.svg" /></a></td>
+</tr>
+<tr>
+<td>EvoLand</td>
+<td>Pytorch</td>
+<td><a href="https://huggingface.co/isp-uv-es/superIX/blob/main/evoland/run.py"><img alt="Model on HF" src="https://huggingface.co/datasets/huggingface/badges/resolve/main/model-on-hf-md.svg" /></a></td>
+</tr>
+<tr>
+<td>SWIN2-MOSE</td>
+<td>Pytorch</td>
+<td><a href="https://huggingface.co/isp-uv-es/superIX/blob/main/swin2mose/run.py"><img alt="Model on HF" src="https://huggingface.co/datasets/huggingface/badges/resolve/main/model-on-hf-md.svg" /></a></td>
+</tr>
+<tr>
+<td>Synthetic</td>
+<td>Pytorch</td>
+<td><a href="https://huggingface.co/isp-uv-es/superIX/blob/main/synthetic/run.py"><img alt="Model on HF" src="https://huggingface.co/datasets/huggingface/badges/resolve/main/model-on-hf-md.svg" /></a></td>
+</tr>
+</tbody>
+</table>
 <h2 id="visualizations"><strong>Visualizations</strong></h2>
 <p>The <code>opensr-test</code> package provides a set of visualizations to help you understand the performance of your SR model.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">torch</span>
@@ -877,23 +945,26 @@
 
 <span class="c1"># Define the SR model</span>
 <span class="n">srmodel</span> <span class="o">=</span> <span class="n">HanModel</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="s1">&#39;eugenesiow/han&#39;</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">srmodel</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
 
 <span class="c1"># Load the data</span>
-<span class="n">lr</span><span class="p">,</span> <span class="n">hr</span><span class="p">,</span> <span class="n">parameters</span> <span class="o">=</span> <span class="n">opensr_test</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;spot&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">opensr_test</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;spot&quot;</span><span class="p">)</span>
+<span class="n">lr</span><span class="p">,</span> <span class="n">hr</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;L2A&quot;</span><span class="p">],</span> <span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;HRharm&quot;</span><span class="p">]</span>
 
 <span class="c1"># Define the benchmark experiment</span>
-<span class="n">metrics</span> <span class="o">=</span> <span class="n">opensr_test</span><span class="o">.</span><span class="n">Metrics</span><span class="p">()</span>
+<span class="n">config</span> <span class="o">=</span> <span class="n">opensr_test</span><span class="o">.</span><span class="n">Config</span><span class="p">()</span>
+<span class="n">metrics</span> <span class="o">=</span> <span class="n">opensr_test</span><span class="o">.</span><span class="n">Metrics</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
 
 <span class="c1"># Define the image to be tested</span>
 <span class="n">idx</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="n">lr_img</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">lr</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">])</span>
-<span class="n">hr_img</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">hr</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">])</span>
-<span class="n">sr_img</span> <span class="o">=</span> <span class="n">srmodel</span><span class="p">(</span><span class="n">lr_img</span><span class="p">[</span><span class="kc">None</span><span class="p">])</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span>
+<span class="n">lr_img</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">lr</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">])</span> <span class="o">/</span> <span class="mi">10000</span>
+<span class="n">hr_img</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">hr</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">])</span> <span class="o">/</span> <span class="mi">10000</span>
+<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+    <span class="n">sr_img</span> <span class="o">=</span> <span class="n">srmodel</span><span class="p">(</span><span class="n">lr_img</span><span class="p">[</span><span class="kc">None</span><span class="p">])</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
 
 <span class="c1"># Compute the metrics</span>
 <span class="n">metrics</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span>
-    <span class="n">lr</span><span class="o">=</span><span class="n">lr_img</span><span class="p">,</span> <span class="n">sr</span><span class="o">=</span><span class="n">sr_img</span><span class="p">,</span> <span class="n">hr</span><span class="o">=</span><span class="n">hr_img</span><span class="p">,</span>
-    <span class="n">gradient_threshold</span><span class="o">=</span><span class="n">parameters</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+    <span class="n">lr</span><span class="o">=</span><span class="n">lr_img</span><span class="p">,</span> <span class="n">sr</span><span class="o">=</span><span class="n">sr_img</span><span class="p">,</span> <span class="n">hr</span><span class="o">=</span><span class="n">hr_img</span>
 <span class="p">)</span>
 </code></pre></div>
 <p>Now, we can visualize the results using the <code>opensr_test.visualize</code> module.
@@ -901,38 +972,51 @@ fDisplay the triplets LR, SR and HR images:</p>
 <div class="highlight"><pre><span></span><code><span class="n">metrics</span><span class="o">.</span><span class="n">plot_triplets</span><span class="p">()</span>
 </code></pre></div>
 <p align="center">
-  <img src="docs/images/example01.png">
+  <img src="docs/images/img_01.png">
 </p>
 
 <p>Display a summary of all the metrics:</p>
 <div class="highlight"><pre><span></span><code><span class="n">metrics</span><span class="o">.</span><span class="n">plot_summary</span><span class="p">()</span>
 </code></pre></div>
 <p align="center">
-  <img src="docs/images/example04.png">
+  <img src="docs/images/img_02.png">
 </p>
 
 <p>Display the correctness of the SR image:</p>
 <div class="highlight"><pre><span></span><code><span class="n">metrics</span><span class="o">.</span><span class="n">plot_tc</span><span class="p">()</span>
 </code></pre></div>
 <p align="center">
-  <img src="docs/images/example05.png">
+  <img src="docs/images/img_03.png">
+</p>
+
+<p>Display the histogram of the metrics:</p>
+<div class="highlight"><pre><span></span><code><span class="n">metrics</span><span class="o">.</span><span class="n">plot_stats</span><span class="p">()</span>
+</code></pre></div>
+<p align="center">
+  <img src="docs/images/img_04.png">
+</p>
+
+<p>Display a ternary plot of the metrics:</p>
+<div class="highlight"><pre><span></span><code><span class="n">metrics</span><span class="o">.</span><span class="n">plot_ternary</span><span class="p">()</span>
+</code></pre></div>
+<p align="center">
+  <img src="docs/images/img_05.png">
 </p>
 
 <h2 id="deeper-understanding"><strong>Deeper understanding</strong></h2>
-<p>Explore the <a href="https://esaopensr.github.io/opensr-test/docs/API/config_pydantic.html">API</a> section for more details about personalizing your benchmark experiments.</p>
-<p align="center">
-    <a href="/docs/api.md"><img src="docs/images/image02.png" alt="opensr-test" width="30%"></a>
-</p>
-
+<p>Explore the <a href="https://esaopensr.github.io/opensr-test/docs/API/config_pydantic.html"><strong>API</strong></a> section for more details about personalizing your benchmark experiments.</p>
 <h2 id="citation"><strong>Citation</strong></h2>
 <p>If you use <code>opensr-test</code> in your research, please cite our paper:</p>
-<div class="highlight"><pre><span></span><code>@article{aybar2024comprehensive,
-  title={A Comprehensive Benchmark for Optical Remote Sensing Image Super-Resolution},
-  author={Aybar, Cesar and Montero, David and Donike, Simon and Kalaitzis, Freddie and G{\&#39;o}mez-Chova, Luis},
-  journal={Authorea Preprints},
+<div class="highlight"><pre><span></span><code>@ARTICLE{10530998,
+  author={Aybar, Cesar and Montero, David and Donike, Simon and Kalaitzis, Freddie and Gómez-Chova, Luis},
+  journal={IEEE Geoscience and Remote Sensing Letters}, 
+  title={A Comprehensive Benchmark for Optical Remote Sensing Image Super-Resolution}, 
   year={2024},
-  publisher={Authorea}
-}
+  volume={21},
+  number={},
+  pages={1-5},
+  keywords={Measurement;Remote sensing;Spatial resolution;Superresolution;Reflectivity;Protocols;Inspection;Benchmarking;datasets;deep learning;NAIP;Sentinel-2 (S2);SPOT;super-resolution (SR)},
+  doi={10.1109/LGRS.2024.3401394}}
 </code></pre></div>
 <h2 id="acknowledgements"><strong>Acknowledgements</strong></h2>
 <p>This work was make with the support of the European Space Agency (ESA) under the project “Explainable AI: application to trustworthy super-resolution (OpenSR)”. Cesar Aybar acknowledges support by the National Council of Science, Technology, and Technological Innovation (CONCYTEC, Peru) through the “PROYECTOS DE INVESTIGACIÓN BÁSICA – 2023-01” program with contract number PE501083135-2023-PROCIENCIA. Luis Gómez-Chova acknowledges support from the Spanish Ministry of Science and Innovation (project PID2019-109026RB-I00 funded by MCIN/AEI/10.13039/501100011033).</p>

@@ -11,7 +11,7 @@ from opensr_test.utils import (
 from opensr_test.spatial import SpatialMetricAlign
 from opensr_test.config import Config, Results, Consistency, Synthesis, Correctness, Auxiliar
 from opensr_test.distance import get_distance
-from opensr_test.correctness import get_distances, tc_improvement, tc_omission, tc_hallucination
+from opensr_test.correctness import get_distances, tc_improvement, tc_omission, tc_hallucination, get_correctness_stats
 from opensr_test import plot
 
 class Metrics:
@@ -407,14 +407,14 @@ class Metrics:
             device=self.params.device
         )
 
-        # Apply the mask to remove the pixels with gradients 
+
+        # Apply the mask to remove the pixels with low gradients
         mask = self._create_mask(
             d_ref=d_ref,
             d_im=d_im,
             d_om=d_om,
             gradient_threshold=gradient_threshold
         )
-        self.potential_pixels = torch.nansum(mask)
         self.d_ref = d_ref * mask
         self.d_im =  d_im * mask
         self.d_om =  d_om * mask
@@ -444,23 +444,26 @@ class Metrics:
             plambda=self.params.im_score
         )
 
-        # Classify the pixels based on the distance
-        tensor_stack = torch.stack([
-            self.improvement,
-            self.omission,
-            self.hallucination
-        ], dim=0)
-        self.classification = torch.argmin(tensor_stack, dim=0) * mask
-
-        # Get the percentage of omission, improvement, and hallucination
-        self.im_percentage = torch.sum(self.classification==0) / self.potential_pixels
-        self.om_percentage = torch.sum(self.classification==1) / self.potential_pixels
-        self.ha_percentage = torch.sum(self.classification==2) / self.potential_pixels        
-            
+        #  Get stats
+        total_stats = get_correctness_stats(
+            im_tensor=self.improvement,
+            om_tensor=self.omission,
+            ha_tensor=self.hallucination,
+            mask=mask,
+            correctness_norm=self.params.correctness_norm,
+            temperature=self.params.correctness_temperature
+        )
+        
+        self.classification = total_stats["classification"]
+        self.improvement, self.omission, self.hallucination = total_stats["tensor_stack"]
+        self.im_percentage = total_stats["stats"][0]
+        self.om_percentage = total_stats["stats"][1]
+        self.ha_percentage = total_stats["stats"][2]
+        
         return {
-            "ha_percent": self.ha_percentage.item(),
-            "om_percent": self.om_percentage.item(),
-            "im_percent": self.im_percentage.item()
+            "ha_metric": self.ha_percentage.item(),
+            "om_metric": self.om_percentage.item(),
+            "im_metric": self.im_percentage.item()
         }
 
     def compute(
@@ -602,17 +605,48 @@ class Metrics:
 
     def plot_tc(
         self,
-        log_scale: Optional[bool] = True,
+        log_scale: Optional[bool] = False,
         stretch: Optional[str] = "linear"
     ):
+        self.d_im_ref[self.d_im_ref > 5] = 5
+        self.d_om_ref[self.d_om_ref > 5] = 5
+
         return plot.display_tc_score(
             sr_rgb=self.sr_harm_RGB.to("cpu"),
+            hr_rgb=self.hr_RGB.to("cpu"),
             d_im_ref=self.d_im_ref.to("cpu"),
             d_om_ref=self.d_om_ref.to("cpu"),
             tc_score=self.classification.to("cpu"),
             log_scale=log_scale,
             stretch=stretch
         )
+
+    def plot_ternary(
+        self,
+        ha: torch.Tensor = None,
+        om: torch.Tensor = None,
+        im: torch.Tensor = None
+    ):
+        if ha is None:
+            ha = self.hallucination.flatten()
+            ha = ha[~torch.isnan(ha)]
+
+        if om is None:
+            om = self.omission.flatten()
+            om = om[~torch.isnan(om)]
+
+        if im is None:
+            im = self.improvement.flatten()
+            im = im[~torch.isnan(im)]
+
+        return plot.display_ternary(
+            ha=ha.cpu().numpy(),
+            om=om.cpu().numpy(),
+            im=im.cpu().numpy()
+        )
+    
+    def plot_stats(self):
+        return plot.display_stats(self)
 
     def __call__(self) -> Any:
         return self.compute()

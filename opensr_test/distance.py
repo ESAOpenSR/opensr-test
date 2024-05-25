@@ -115,9 +115,7 @@ class DistanceMetric(ABC):
         metric_result = torch.nn.functional.interpolate(
             metric_result[None, None],
             size=self.x.shape[-2:],
-            mode="bicubic",
-            antialias=True,
-            align_corners=False
+            mode="nearest"
         ).squeeze()
 
         return metric_result
@@ -292,36 +290,50 @@ class LPIPS(DistanceMetric):
         x: torch.Tensor,
         y: torch.Tensor,
         method: str = "image",
-        patch_size: int = 32,
+        patch_size: int = 16,
         device: Union[str, torch.device] = "cpu",
     ):
         if method == "patch":
-            if patch_size < 32:
-                raise ValueError("The patch size must be at least 32.")
+            if patch_size < 16:
+                raise ValueError("The patch size must be at least 16.")
 
-        # if extra_requires (setup.py) is not fulfilled, raise error
         check_lpips()
         import lpips
 
-        if method == "patch":
-            if patch_size < 32:
-                raise ValueError("The patch size must be at least 32.")
-
         # Set the model
         self.model = lpips.LPIPS(net="alex", verbose=False).to(device)
+        self.model.eval()
 
         # Normalize the tensors to [-1, 1]
-        y = (y - y.min()) / (y.max() - y.min())
         y = y * 2 - 1
-
-        x = (x - x.min()) / (x.max() - x.min())
         x = x * 2 - 1
 
         super().__init__(x=x, y=y, method=method, patch_size=patch_size)
 
     @torch.no_grad()
     def _compute_image(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
-        return self.model(x, y).mean()
+        # Scale image is lower than 64
+        if (x.shape[1] < 64) or (x.shape[2] < 64):
+            x = torch.nn.functional.interpolate(
+                x[None],
+                size=(64, 64),
+                mode="bilinear",
+                antialias=True
+            ).squeeze()
+            
+        
+        if (y.shape[1] < 64) or (y.shape[2] < 64):
+            y = torch.nn.functional.interpolate(
+                y[None],
+                size=(64, 64),
+                mode="bilinear",
+                antialias=True
+            ).squeeze()
+
+        with torch.no_grad():
+            result = self.model(x, y).mean()
+
+        return result
 
     def _compute_pixel(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
         raise NotImplementedError("LPIPS cannot be computed at pixel level.")
@@ -339,13 +351,12 @@ class CLIP(DistanceMetric):
         device: Union[str, torch.device] = "cpu",
     ):
         if method == "patch":
-            if patch_size < 32:
-                raise ValueError("The patch size must be at least 32.")
+            if patch_size < 16:
+                raise ValueError("The patch size must be at least 16.")
                     
         # if extra_requires (setup.py) is not fulfilled, raise error
         check_openclip()
         check_huggingface_hub()
-
         import open_clip
         from huggingface_hub import hf_hub_download
 
@@ -360,15 +371,15 @@ class CLIP(DistanceMetric):
         model, _, preprocess = open_clip.create_model_and_transforms("RN50")
         model.load_state_dict(ckpt)
         model.to(device)
+        model.eval()
 
         # desactivate the gradients
         for param in model.parameters():
             param.requires_grad = False
 
         # Scale the tensors values to [0, 1]
-        # we found better results with this normalization
-        x_norm = (x - x.min()) / (x.max() - x.min())
-        y_norm = (y - y.min()) / (y.max() - y.min())
+        x_norm = x.clamp(0, 1)
+        y_norm = y.clamp(0, 1)
         self.model = model
         super().__init__(
             x=x_norm, y=y_norm, method=method, patch_size=patch_size
@@ -383,7 +394,8 @@ class CLIP(DistanceMetric):
                 size=224,
                 mode="bilinear",
                 antialias=True
-            )
+            ).squeeze()
+            
         
         if y.shape != (3, 224, 224):
             y = torch.nn.functional.interpolate(
@@ -391,12 +403,19 @@ class CLIP(DistanceMetric):
                 size=224,
                 mode="bilinear",
                 antialias=True
-            )
+            ).squeeze()
         
+        # normalize
+        means = torch.tensor([0.48145466, 0.4578275, 0.40821073]).view(3, 1, 1).to(x.device)
+        stds = torch.tensor([0.26862954, 0.26130258, 0.27577711]).view(3, 1, 1).to(x.device)
+
+        x = (x - means) / stds
+        y = (y - means) / stds
+
         # Run the CLIP model
         with torch.no_grad():
-            x_emb = self.model.encode_image(x).squeeze()
-            y_emb = self.model.encode_image(y).squeeze()
+            x_emb = self.model.encode_image(x[None]).squeeze()
+            y_emb = self.model.encode_image(y[None]).squeeze()
 
         return torch.nn.functional.l1_loss(x_emb, y_emb)
 
@@ -420,8 +439,8 @@ class MTF(DistanceMetric):
         )
 
         if method == "patch":
-            if patch_size < 32:
-                raise ValueError("The patch size must be at least 32.")
+            if patch_size < 16:
+                raise ValueError("The patch size must be at least 16.")
 
         self.scale = scale
 
@@ -447,7 +466,6 @@ class MTF(DistanceMetric):
 
     def _compute_pixel(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
         raise NotImplementedError("MTF cannot be computed at pixel level.")
-
 
 
 def get_distance(
