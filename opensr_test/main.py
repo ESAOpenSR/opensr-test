@@ -608,14 +608,17 @@ class Metrics:
         log_scale: Optional[bool] = False,
         stretch: Optional[str] = "linear"
     ):
-        self.d_im_ref[self.d_im_ref > 5] = 5
-        self.d_om_ref[self.d_om_ref > 5] = 5
+        d_im_ref = self.d_im_ref.clone()
+        d_om_ref = self.d_om_ref.clone()
+
+        d_im_ref[d_im_ref > 5] = 5
+        d_om_ref[d_om_ref > 5] = 5
 
         return plot.display_tc_score(
             sr_rgb=self.sr_harm_RGB.to("cpu"),
             hr_rgb=self.hr_RGB.to("cpu"),
-            d_im_ref=self.d_im_ref.to("cpu"),
-            d_om_ref=self.d_om_ref.to("cpu"),
+            d_im_ref=d_im_ref.to("cpu"),
+            d_om_ref=d_om_ref.to("cpu"),
             tc_score=self.classification.to("cpu"),
             log_scale=log_scale,
             stretch=stretch
@@ -625,7 +628,8 @@ class Metrics:
         self,
         ha: torch.Tensor = None,
         om: torch.Tensor = None,
-        im: torch.Tensor = None
+        im: torch.Tensor = None,
+        bins: Optional[str] = "log"
     ):
         if ha is None:
             ha = self.hallucination.flatten()
@@ -642,7 +646,8 @@ class Metrics:
         return plot.display_ternary(
             ha=ha.cpu().numpy(),
             om=om.cpu().numpy(),
-            im=im.cpu().numpy()
+            im=im.cpu().numpy(),
+            bins=bins
         )
     
     def plot_histogram(self):

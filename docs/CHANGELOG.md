@@ -21,6 +21,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 Unreleased changes here.
 
+## [1.1.0] - 2024-05-20
+
+- Fractional Difference Index (FDI) added to the distance metrics.
+- Bug in the `plot_tc` function fixed.
+- A new parameter added to the `display_ternary` function to control the bin count.
+- Config initial parameters have been updated.
+
+
+
 ## [1.0.0] - 2024-05-20
 
 - Logo changed.

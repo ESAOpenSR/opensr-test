@@ -468,6 +468,24 @@ class MTF(DistanceMetric):
         raise NotImplementedError("MTF cannot be computed at pixel level.")
 
 
+class FractionalDifference(DistanceMetric):
+    """Estimate the fractional difference between two tensors"""
+    def __init__(
+        self,
+        x: torch.Tensor,
+        y: torch.Tensor,
+        method: str = "image",
+        patch_size: int = 32
+    ):
+        super().__init__(x=x, y=y, method=method, patch_size=patch_size)
+        self.epsilon = 1e-8
+
+    def _compute_image(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
+        return torch.nanmean(torch.abs(x - y) / torch.abs(x + y + self.epsilon))
+
+    def _compute_pixel(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
+        return torch.nanmean(torch.abs(x - y) / torch.abs(x + y + self.epsilon), axis=0)
+
 def get_distance(
     x: torch.Tensor,
     y: torch.Tensor,
@@ -520,6 +538,8 @@ def get_distance(
         distance_fn = MTF(
             x=x, y=y, method=agg_method, patch_size=patch_size, scale=scale
         )
+    elif method == "fd":
+        distance_fn = FractionalDifference(x=x, y=y, method=agg_method, patch_size=patch_size)
     elif method == "lpips":
         x_rgb = x[rgb_bands, :, :]
         y_rgb = y[rgb_bands, :, :]
