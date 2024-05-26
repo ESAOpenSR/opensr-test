@@ -21,6 +21,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 Unreleased changes here.
 
+## [1.0.0] - 2024-05-20
+
+- Logo changed.
+- The `lightglue` submodule has been replaced with a new package called `satalign`.
+- A new example has been added on how to run `opensr-test` on synthetic data.
+- The documentation has been updated.
+- The harmonization module has been updated to include the `satalign` package.
+- We have added two new datasets: `spain_crops` and `spain_urban`.
+- We add a new plot function: `plot_ternary`.
+- We add a new plot function: `plot_histogram`.
+
+
+
+
+## [0.2.0] - 2023-12-20
+
+- Paper submited to the IEEE remote sensing letters.
+
+
 ## [0.1.0] - 2023-12-20
 
 ### Added

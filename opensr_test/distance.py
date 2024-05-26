@@ -1,15 +1,12 @@
+from abc import ABC, abstractmethod
 from typing import List, Optional, Union
 
-from abc import ABC, abstractmethod
-
 import torch
-from opensr_test.config import Metric
-from opensr_test.utils import check_lpips, check_openclip
-from torchvision.transforms import Normalize
+from opensr_test.utils import check_lpips, check_openclip, check_huggingface_hub
 
 
 class DistanceMetric(ABC):
-    """ Metaclass to define the distance metrics
+    """An abstract class to compute the distance between two tensors.
 
     Parameters:
         method (str): The method to use. Either "pixel", "patch", or "image".
@@ -17,18 +14,16 @@ class DistanceMetric(ABC):
         x (torch.Tensor): The SR harmonized image (C, H, W).
         y (torch.Tensor): The HR image (C, H, W).
         **kwargs: The parameters to pass to the distance function.
-        
+
     Abstract methods:
         compute_patch: Compute the distance metric at patch level.
         compute_image: Compute the distance metric at image level.
         compute_pixel: Compute the distance metric at image level.
         compute: Compute the distance metric.
-        
     """
 
     def __init__(
         self,
-        name: str,
         method: str,
         patch_size: int,
         x: torch.Tensor,
@@ -36,7 +31,6 @@ class DistanceMetric(ABC):
         **kwargs
     ):
         self.method = method
-        self.name = name
         self.patch_size = patch_size
         self.kwargs = kwargs
         self.axis: int = 0
@@ -45,9 +39,9 @@ class DistanceMetric(ABC):
 
     @staticmethod
     def do_square(tensor: torch.Tensor, patch_size: Optional[int] = 32) -> torch.Tensor:
-        """ Split a tensor into n_patches x n_patches patches and return
+        """Split a tensor into n_patches x n_patches patches and return
         the patches as a tensor.
-        
+
         Args:
             tensor (torch.Tensor): The tensor to split.
             n_patches (int, optional): The number of patches to split the tensor into.
@@ -56,17 +50,20 @@ class DistanceMetric(ABC):
         Returns:
             torch.Tensor: The patches as a tensor.
         """
+        
         # Check if it is a square tensor
         if tensor.shape[-1] != tensor.shape[-2]:
             raise ValueError("The tensor must be square.")
 
-        # tensor (C, H, W)
+        # Get the image size
         xdim = tensor.shape[1]
         ydim = tensor.shape[2]
 
+        # Get the patch size
         minimages_x = int(torch.ceil(torch.tensor(xdim / patch_size)))
         minimages_y = int(torch.ceil(torch.tensor(ydim / patch_size)))
 
+        # pad the tensor to be divisible by the patch size            
         pad_x_01 = int((minimages_x * patch_size - xdim) // 2)
         pad_x_02 = int((minimages_x * patch_size - xdim) - pad_x_01)
 
@@ -96,30 +93,35 @@ class DistanceMetric(ABC):
         pass
 
     def compute_image(self) -> torch.Tensor:
-        return Metric(value=self._compute_image(self.x, self.y), description=self.name)
+        return self._compute_image(self.x, self.y)
 
     def compute_patch(self) -> torch.Tensor:
+        # Create the patches
         x_batched = self.do_square(self.x, self.patch_size)
         y_batched = self.do_square(self.y, self.patch_size)
+        
+        # Compute the metric for each patch
         metric_result = torch.zeros(x_batched.shape[:2])
-
         xrange, yrange = x_batched.shape[0:2]
-
         for x_index in range(xrange):
             for y_index in range(yrange):
                 x_batch = x_batched[x_index, y_index]
                 y_batch = y_batched[x_index, y_index]
-                metric_result[x_index, y_index] = self._compute_image(x_batch, y_batch)
+                metric_result[x_index, y_index] = self._compute_image(
+                    x_batch, y_batch
+                )
 
         # Go back to the original size
         metric_result = torch.nn.functional.interpolate(
-            metric_result[None, None], size=self.x.shape[-2:], mode="nearest"
+            metric_result[None, None],
+            size=self.x.shape[-2:],
+            mode="nearest"
         ).squeeze()
-        
-        return Metric(value=metric_result, description=self.name)
+
+        return metric_result
 
     def compute_pixel(self) -> torch.Tensor:
-        return Metric(value=self._compute_pixel(self.x, self.y), description=self.name)
+        return self._compute_pixel(self.x, self.y)
 
     def compute(self) -> torch.Tensor:
         if self.method == "pixel":
@@ -142,22 +144,22 @@ class KL(DistanceMetric):
         method: str = "image",
         patch_size: int = 32,
     ):
-        super().__init__(x=x, y=y, method=method, patch_size=patch_size, name="KL")
+        super().__init__(x=x, y=y, method=method, patch_size=patch_size)
 
         self.large_number = 1e2
         self.epsilon = 1e-8
 
+    def _compute_image(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
         pbias_d = torch.abs(x / (y + self.epsilon))
         pbias_d[pbias_d > self.large_number] = self.large_number
         pbias_d[pbias_d < 1 / self.large_number] = 1 / self.large_number
-
-        self.pbias_d = pbias_d
-
-    def _compute_image(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
-        return torch.mean(x) * torch.log(torch.mean(self.pbias_d))
+        return torch.mean(x) * torch.log(torch.mean(pbias_d))
 
     def _compute_pixel(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
-        return torch.mean(x, axis=0) * torch.log(torch.mean(self.pbias_d, axis=0))
+        pbias_d = torch.abs(x / (y + self.epsilon))
+        pbias_d[pbias_d > self.large_number] = self.large_number
+        pbias_d[pbias_d < 1 / self.large_number] = 1 / self.large_number
+        return torch.mean(x, axis=0) * torch.log(torch.mean(pbias_d, axis=0))
 
 
 class L1(DistanceMetric):
@@ -170,7 +172,7 @@ class L1(DistanceMetric):
         method: str = "image",
         patch_size: int = 32,
     ):
-        super().__init__(x=x, y=y, method=method, patch_size=patch_size, name="L1")
+        super().__init__(x=x, y=y, method=method, patch_size=patch_size)
 
     def _compute_image(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
         return torch.nanmean(torch.abs(x - y))
@@ -189,7 +191,7 @@ class L2(DistanceMetric):
         method: str = "image",
         patch_size: int = 32,
     ):
-        super().__init__(x=x, y=y, method=method, patch_size=patch_size, name="L2")
+        super().__init__(x=x, y=y, method=method, patch_size=patch_size)
 
     def _compute_image(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
         return torch.nanmean((x - y) ** 2)
@@ -208,17 +210,26 @@ class PBIAS(DistanceMetric):
         method: str = "image",
         patch_size: int = 32,
     ):
-        super().__init__(x=x, y=y, method=method, patch_size=patch_size, name="PBIAS")
-
+        super().__init__(x=x, y=y, method=method, patch_size=patch_size)
+        
+        self.large_number = 1e2
+        self.epsilon = 1e-8
+        
     def _compute_image(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
-        return torch.nanmean((x - y) ** 2)
+        ratio = torch.abs((x - y) / (y + self.epsilon))
+        ratio[ratio > self.large_number] = self.large_number
+        ratio[ratio < 1 / self.large_number] = 1 / self.large_number
+        return torch.nanmean(ratio)
 
     def _compute_pixel(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
-        return torch.nanmean((x - y) ** 2, axis=0)
+        ratio = torch.abs((x - y) / (y + self.epsilon))
+        ratio[ratio > self.large_number] = self.large_number
+        ratio[ratio < 1 / self.large_number] = 1 / self.large_number
+        return torch.nanmean(ratio, axis=0)
 
 
-class PSNR(DistanceMetric):
-    """Spectral information divergence between two tensors"""
+class IPSNR(DistanceMetric):
+    """Inverse Peak signal to noise ratio between two tensors"""
 
     def __init__(
         self,
@@ -227,7 +238,7 @@ class PSNR(DistanceMetric):
         method: str = "image",
         patch_size: int = 32,
     ):
-        super().__init__(x=x, y=y, method=method, patch_size=patch_size, name="PSNR")
+        super().__init__(x=x, y=y, method=method, patch_size=patch_size)
 
         self.data_range = torch.tensor(1)
         self.epsilon = torch.tensor(1e-10)
@@ -235,16 +246,16 @@ class PSNR(DistanceMetric):
     def _compute_image(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
         l2_distance = torch.nanmean((x - y) ** 2)
         l2_distance[l2_distance < self.epsilon] = self.epsilon
-        return 10 * torch.log10(self.data_range ** 2 / l2_distance)
+        return 1 / (10 * torch.log10(self.data_range**2 / l2_distance))
 
     def _compute_pixel(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
         l2_distance = torch.nanmean((x - y) ** 2, axis=0)
         l2_distance[l2_distance < self.epsilon] = self.epsilon
-        return 1/(10 * torch.log10(self.data_range ** 2 / l2_distance))
+        return 1 / (10 * torch.log10(self.data_range**2 / l2_distance))
 
 
 class SAD(DistanceMetric):
-    """Spectral information divergence between two tensors"""
+    """Spectral Angle distance between two tensors"""
 
     def __init__(
         self,
@@ -253,35 +264,15 @@ class SAD(DistanceMetric):
         method: str = "image",
         patch_size: int = 32,
     ):
-        super().__init__(x=x, y=y, method=method, patch_size=patch_size, name="SAD")
+        super().__init__(x=x, y=y, method=method, patch_size=patch_size)
 
     def _compute_image(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
-        dot_product = (x * y).sum(dim=0)
-        preds_norm = x.norm(dim=0)
-        target_norm = y.norm(dim=0)
-        sam_score = torch.clamp(dot_product / (preds_norm * target_norm), -1, 1).acos()
-        return torch.rad2deg(sam_score)
-
-    def _compute_pixel(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
         dot_product = (x * y).squeeze().sum()
         preds_norm = x.squeeze().norm()
         target_norm = y.squeeze().norm()
         sam_score = torch.clamp(dot_product / (preds_norm * target_norm), -1, 1).acos()
         return torch.rad2deg(sam_score)
 
-
-class SAD(DistanceMetric):
-    """Spectral information divergence between two tensors"""
-
-    def __init__(
-        self,
-        x: torch.Tensor,
-        y: torch.Tensor,
-        method: str = "image",
-        patch_size: int = 32,
-    ):
-        super().__init__(x=x, y=y, method=method, patch_size=patch_size, name="SAD")
-
     def _compute_pixel(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
         dot_product = (x * y).sum(dim=0)
         preds_norm = x.norm(dim=0)
@@ -289,55 +280,67 @@ class SAD(DistanceMetric):
         sam_score = torch.clamp(dot_product / (preds_norm * target_norm), -1, 1).acos()
         return torch.rad2deg(sam_score)
 
-    def _compute_image(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
-        dot_product = (x * y).sum()
-        preds_norm = x.norm()
-        target_norm = y.norm()
-        sam_score = torch.clamp(dot_product / (preds_norm * target_norm), -1, 1).acos()
-        return torch.rad2deg(sam_score)
 
 
 class LPIPS(DistanceMetric):
-    """Spectral information divergence between two tensors"""
+    """Learned Perceptual Image Patch Similarity between two tensors"""
 
     def __init__(
         self,
         x: torch.Tensor,
         y: torch.Tensor,
         method: str = "image",
-        patch_size: int = 32,
+        patch_size: int = 16,
         device: Union[str, torch.device] = "cpu",
     ):
-        # if extra_requires (setup.py) is not fulfilled, raise error
+        if method == "patch":
+            if patch_size < 16:
+                raise ValueError("The patch size must be at least 16.")
+
         check_lpips()
         import lpips
 
-        if method == "patch":
-            if patch_size < 32:
-                raise ValueError("The patch size must be at least 32.")
-
         # Set the model
         self.model = lpips.LPIPS(net="alex", verbose=False).to(device)
+        self.model.eval()
 
         # Normalize the tensors to [-1, 1]
-        y = (y - y.min()) / (y.max() - y.min())
         y = y * 2 - 1
-
-        x = (x - x.min()) / (x.max() - x.min())
         x = x * 2 - 1
 
-        super().__init__(x=x, y=y, method=method, patch_size=patch_size, name="LPIPS")
+        super().__init__(x=x, y=y, method=method, patch_size=patch_size)
 
     @torch.no_grad()
     def _compute_image(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
-        return self.model(x, y).mean()
+        # Scale image is lower than 64
+        if (x.shape[1] < 64) or (x.shape[2] < 64):
+            x = torch.nn.functional.interpolate(
+                x[None],
+                size=(64, 64),
+                mode="bilinear",
+                antialias=True
+            ).squeeze()
+            
+        
+        if (y.shape[1] < 64) or (y.shape[2] < 64):
+            y = torch.nn.functional.interpolate(
+                y[None],
+                size=(64, 64),
+                mode="bilinear",
+                antialias=True
+            ).squeeze()
+
+        with torch.no_grad():
+            result = self.model(x, y).mean()
+
+        return result
 
     def _compute_pixel(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
         raise NotImplementedError("LPIPS cannot be computed at pixel level.")
 
 
-class CLIPscore(DistanceMetric):
-    """Estimate the CLIPscore between two tensors"""
+class CLIP(DistanceMetric):
+    """Estimate the CLIP score between two tensors"""
 
     def __init__(
         self,
@@ -347,51 +350,81 @@ class CLIPscore(DistanceMetric):
         patch_size: int = 32,
         device: Union[str, torch.device] = "cpu",
     ):
+        if method == "patch":
+            if patch_size < 16:
+                raise ValueError("The patch size must be at least 16.")
+                    
         # if extra_requires (setup.py) is not fulfilled, raise error
         check_openclip()
+        check_huggingface_hub()
         import open_clip
+        from huggingface_hub import hf_hub_download
 
-        if method != "patch":
-            raise ValueError(
-                "CLIPscore can only be computed at patch level of 256x256."
-            )
-
-        if method == "patch":
-            if patch_size != 256:
-                raise ValueError("The patch size must be 256.")
-
-        # Set the model        
-        self.model = open_clip.create_model_and_transforms(
-            "ViT-B-16-SigLIP-256",
-            pretrained='webli',
-            device=device
-        )[0]
-        
-        # Normalize the tensors
-        normalize = Normalize(
-            mean=(0.48145466, 0.4578275, 0.40821073),
-            std=(0.26862954, 0.26130258, 0.27577711)
+        # Set the model
+        # Copy the pretrained model in the current directory
+        checkpoint_path = hf_hub_download(
+            "chendelong/RemoteCLIP",
+            f"RemoteCLIP-RN50.pt",
+            cache_dir='checkpoints'
         )
-        x_norm = normalize(x)
-        y_norm = normalize(y)
+        ckpt = torch.load(checkpoint_path, map_location=device)
+        model, _, preprocess = open_clip.create_model_and_transforms("RN50")
+        model.load_state_dict(ckpt)
+        model.to(device)
+        model.eval()
 
+        # desactivate the gradients
+        for param in model.parameters():
+            param.requires_grad = False
+
+        # Scale the tensors values to [0, 1]
+        x_norm = x.clamp(0, 1)
+        y_norm = y.clamp(0, 1)
+        self.model = model
         super().__init__(
-            x=x_norm, y=y_norm, method=method, patch_size=patch_size, name="CLIPscore"
+            x=x_norm, y=y_norm, method=method, patch_size=patch_size
         )
 
     @torch.no_grad()
     def _compute_image(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
-        x_emb = self.model.encode_image(x[None]).squeeze()
-        y_emb = self.model.encode_image(y[None]).squeeze()
+        # Scale image to be always Bx3x224x224
+        if x.shape != (3, 224, 224):
+            x = torch.nn.functional.interpolate(
+                x[None],
+                size=224,
+                mode="bilinear",
+                antialias=True
+            ).squeeze()
+            
+        
+        if y.shape != (3, 224, 224):
+            y = torch.nn.functional.interpolate(
+                y[None],
+                size=224,
+                mode="bilinear",
+                antialias=True
+            ).squeeze()
+        
+        # normalize
+        means = torch.tensor([0.48145466, 0.4578275, 0.40821073]).view(3, 1, 1).to(x.device)
+        stds = torch.tensor([0.26862954, 0.26130258, 0.27577711]).view(3, 1, 1).to(x.device)
+
+        x = (x - means) / stds
+        y = (y - means) / stds
+
+        # Run the CLIP model
+        with torch.no_grad():
+            x_emb = self.model.encode_image(x[None]).squeeze()
+            y_emb = self.model.encode_image(y[None]).squeeze()
+
         return torch.nn.functional.l1_loss(x_emb, y_emb)
 
     def _compute_pixel(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
-        raise NotImplementedError("CLIPscore cannot be computed at pixel level.")
+        raise NotImplementedError("CLIP cannot be computed at pixel level.")
 
 
-
-class CROSSMTF(DistanceMetric):
-    """Spectral information divergence between two tensors"""
+class MTF(DistanceMetric):
+    """Estimate the cross-modulation transfer function between two tensors"""
 
     def __init__(
         self,
@@ -402,16 +435,20 @@ class CROSSMTF(DistanceMetric):
         scale: int = 4,
     ):
         super().__init__(
-            x=x, y=y, method=method, patch_size=patch_size, name="CROSSMTF"
+            x=x, y=y, method=method, patch_size=patch_size
         )
 
         if method == "patch":
-            if patch_size < 32:
-                raise ValueError("The patch size must be at least 32.")
+            if patch_size < 16:
+                raise ValueError("The patch size must be at least 16.")
 
         self.scale = scale
 
     def _compute_image(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
+        # do computation in cpu to avoid problems with fft
+        x = x.cpu()
+        y = y.cpu()
+
         # Compute mask
         freq = torch.fft.fftfreq(x.shape[-1])
         freq = torch.fft.fftshift(freq)
@@ -422,12 +459,13 @@ class CROSSMTF(DistanceMetric):
         fft_preds = torch.abs(torch.fft.fftshift(torch.fft.fft2(x)))
         fft_target = torch.abs(torch.fft.fftshift(torch.fft.fft2(y)))
 
-        mtf = torch.masked_select(fft_preds / fft_target, tensormask)
+        mtf = torch.masked_select((fft_target - fft_preds) / fft_target, tensormask)
+        mtf = torch.abs(mtf)
 
         return torch.mean(torch.clamp(mtf, 0, 1))
 
     def _compute_pixel(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
-        raise NotImplementedError("CROSSMTF cannot be computed at pixel level.")
+        raise NotImplementedError("MTF cannot be computed at pixel level.")
 
 
 def get_distance(
@@ -440,7 +478,9 @@ def get_distance(
     device: Union[str, torch.device] = "cpu",
     rgb_bands: Optional[List[int]] = [0, 1, 2],
 ):
-    """ Estimate the unsystematic error between the SR and HR image.
+    """Estimate the distance between two tensors. All the distances
+    are normalized to be between 0 and n,  where n is the maximum
+
 
     Args:
         x (torch.Tensor): The SR harmonized image (C, H, W).
@@ -448,13 +488,13 @@ def get_distance(
         method (str): The method to use. Either "psnr" or "cpsnr".
         agg_method (str): The method to use to aggregate the distance.
             Either "pixel", "image", or "patch".
-        patch_size (int, optional): The patch size to use if the patch 
+        patch_size (int, optional): The patch size to use if the patch
             method is used.
         scale (int, optional): The scale of the super-resolution.
-        space_search (int, optional): This parameter is used to search 
-            for the best shift that maximizes the PSNR. By default, it is 
+        space_search (int, optional): This parameter is used to search
+            for the best shift that maximizes the PSNR. By default, it is
             the same as the super-resolution scale.
-        
+
     Returns:
         torch.Tensor: The metric value.
     """
@@ -472,12 +512,12 @@ def get_distance(
         distance_fn = L2(x=x, y=y, method=agg_method, patch_size=patch_size)
     elif method == "pbias":
         distance_fn = PBIAS(x=x, y=y, method=agg_method, patch_size=patch_size)
-    elif method == "ipsnr":
-        distance_fn = PSNR(x=x, y=y, method=agg_method, patch_size=patch_size)
+    elif method == "psnr":
+        distance_fn = IPSNR(x=x, y=y, method=agg_method, patch_size=patch_size)
     elif method == "sad":
         distance_fn = SAD(x=x, y=y, method=agg_method, patch_size=patch_size)
-    elif method == "crossmtf":
-        distance_fn = CROSSMTF(
+    elif method == "mtf":
+        distance_fn = MTF(
             x=x, y=y, method=agg_method, patch_size=patch_size, scale=scale
         )
     elif method == "lpips":
@@ -489,10 +529,10 @@ def get_distance(
     elif method == "clip":
         x_rgb = x[rgb_bands, :, :]
         y_rgb = y[rgb_bands, :, :]
-        distance_fn = CLIPscore(
+        distance_fn = CLIP(
             x_rgb, y_rgb, method=agg_method, patch_size=patch_size, device=device
         )
     else:
         raise ValueError("No valid distance method.")
 
-    return distance_fn
+    return distance_fn.compute()

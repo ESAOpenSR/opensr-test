@@ -1,11 +1,13 @@
 from typing import Dict, Optional, Tuple
 
+import matplotlib
 import matplotlib.colors as colors
 import matplotlib.pyplot as plt
+import mpltern
 import numpy as np
 import torch
-from opensr_test.lightglue import viz2d
 from skimage import exposure
+from matplotlib.patches import ArrowStyle, FancyArrowPatch
 
 
 def min_max_range(tensor):
@@ -81,117 +83,6 @@ def equalize_hist(img: torch.Tensor, permute=True) -> torch.Tensor:
     return torch.from_numpy(new_img).float()
 
 
-def quadruplets(
-    lr_img: torch.Tensor,
-    sr_img: torch.Tensor,
-    hr_img: torch.Tensor,
-    landuse_img: Optional[torch.Tensor] = None,
-    stretch: Optional[str] = "linear",
-) -> Tuple[plt.figure, plt.Axes]:
-    """ Display LR, SR, HR and Landuse images in a single figure.
-
-    Args:
-        lr_img (torch.Tensor): The LR RGB (3xHxW) image.
-        sr_img (torch.Tensor): The SR RGB (3xHxW) image.
-        hr_img (torch.Tensor): The HR RGB (3xHxW) image.
-        landuse_img (torch.Tensor): The landuse grayscale (HxW) image.
-            Optional, defaults to None.
-        stretch (Optional[str], optional): Option to stretch the values 
-            to increase contrast: "lin" (linear) or "hist" (histogram)
-
-    Raises:
-        ValueError: The LR image must be a RGB (3xHxW) image.
-        ValueError: The SR image must be a RGB (3xHxW) image.
-        ValueError: The HR image must be a RGB (3xHxW) image.
-        ValueError: The landuse image must be a grayscale (HxW) image.
-
-    Returns:
-        Tuple[plt.figure, plt.Axes]: The figure and axes to plot.
-    """
-    if lr_img.shape[0] == 4:
-        raise ValueError("The LR image must be a RGB (3xHxW) image.")
-    if sr_img.shape[0] == 4:
-        raise ValueError("The SR image must be a RGB (3xHxW) image.")
-    if hr_img.shape[0] == 4:
-        raise ValueError("The HR image must be a RGB (3xHxW) image.")
-
-    if landuse_img is None:
-        return triplets(lr_img, sr_img, hr_img, stretch=stretch)
-
-    # Apply the stretch
-    if stretch == "linear":
-        lr_img = linear_fix(lr_img)
-        sr_img = linear_fix(sr_img)
-        hr_img = linear_fix(hr_img)
-    elif stretch == "histogram":
-        lr_img = equalize_hist(lr_img)
-        sr_img = equalize_hist(sr_img)
-        hr_img = equalize_hist(hr_img)
-
-    # Define the categorical values and colors
-    values = [10, 20, 30, 40, 50, 60, 70, 80, 90, 95, 100]
-    colors_list = [
-        "#006400",
-        "#ffbb22",
-        "#ffff4c",
-        "#f096ff",
-        "#fa0000",
-        "#b4b4b4",
-        "#f0f0f0",
-        "#0064c8",
-        "#0096a0",
-        "#00cf75",
-        "#fae6a0",
-    ]
-    labels = [
-        "Tree cover (10)",
-        "Shrubland (20)",
-        "Grassland (30)",
-        "Cropland (40)",
-        "Built-up (50)",
-        "Bare / sparse vegetation (60)",
-        "Snow and ice (70)",
-        "Permanent water bodies (80)",
-        "Herbaceous wetland (90)",
-        "Mangroves (95)",
-        "Moss and lichen (100)",
-    ]
-
-    # Set bounds and ticks
-    bounds = [values[i] - 2.5 for i in range(len(values))]
-    bounds.append(values[-1] + 2.5)
-    ticks = [values[i] for i in range(len(values))]
-
-    # Create a iterable colormap
-    cmap = colors.ListedColormap(colors_list)
-    norm = colors.BoundaryNorm(bounds, cmap.N)
-    sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
-    sm.set_array([])
-
-    # Plot the images
-    scale_factor = hr_img.shape[0] / lr_img.shape[0]
-    fig, axs = plt.subplots(1, 4, figsize=(25, 5))
-    axs[0].imshow(lr_img)
-    axs[0].set_title("LR")
-    axs[1].imshow(sr_img)
-    axs[1].set_title("SR")
-    axs[2].imshow(hr_img)
-    axs[2].set_title("HR")
-    axs[3].imshow(landuse_img, cmap=cmap, interpolation="nearest", norm=norm)
-    axs[3].set_title("LandUse")
-
-    # Add the colorbar
-    cbar_ax = axs[0].inset_axes([1.05, 0, 0.05, 1], transform=axs[3].transAxes)
-    cbar = fig.colorbar(sm, cax=cbar_ax, ticks=ticks, boundaries=bounds)
-    cbar.ax.set_yticklabels(labels)
-
-    # Add the suptitle
-    fig.suptitle("Scale factor: %.2f" % scale_factor, fontsize=16)
-
-    # return the figure to plot
-    return fig, axs
-
-
 def triplets(
     lr_img: torch.Tensor,
     sr_img: torch.Tensor,
@@ -241,47 +132,17 @@ def triplets(
     scale_factor = hr_img.shape[0] / lr_img.shape[0]
     fig, axs = plt.subplots(1, 3, figsize=(25, 5))
     axs[0].imshow(lr_img)
-    axs[0].set_title("LR")
+    axs[0].set_title("LR", fontsize=14, fontweight="bold")
     axs[1].imshow(sr_img)
-    axs[1].set_title("SR")
+    axs[1].set_title("SR", fontsize=14, fontweight="bold")
     axs[2].imshow(hr_img)
-    axs[2].set_title("HR")
+    axs[2].set_title("HR", fontsize=14, fontweight="bold")
 
     # Add the suptitle
     fig.suptitle("Scale factor: %.2f" % scale_factor, fontsize=16)
     
     # return the figure to plot
     return fig, axs
-
-
-def spatial_matches(
-    lr: torch.Tensor,
-    sr_to_lr: torch.Tensor,
-    points0: torch.Tensor,
-    points1: torch.Tensor,
-    matches01: Dict[str, torch.Tensor],
-    threshold_distance: Optional[int] = 5,
-    stretch: Optional[str] = "linear",
-):
-
-    if stretch == "linear":
-        sr_to_lr = linear_fix(sr_to_lr, permute=False)
-        lr = linear_fix(lr, permute=False)
-    elif stretch == "histogram":
-        sr_to_lr = equalize_hist(sr_to_lr, permute=False)
-        lr = equalize_hist(lr, permute=False)
-
-    # if the distance between the points is higher than
-    # threshold_distance pixels, it is considered a bad match
-    dist = torch.sqrt(torch.sum((points0 - points1) ** 2, dim=1))
-    thres = dist < threshold_distance
-    p0 = points0[thres]
-    p1 = points1[thres]
-
-    axes = viz2d.plot_images([lr, sr_to_lr], titles=["LR", "SR to LR"])
-    viz2d.plot_matches(p0, p1, color="lime", lw=0.2)
-    viz2d.add_text(0, f'Stop after {matches01["stop"]} layers', fs=20)
-    return axes
 
 
 def display_results(
@@ -297,7 +158,6 @@ def display_results(
     e2_title: str,
     e2_subtitle: str,
     e3: torch.Tensor,
-    e3_points: Tuple[torch.Tensor, torch.Tensor],
     e3_title: str,
     e3_subtitle: str,
     e4: torch.Tensor,
@@ -377,41 +237,43 @@ def display_results(
     axs[0, 4].set_title("HR", fontsize=20, fontweight="bold")
 
     # Display the local reflectance map error
-    axs[1, 0].imshow(e1)
+    axs[1, 0].imshow(e1.cpu().clone())
     axs[1, 0].set_title(
         "%s \n %s: %s" % (r"$\bf{Reflectance\ Consistency \downarrow}$", e1_title, e1_subtitle)
     )
 
     # Display the spectral map error
-    axs[1, 1].imshow(e2)
+    axs[1, 1].imshow(e2.cpu().clone())
     axs[1, 1].set_title(
         "%s \n %s: %s" % (r"$\bf{Spectral\ Consistency \downarrow}$", e2_title, e2_subtitle)
     )
 
-    # Display the Spatial consistency
-    if len(torch.tensor(e3).shape) == 0:
-        axs[1, 2].imshow(e2 * torch.nan)
-    else:
-        axs[1, 2].imshow(e3, vmin=e3.min(), vmax=e3.max(), cmap="RdBu")
-        axs[1, 2].plot(
-            [x[0] for x in e3_points], [x[1] for x in e3_points], "r*", markersize=5
-        )
+    # Display the distance to the omission space
+    e3p = e3[~torch.isnan(e3)]
+    p5, p95 = np.percentile(e3p.flatten().cpu().clone().numpy(), [2, 98])
+    axs[1, 2].imshow(e3, vmin=p5, vmax=p95)
     axs[1, 2].set_title(
-        "%s \n %s: %s" % (r"$\bf{Spatial\ Consistency \downarrow}$", e3_title, e3_subtitle)
+        "%s \n %s: %s"
+        % (r"$\bf{Distance\ to\ Omission\ Space \uparrow}$", e3_title, e3_subtitle)
     )
 
-    # Display the distance to the ommission space
-    axs[1, 3].imshow(e4)
+    # Display the distance to the hallucination space
+    e5p = e5[~torch.isnan(e5)]
+    p5, p95 = np.percentile(e5p.flatten().cpu().clone().numpy(), [2, 98])
+    axs[1, 3].imshow(e5, vmin=p5, vmax=p95)
     axs[1, 3].set_title(
         "%s \n %s: %s"
-        % (r"$\bf{Distance\ to\ Omission\ Space \uparrow}$", e4_title, e4_subtitle)
+        % (r"$\bf{Distance\ to\ Hallucination\ Space \uparrow}$", e5_title, e5_subtitle)
     )
 
-    # Display the Hallucination error
-    axs[1, 4].imshow(e5)
+
+    # Display the distance to the improvement space
+    e4p = e4[~torch.isnan(e4)]
+    p5, p95 = np.percentile(e4p.flatten().cpu().clone().numpy(), [2, 98])
+    axs[1, 4].imshow(e4, vmin=p5, vmax=p95)
     axs[1, 4].set_title(
         "%s \n %s: %s"
-        % (r"$\bf{Distance\ to\ Improvement\ Space \downarrow}$", e5_title, e5_subtitle)
+        % (r"$\bf{Distance\ to\ Improvement\ Space \downarrow}$", e4_title, e4_subtitle)
     )
 
     return fig, axs
@@ -419,55 +281,205 @@ def display_results(
 
 def display_tc_score(
     sr_rgb: torch.Tensor,
+    hr_rgb: torch.Tensor,
     d_im_ref: torch.Tensor,
     d_om_ref: torch.Tensor,
     tc_score: torch.Tensor,
-    log_scale: bool = True,
+    log_scale: bool = False,
     stretch: Optional[str] = "linear",
 ):    
     # Apply the stretch
     if stretch == "linear":
         sr_rgb = linear_fix(sr_rgb)
+        hr_rgb = linear_fix(hr_rgb)
     elif stretch == "histogram":
         sr_rgb = equalize_hist(sr_rgb)
+        hr_rgb = equalize_hist(hr_rgb)
     else:
         sr_rgb = do_nothing(sr_rgb)
+        hr_rgb = do_nothing(hr_rgb)
 
     # Custom categorical colormap - Blue[0], Green[1], Red[2]
-    colorbar = colors.ListedColormap(["blue", "green", "red"])
-    
+    categorical_map = colors.ListedColormap(["blue", "green", "red"])
+    bounds = [0, 0.5, 1.5, 2.5]
+    norm = colors.BoundaryNorm(bounds, categorical_map.N)
+
     # Define triplets
-    p1 = d_im_ref.ravel()
+    p1 = d_im_ref.ravel().cpu().clone()
     p1 = p1[~torch.isnan(p1)]
 
-    p2 = d_om_ref.ravel()
+    p2 = d_om_ref.ravel().cpu().clone()
     p2 = p2[~torch.isnan(p2)]
     
-    p3 = tc_score.ravel()
+    p3 = tc_score.ravel().cpu().clone()
     p3 = p3[~torch.isnan(p3)]
     
     if log_scale:
-        fig, ax = plt.subplots(1, 3, figsize=(15, 5))
+        fig, axs = plt.subplots(2, 2, figsize=(10, 10))
+        ax = axs.flatten()
         ax[0].imshow(sr_rgb)
         ax[0].set_title("SR RGB", fontsize=20, fontweight="bold")
-        ax[1].imshow(tc_score, cmap=colorbar)
-        ax[1].set_title("TC score - GRID", fontsize=20, fontweight="bold")
-        ax[2].scatter(p1, p2, c=p3, cmap=colorbar)
-        ax[2].set_ylabel("$d_{im}$", fontsize=18)
-        ax[2].set_xlabel("$d_{om}$", fontsize=18)
-        ax[2].set_title("TC score - 2D", fontsize=20, fontweight="bold")
-        ax[2].set_yscale("log")
-        ax[2].set_xscale("log")    
+        ax[1].imshow(hr_rgb)
+        ax[1].set_title("HR RGB", fontsize=20, fontweight="bold")
+        ax[2].imshow(tc_score, cmap=categorical_map, norm=norm)
+        ax[2].set_title("TC score - GRID", fontsize=20, fontweight="bold")
+        ax[3].scatter(p2, p1, c=p3, cmap=categorical_map, norm=norm)
+        ax[3].set_ylabel("$d_{im}$", fontsize=18)
+        ax[3].set_xlabel("$d_{om}$", fontsize=18)
+        ax[3].set_title("TC score - 2D", fontsize=20, fontweight="bold")
+        ax[3].set_yscale("log")
+        ax[3].set_xscale("log")    
         # make square and equal
-        ax[2].set_aspect(1.0/ax[2].get_data_ratio(), adjustable='box')
+        ax[3].set_aspect(1.0/ax[3].get_data_ratio(), adjustable='box')
     else:
-        fig, ax = plt.subplots(1, 3, figsize=(15, 5))
-        ax[0].imshow(sr_rgb.permute(1, 2, 0)*3)
+        fig, axs = plt.subplots(2, 2, figsize=(10, 10))
+        ax = axs.flatten()
+        ax[0].imshow(sr_rgb)
         ax[0].set_title("SR RGB", fontsize=20, fontweight="bold")
-        ax[1].imshow(tc_score, cmap=colorbar)
-        ax[1].set_title("TC score - GRID", fontsize=20, fontweight="bold")
-        ax[2].scatter(p1, p2, c=p3, cmap=colorbar)        
-        ax[2].set_ylabel("$d_{im}$", fontsize=18)
-        ax[2].set_xlabel("$d_{om}$", fontsize=18)
-        ax[2].set_title("TC score - 2D", fontsize=20, fontweight="bold")        
+        ax[1].imshow(hr_rgb)
+        ax[1].set_title("HR RGB", fontsize=20, fontweight="bold")
+        ax[2].imshow(tc_score, cmap=categorical_map, norm=norm)
+        ax[2].set_title("TC score - GRID", fontsize=20, fontweight="bold")
+        ax[3].scatter(p2, p1, c=p3, cmap=categorical_map, norm=norm)
+        ax[3].set_ylabel("$d_{im}$", fontsize=18)
+        ax[3].set_xlabel("$d_{om}$", fontsize=18)
+        ax[3].set_title("TC score - 2D", fontsize=20, fontweight="bold")
     return fig, ax
+
+
+def display_ternary(
+    ha: torch.Tensor,
+    om: torch.Tensor,
+    im: torch.Tensor
+):
+    """ Display the ternary plot of the HA, OM and IM values.
+
+    Args:
+        ha (torch.Tensor): The hallucination error (H, W).
+        om (torch.Tensor): The omission error (H, W).
+        im (torch.Tensor): The improvement error (H, W).
+    
+    Returns:
+        fig, ax: The figure and axes of the plot.
+    """
+
+    # Set background color
+    # matplotlib.rc('axes',edgecolor='black',linewidth=1.2)
+
+    fig = plt.figure()
+    ax = fig.add_subplot(projection='ternary')
+
+    # Generate data
+    pc = ax.hexbin(im, om, ha, edgecolors="none", gridsize=50, cmap='viridis', bins='log')
+    cax = ax.inset_axes([1.1, 0.1, 0.05, 0.9], transform=ax.transAxes)
+    colorbar = fig.colorbar(pc, cax=cax)
+    colorbar.set_label("Count", rotation=270, va="baseline")
+
+    # Set labels with formatting
+    ax.set_tlabel('Im', fontsize=15, color='blue', weight='bold')
+    ax.set_llabel('Om', fontsize=15, color='green', weight='bold')
+    ax.set_rlabel('Ha', fontsize=15, color='red', weight='bold')
+
+    # Set grid properties
+    ax.grid(color='black', linestyle='--', linewidth=1, alpha=0.5)
+
+    # Configure axis tick and color properties
+    ax.taxis.set_tick_params(grid_color='blue', labelcolor='blue', color='red', labelsize=12)
+    ax.laxis.set_tick_params(grid_color='green', labelcolor='green', color='blue', labelsize=12)
+    ax.raxis.set_tick_params(grid_color='red', labelcolor='red', color='blue', labelsize=12)
+
+    # Remove tick positions
+    ax.taxis.set_ticks_position('none')
+    ax.laxis.set_ticks_position('none')
+    ax.raxis.set_ticks_position('none')
+
+    # Add arrows
+    arrowstyle = ArrowStyle('simple', head_length=10, head_width=5)
+    kwargs_arrow = {
+        'transform': ax.transAxes,  # Used with ``ax.transAxesProjection``
+        'arrowstyle': arrowstyle,
+        'linewidth': 1,
+        'clip_on': False,  # To plot arrows outside triangle
+        'zorder': -10,  # Very low value not to hide e.g. tick labels.
+    }
+
+    # Start of arrows in barycentric coordinates.
+    ta = np.array([ 0.0, -0.1,  1.1])
+    la = np.array([ 1.1,  0.0, -0.1])
+    ra = np.array([-0.1,  1.1,  0.0])
+
+    # End of arrows in barycentric coordinates.
+    tb = np.array([ 1.0, -0.1,  0.1])
+    lb = np.array([ 0.1,  1.0, -0.1])
+    rb = np.array([-0.1,  0.1,  1.0])
+
+    # This transforms the above barycentric coordinates to the original Axes
+    # coordinates. In combination with ``ax.transAxes``, we can plot arrows fixed
+    # to the Axes coordinates.
+    f = ax.transAxesProjection.transform
+
+    tarrow = FancyArrowPatch(f(ta), f(tb), ec='blue', fc='blue', **kwargs_arrow)
+    larrow = FancyArrowPatch(f(la), f(lb), ec='green', fc='green', **kwargs_arrow)
+    rarrow = FancyArrowPatch(f(ra), f(rb), ec='red', fc='red', **kwargs_arrow)
+    ax.add_patch(tarrow)
+    ax.add_patch(larrow)
+    ax.add_patch(rarrow)
+
+    # To put the axis-labels at the positions consistent with the arrows above, it
+    # may be better to put the axis-label-text directly as follows rather than
+    # using e.g.  ax.set_tlabel.
+    kwargs_label = {
+        'transform': ax.transTernaryAxes,
+        'backgroundcolor': 'w',
+        'ha': 'center',
+        'va': 'center',
+        'rotation_mode': 'anchor',
+        'fontsize': 12,
+        'zorder': -9,  # A bit higher on arrows, but still lower than others.
+    }
+
+    # Put axis-labels on the midpoints of arrows.
+    tpos = (ta + tb) * 0.5
+    lpos = (la + lb) * 0.5
+    rpos = (ra + rb) * 0.5
+
+    ax.text(*tpos, 'Improvement'  , color='blue', rotation=-60, **kwargs_label)
+    ax.text(*lpos, 'Omission' , color='green', rotation= 60, **kwargs_label)
+    ax.text(*rpos, 'Hallucination', color='red', rotation=  0, **kwargs_label)
+    
+    return fig, ax
+
+
+def display_stats(object):
+    fig, axs = plt.subplots(2, 3, figsize=(15, 10))
+    axs = axs.flatten()
+
+    d1 = object.d_ref.cpu().numpy().flatten()
+    axs[0].hist(d1, bins=25, alpha=0.5, label='LR-HR distance')
+    axs[0].set_title("Distance between the LR and HR images", fontsize=12, fontweight="bold")
+    axs[0].legend()
+
+    d2 = object.d_im.cpu().numpy().flatten()
+    axs[1].hist(d2, bins=25, alpha=0.5, label='SR-HR distance')
+    axs[1].set_title("Distance between the SR and HR images", fontsize=12, fontweight="bold")
+    axs[1].legend()
+
+    d3 = object.d_om.cpu().numpy().flatten()
+    axs[2].hist(d3, bins=25, alpha=0.5, label='SR-LR distance')
+    axs[2].set_title("Distance between the SR and LR images", fontsize=12, fontweight="bold")
+    axs[2].legend()
+
+    omission = object.omission.cpu().numpy().flatten()
+    axs[3].hist(omission, bins=25, alpha=0.5, label='lower is better')
+    axs[3].set_title("Omission - reference distance [0-1]", fontsize=12, fontweight="bold")
+    axs[3].legend()
+
+    axs[4].hist(object.improvement.cpu().numpy().flatten(), bins=25, alpha=0.5, label='higher is better')
+    axs[4].set_title("Improvement - reference distance [0-1]", fontsize=12, fontweight="bold")
+    axs[4].legend()
+
+    axs[5].hist(object.hallucination.cpu().numpy().flatten(), bins=25, alpha=0.5, label='lower is better')
+    axs[5].set_title("Hallucination - reference distance [0-1]", fontsize=12, fontweight="bold")
+    axs[5].legend()    
+    
+    return fig, axs
