@@ -350,7 +350,8 @@ def display_tc_score(
 def display_ternary(
     ha: torch.Tensor,
     om: torch.Tensor,
-    im: torch.Tensor
+    im: torch.Tensor,
+    bins: str = "log",
 ):
     """ Display the ternary plot of the HA, OM and IM values.
 
@@ -358,6 +359,7 @@ def display_ternary(
         ha (torch.Tensor): The hallucination error (H, W).
         om (torch.Tensor): The omission error (H, W).
         im (torch.Tensor): The improvement error (H, W).
+        bins (str, optional): The binning strategy. Defaults to "log".
     
     Returns:
         fig, ax: The figure and axes of the plot.
@@ -370,7 +372,7 @@ def display_ternary(
     ax = fig.add_subplot(projection='ternary')
 
     # Generate data
-    pc = ax.hexbin(im, om, ha, edgecolors="none", gridsize=50, cmap='viridis', bins='log')
+    pc = ax.hexbin(im, om, ha, edgecolors="none", gridsize=50, cmap='viridis', bins=bins)
     cax = ax.inset_axes([1.1, 0.1, 0.05, 0.9], transform=ax.transAxes)
     colorbar = fig.colorbar(pc, cax=cax)
     colorbar.set_label("Count", rotation=270, va="baseline")

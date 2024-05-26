@@ -5,7 +5,7 @@ from pydantic import BaseModel, field_validator, model_validator
 
 DistanceMetrics = Literal[
     "kl", "l1", "l2", "pbias", "psnr", "sad",
-    "mtf", "lpips", "clip"
+    "mtf", "lpips", "clip", "fd"
 ]
 
 class Config(BaseModel):
@@ -13,7 +13,7 @@ class Config(BaseModel):
     device: Union[str, Any] = "cpu"
     agg_method: str = "pixel"  # pixel, image, patch
     patch_size: Optional[int] = None
-    border_mask: Optional[int] = 16    
+    border_mask: Optional[int] = 16
     rgb_bands: Optional[List[int]] = [0, 1, 2]
     harm_apply_spectral: bool = True
     harm_apply_spatial: bool = True
@@ -34,12 +34,12 @@ class Config(BaseModel):
     synthesis_distance: DistanceMetrics = "l1"
 
     # Correctness parameters
-    correctness_distance: DistanceMetrics = "l1"
+    correctness_distance: DistanceMetrics = "fd"
     correctness_norm: Literal["softmin", "percent"] = "softmin"
-    im_score: Optional[float] = 0.80
-    om_score: Optional[float] = 0.80
-    ha_score: Optional[float] = 0.40 # be quiet conservative about hallucinations
-    correctness_temperature: Optional[float] = 1.5
+    im_score: Optional[float] = 0.05
+    om_score: Optional[float] = 0.05
+    ha_score: Optional[float] = 0.05 # be quiet conservative about hallucinations
+    correctness_temperature: Optional[float] = 0.25 # be quiet conservative about hallucinations
 
 
     # General parameters - validator ----------------------------
