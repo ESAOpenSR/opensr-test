@@ -598,6 +598,33 @@
     Benchmark
   </a>
   
+    <nav class="md-nav" aria-label="Benchmark">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#clip" class="md-nav__link">
+    CLIP
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lpips" class="md-nav__link">
+    LPIPS
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#l1" class="md-nav__link">
+    L1
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -783,7 +810,182 @@
 <li><strong>im_metric</strong>: The amount of improvements in the SR image. An improvement is a detail in the SR image that <strong>is present in the HR image and not in the LR image.</strong> The higher the value, the better the correctness of the SR image.</li>
 </ul>
 <h2 id="benchmark"><strong>Benchmark</strong></h2>
-<p>Benchmark comparison of SR models. Downward arrows (↓) denote metrics in which lower values are preferable, and upward arrows (↑) indicate that higher values reflect better performance. This table is an improved version of the one presented in the paper, reflecting the enhancements applied to the datasets. To get the datasets used in the paper, set the <code>dataset</code> parameter to <code>version=020</code>.</p>
+<p>Benchmark comparison of SR models. Downward arrows (↓) denote metrics in which lower values are preferable, and upward arrows (↑) indicate that higher values reflect better performance. This table is an improved version of the one presented in the opensr-test paper, considering the latest version of the datasets and other distance metrics. To get the datasets used in the <a href="https://ieeexplore.ieee.org/document/10530998">original paper</a>, set the <code>dataset</code> parameter to <code>version=020</code> in the <code>opensr_test.load</code> function.</p>
+<h3 id="clip"><strong>CLIP</strong></h3>
+<p>We use the <a href="https://github.com/ChenDelong1999/RemoteCLIP"><strong>CLIP</strong></a> model to measure the distance between the LR, SR, and HR images. The parameters of the experiments are: <code>{"device": "cuda", "agg_method": "patch", "patch_size": 16, "correctness_distance": "clip"}</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Reflectance</th>
+<th>Spectral</th>
+<th>Spatial</th>
+<th>Synthesis</th>
+<th>HA Metric</th>
+<th>OM Metric</th>
+<th>IM Metric</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SuperImage</td>
+<td>0.0026</td>
+<td>2.2393</td>
+<td>0.0080</td>
+<td>0.0054</td>
+<td>0.2979</td>
+<td>0.4219</td>
+<td>0.2802</td>
+</tr>
+<tr>
+<td>LDMSuperResolutionPipeline</td>
+<td>0.0422</td>
+<td>13.6433</td>
+<td>0.0742</td>
+<td>0.0357</td>
+<td>0.8088</td>
+<td>0.1019</td>
+<td>0.0892</td>
+</tr>
+<tr>
+<td>opensr-model</td>
+<td>0.0033</td>
+<td>2.2020</td>
+<td>0.0119</td>
+<td>0.0084</td>
+<td>0.3366</td>
+<td>0.3720</td>
+<td>0.2915</td>
+</tr>
+<tr>
+<td>SR4RS</td>
+<td>0.0378</td>
+<td>22.7015</td>
+<td>0.9900</td>
+<td>0.0197</td>
+<td>0.4903</td>
+<td>0.2621</td>
+<td>0.2477</td>
+</tr>
+</tbody>
+</table>
+<h3 id="lpips"><strong>LPIPS</strong></h3>
+<p>We use the <a href="https://github.com/richzhang/PerceptualSimilarity"><strong>LPIPS</strong></a> model to measure the distance between the LR, SR, and HR images. The parameters of the experiments are: <code>{"device": "cuda", "agg_method": "patch", "patch_size": 16, "correctness_distance": "lpips"}</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Reflectance</th>
+<th>Spectral</th>
+<th>Spatial</th>
+<th>Synthesis</th>
+<th>HA Metric</th>
+<th>OM Metric</th>
+<th>IM Metric</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SuperImage</td>
+<td>0.0026</td>
+<td>2.2393</td>
+<td>0.0080</td>
+<td>0.0054</td>
+<td>0.2561</td>
+<td>0.4537</td>
+<td>0.2901</td>
+</tr>
+<tr>
+<td>LDMSuperResolutionPipeline</td>
+<td>0.0422</td>
+<td>13.6433</td>
+<td>0.0742</td>
+<td>0.0357</td>
+<td>0.7209</td>
+<td>0.1543</td>
+<td>0.1249</td>
+</tr>
+<tr>
+<td>opensr-model</td>
+<td>0.0033</td>
+<td>2.2020</td>
+<td>0.0119</td>
+<td>0.0084</td>
+<td>0.2827</td>
+<td>0.3905</td>
+<td>0.3269</td>
+</tr>
+<tr>
+<td>SR4RS</td>
+<td>0.0378</td>
+<td>22.7015</td>
+<td>0.9900</td>
+<td>0.0197</td>
+<td>0.4918</td>
+<td>0.2441</td>
+<td>0.2640</td>
+</tr>
+</tbody>
+</table>
+<h3 id="l1"><strong>L1</strong></h3>
+<p>We use the L1 distance to measure the distance between the LR, SR, and HR images.  The parameters of the experiments are: <code>{"device": "cuda", "agg_method": "patch", "patch_size": 1, "correctness_distance": "l1"}</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Reflectance</th>
+<th>Spectral</th>
+<th>Spatial</th>
+<th>Synthesis</th>
+<th>HA Metric</th>
+<th>OM Metric</th>
+<th>IM Metric</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SuperImage</td>
+<td>0.0030</td>
+<td>1.4716</td>
+<td>0.0080</td>
+<td>0.0054</td>
+<td>0.3810</td>
+<td>0.3512</td>
+<td>0.2677</td>
+</tr>
+<tr>
+<td>LDMSuperResolutionPipeline</td>
+<td>0.0495</td>
+<td>9.7153</td>
+<td>0.0742</td>
+<td>0.0359</td>
+<td>0.7301</td>
+<td>0.1498</td>
+<td>0.1200</td>
+</tr>
+<tr>
+<td>opensr-model</td>
+<td>0.0037</td>
+<td>1.3306</td>
+<td>0.0119</td>
+<td>0.0085</td>
+<td>0.4961</td>
+<td>0.2715</td>
+<td>0.2324</td>
+</tr>
+<tr>
+<td>SR4RS</td>
+<td>0.0439</td>
+<td>3.5855</td>
+<td>0.9900</td>
+<td>0.0199</td>
+<td>0.7610</td>
+<td>0.1231</td>
+<td>0.1159</td>
+</tr>
+</tbody>
+</table>
+<p>To reproduce the results, check this <a href="https://colab.research.google.com/drive/1wDD_d0RUnAZkJTf63_t9qULjPjtCmbuv"><strong>Colab notebook</strong></a>.</p>
 <h2 id="installation"><strong>Installation</strong></h2>
 <p>Install the latest version from PyPI:</p>
 <div class="highlight"><pre><span></span><code>pip install opensr-test
@@ -962,29 +1164,36 @@ pip install opensr-test[perceptual] # Install to test perceptual metrics
     <span class="n">lr</span><span class="o">=</span><span class="n">lr_img</span><span class="p">,</span> <span class="n">sr</span><span class="o">=</span><span class="n">sr_img</span><span class="p">,</span> <span class="n">hr</span><span class="o">=</span><span class="n">hr_img</span>
 <span class="p">)</span>
 </code></pre></div>
-<p>Now, we can visualize the results using the <code>opensr_test.visualize</code> module.
-fDisplay the triplets LR, SR and HR images:</p>
+<p>Now, we can visualize the results using the <code>opensr_test.plot_*</code> module. To display the triplets LR, SR and HR images:</p>
 <div class="highlight"><pre><span></span><code><span class="n">metrics</span><span class="o">.</span><span class="n">plot_triplets</span><span class="p">()</span>
 </code></pre></div>
 <p align="center">
   <img src="docs/images/img_01.png">
 </p>
 
-<p>Display a summary of all the metrics:</p>
+<p>Display the summary of the metrics. The plot shows:
+  - LR: Low Resolution image 
+  - LRdown: Downsampled Low Resolution image using bilinear interpolation and triangular antialiasing filter.
+  - SR: Super-Resolved image.
+  - SRharm: Harmonized super-resolution image.
+  - HR: High Resolution image.
+  - Reflectance Consistency: Reflectance consistency between the LR and HR images.
+  - Spectral Consistency: Spectral consistency between the LR and HR images.
+  - Distance normalized to the Omissiom, Hallucination, and Improvement spaces.</p>
 <div class="highlight"><pre><span></span><code><span class="n">metrics</span><span class="o">.</span><span class="n">plot_summary</span><span class="p">()</span>
 </code></pre></div>
 <p align="center">
   <img src="docs/images/img_02.png">
 </p>
 
-<p>Display the correctness of the SR image:</p>
+<p>Display the correctness of the SR image. The blue color represents the pixels closer to the improvement space (HR), green pixels are closer to the omission space (LR), and red pixels are closer to the hallucination space (neither in HR nor LR). The distance SR-LR and SR-HR are normalized to the LR-HR distance that is independent of the SR model. Threfore a pixel or patch with a improvement distance (<span class="arithmatex">\(d_{im}\)</span>) of 3 means that the SR is further to the HR in 3 LR-HR units. The same applies to the omission distance.</p>
 <div class="highlight"><pre><span></span><code><span class="n">metrics</span><span class="o">.</span><span class="n">plot_tc</span><span class="p">()</span>
 </code></pre></div>
 <p align="center">
   <img src="docs/images/img_03.png">
 </p>
 
-<p>Display the histogram of the distances:</p>
+<p>Display the histogram of the distances before and after the normalization:</p>
 <div class="highlight"><pre><span></span><code><span class="n">metrics</span><span class="o">.</span><span class="n">plot_stats</span><span class="p">()</span>
 </code></pre></div>
 <p align="center">
