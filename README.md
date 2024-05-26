@@ -83,8 +83,45 @@ This model returns:
 
 ## **Benchmark**
 
-Benchmark comparison of SR models. Downward arrows (↓) denote metrics in which lower values are preferable, and upward arrows (↑) indicate that higher values reflect better performance. This table is an improved version of the one presented in the paper, reflecting the enhancements applied to the datasets. To get the datasets used in the paper, set the `dataset` parameter to `version=020`.
+Benchmark comparison of SR models. Downward arrows (↓) denote metrics in which lower values are preferable, and upward arrows (↑) indicate that higher values reflect better performance. This table is an improved version of the one presented in the opensr-test paper, considering the latest version of the datasets and other distance metrics. To get the datasets used in the [original paper](https://ieeexplore.ieee.org/document/10530998), set the `dataset` parameter to `version=020` in the `opensr_test.load` function.
 
+### **CLIP**
+
+We use the [**CLIP**](https://github.com/ChenDelong1999/RemoteCLIP) model to measure the distance between the LR, SR, and HR images. The parameters of the experiments are: `{"device": "cuda", "agg_method": "patch", "patch_size": 16, "correctness_distance": "clip"}`.
+
+
+| Model | Reflectance | Spectral | Spatial | Synthesis | HA Metric | OM Metric | IM Metric |
+|-------|-------------|----------|---------|-----------|-----------|-----------|-----------|
+| SuperImage | 0.0026 | 2.2393 | 0.0080 | 0.0054 | 0.2979 | 0.4219 | 0.2802 |
+| LDMSuperResolutionPipeline | 0.0422 | 13.6433 | 0.0742 | 0.0357 | 0.8088 | 0.1019 | 0.0892 |
+| opensr-model | 0.0033 | 2.2020 | 0.0119 | 0.0084 | 0.3366 | 0.3720 | 0.2915 |
+| SR4RS | 0.0378 | 22.7015 | 0.9900 | 0.0197 | 0.4903 | 0.2621 | 0.2477 |
+
+### **LPIPS**
+
+We use the [**LPIPS**](https://github.com/richzhang/PerceptualSimilarity) model to measure the distance between the LR, SR, and HR images. The parameters of the experiments are: `{"device": "cuda", "agg_method": "patch", "patch_size": 16, "correctness_distance": "lpips"}`.
+
+| Model | Reflectance | Spectral | Spatial | Synthesis | HA Metric | OM Metric | IM Metric |
+|-------|-------------|----------|---------|-----------|-----------|-----------|-----------|
+| SuperImage | 0.0026 | 2.2393 | 0.0080 | 0.0054 | 0.2561 | 0.4537 | 0.2901 |
+| LDMSuperResolutionPipeline | 0.0422 | 13.6433 | 0.0742 | 0.0357 | 0.7209 | 0.1543 | 0.1249 |
+| opensr-model | 0.0033 | 2.2020 | 0.0119 | 0.0084 | 0.2827 | 0.3905 | 0.3269 |
+| SR4RS | 0.0378 | 22.7015 | 0.9900 | 0.0197 | 0.4918 | 0.2441 | 0.2640 |
+
+
+### **L1**
+
+We use the L1 distance to measure the distance between the LR, SR, and HR images.  The parameters of the experiments are: `{"device": "cuda", "agg_method": "patch", "patch_size": 1, "correctness_distance": "l1"}`.
+
+
+| Model | Reflectance | Spectral | Spatial | Synthesis | HA Metric | OM Metric | IM Metric |
+|-------|-------------|----------|---------|-----------|-----------|-----------|-----------|
+| SuperImage | 0.0030 | 1.4716 | 0.0080 | 0.0054 | 0.3810 | 0.3512 | 0.2677 |
+| LDMSuperResolutionPipeline | 0.0495 | 9.7153 | 0.0742 | 0.0359 | 0.7301 | 0.1498 | 0.1200 |
+| opensr-model | 0.0037 | 1.3306 | 0.0119 | 0.0085 | 0.4961 | 0.2715 | 0.2324 |
+| SR4RS | 0.0439 | 3.5855 | 0.9900 | 0.0199 | 0.7610 | 0.1231 | 0.1159 |
+
+To reproduce the results, check this [**Colab notebook**](https://colab.research.google.com/drive/1wDD_d0RUnAZkJTf63_t9qULjPjtCmbuv).
 
 ## **Installation**
 
@@ -242,8 +279,7 @@ metrics.compute(
 )
 ```
 
-Now, we can visualize the results using the `opensr_test.visualize` module.
-fDisplay the triplets LR, SR and HR images:
+Now, we can visualize the results using the `opensr_test.plot_*` module. To display the triplets LR, SR and HR images:
 
 ```python
 metrics.plot_triplets()
@@ -253,7 +289,15 @@ metrics.plot_triplets()
   <img src="docs/images/img_01.png">
 </p>
 
-Display a summary of all the metrics:
+Display the summary of the metrics. The plot shows:
+  - LR: Low Resolution image 
+  - LRdown: Downsampled Low Resolution image using bilinear interpolation and triangular antialiasing filter.
+  - SR: Super-Resolved image.
+  - SRharm: Harmonized super-resolution image.
+  - HR: High Resolution image.
+  - Reflectance Consistency: Reflectance consistency between the LR and HR images.
+  - Spectral Consistency: Spectral consistency between the LR and HR images.
+  - Distance normalized to the Omissiom, Hallucination, and Improvement spaces.
 
 ```python
 metrics.plot_summary()
@@ -264,7 +308,7 @@ metrics.plot_summary()
 </p>
 
 
-Display the correctness of the SR image:
+Display the correctness of the SR image. The blue color represents the pixels closer to the improvement space (HR), green pixels are closer to the omission space (LR), and red pixels are closer to the hallucination space (neither in HR nor LR). The distance SR-LR and SR-HR are normalized to the LR-HR distance that is independent of the SR model. Threfore a pixel or patch with a improvement distance ($d_{im}$) of 3 means that the SR is further to the HR in 3 LR-HR units. The same applies to the omission distance.
 
 ```python
 metrics.plot_tc()
@@ -275,7 +319,7 @@ metrics.plot_tc()
 </p>
 
 
-Display the histogram of the distances:
+Display the histogram of the distances before and after the normalization:
 
 ```python
 metrics.plot_stats()
