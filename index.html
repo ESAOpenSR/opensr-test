@@ -616,8 +616,8 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#l1" class="md-nav__link">
-    L1
+  <a href="#normalized-difference-nd" class="md-nav__link">
+    Normalized Difference (ND)
   </a>
   
 </li>
@@ -736,7 +736,7 @@
 
 
 <p align="center">
-  <a href="https://github.com/ESAOpenSR/opensr-test"><img src="docs/images/logo.png" alt="header" width="50%"></a>
+  <a href="https://github.com/ESAOpenSR/opensr-test"><img src="docs/images/logo.png" alt="header" width="45%"></a>
 </p>
 
 <p align="center">
@@ -748,6 +748,9 @@
 <p align="center">
 <a href='https://pypi.python.org/pypi/opensr-test'>
 <img src='https://img.shields.io/pypi/v/opensr-test.svg' alt='PyPI' />
+</a>
+<a href='https://colab.research.google.com/drive/1wDD_d0RUnAZkJTf63_t9qULjPjtCmbuv?usp=sharing'>
+<img src='https://colab.research.google.com/assets/colab-badge.svg' alt='COLAB' />
 </a>
 <a href="https://opensource.org/licenses/MIT" target="_blank">
     <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License">
@@ -812,176 +815,206 @@
 <h2 id="benchmark"><strong>Benchmark</strong></h2>
 <p>Benchmark comparison of SR models. Downward arrows (↓) denote metrics in which lower values are preferable, and upward arrows (↑) indicate that higher values reflect better performance. This table is an improved version of the one presented in the opensr-test paper, considering the latest version of the datasets and other distance metrics. To get the datasets used in the <a href="https://ieeexplore.ieee.org/document/10530998">original paper</a>, set the <code>dataset</code> parameter to <code>version=020</code> in the <code>opensr_test.load</code> function.</p>
 <h3 id="clip"><strong>CLIP</strong></h3>
-<p>We use the <a href="https://github.com/ChenDelong1999/RemoteCLIP"><strong>CLIP</strong></a> model to measure the distance between the LR, SR, and HR images. The parameters of the experiments are: <code>{"device": "cuda", "agg_method": "patch", "patch_size": 16, "correctness_distance": "clip"}</code>.</p>
+<p>We use the <a href="https://github.com/ChenDelong1999/RemoteCLIP"><strong>RemoteCLIP</strong></a> model to measure the distance between the LR, SR, and HR images. The parameters of the experiments are: <code>{"device": "cuda", "agg_method": "patch", "patch_size": 16, "correctness_distance": "clip"}</code>. This distance metric allows us to quantify the amount of semantic information introduced by the SR model. By comparing the three categories, we can assess the accuracy of the semantic information introduced.</p>
 <table>
 <thead>
 <tr>
-<th>Model</th>
-<th>Reflectance</th>
-<th>Spectral</th>
-<th>Spatial</th>
-<th>Synthesis</th>
-<th>HA Metric</th>
-<th>OM Metric</th>
-<th>IM Metric</th>
+<th align="left">model</th>
+<th align="left">reflectance ↓</th>
+<th align="left">spectral ↓</th>
+<th align="left">spatial ↓</th>
+<th align="left">synthesis ↑</th>
+<th align="left">ha_metric ↓</th>
+<th align="left">om_metric ↓</th>
+<th align="left">im_metric ↑</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>SuperImage</td>
-<td>0.0026</td>
-<td>2.2393</td>
-<td>0.0080</td>
-<td>0.0054</td>
-<td>0.2979</td>
-<td>0.4219</td>
-<td>0.2802</td>
+<td align="left">ldm_baseline</td>
+<td align="left">0.1239 ± 0.0405</td>
+<td align="left">12.8441 ± 2.7508</td>
+<td align="left">0.0717 ± 0.0683</td>
+<td align="left">0.0409 ± 0.0290</td>
+<td align="left">0.5963 ± 0.3055</td>
+<td align="left">0.2327 ± 0.2238</td>
+<td align="left">0.1710 ± 0.1435</td>
 </tr>
 <tr>
-<td>LDMSuperResolutionPipeline</td>
-<td>0.0422</td>
-<td>13.6433</td>
-<td>0.0742</td>
-<td>0.0357</td>
-<td>0.8088</td>
-<td>0.1019</td>
-<td>0.0892</td>
+<td align="left">opensrmodel</td>
+<td align="left">0.0076 ± 0.0046</td>
+<td align="left">1.9739 ± 1.0507</td>
+<td align="left">0.0118 ± 0.0108</td>
+<td align="left">0.0194 ± 0.0120</td>
+<td align="left">0.1052 ± 0.0590</td>
+<td align="left">0.6927 ± 0.1343</td>
+<td align="left">0.2021 ± 0.0854</td>
 </tr>
 <tr>
-<td>opensr-model</td>
-<td>0.0033</td>
-<td>2.2020</td>
-<td>0.0119</td>
-<td>0.0084</td>
-<td>0.3366</td>
-<td>0.3720</td>
-<td>0.2915</td>
+<td align="left">satlas</td>
+<td align="left">0.1197 ± 0.0233</td>
+<td align="left">15.1521 ± 2.9876</td>
+<td align="left">0.2766 ± 0.0741</td>
+<td align="left">0.0648 ± 0.0302</td>
+<td align="left">0.6996 ± 0.2058</td>
+<td align="left">0.0872 ± 0.0947</td>
+<td align="left">0.2132 ± 0.1393</td>
 </tr>
 <tr>
-<td>SR4RS</td>
-<td>0.0378</td>
-<td>22.7015</td>
-<td>0.9900</td>
-<td>0.0197</td>
-<td>0.4903</td>
-<td>0.2621</td>
-<td>0.2477</td>
+<td align="left">sr4rs</td>
+<td align="left">0.0979 ± 0.0509</td>
+<td align="left">22.4905 ± 2.1168</td>
+<td align="left">1.0099 ± 0.0439</td>
+<td align="left">0.0509 ± 0.0237</td>
+<td align="left">0.3099 ± 0.1704</td>
+<td align="left">0.3486 ± 0.1753</td>
+<td align="left">0.3415 ± 0.1042</td>
+</tr>
+<tr>
+<td align="left">superimage</td>
+<td align="left">0.0068 ± 0.0016</td>
+<td align="left">1.8977 ± 1.1053</td>
+<td align="left">0.0004 ± 0.0032</td>
+<td align="left">0.0130 ± 0.0073</td>
+<td align="left">0.0610 ± 0.0305</td>
+<td align="left">0.8524 ± 0.0586</td>
+<td align="left">0.0866 ± 0.0395</td>
 </tr>
 </tbody>
 </table>
 <h3 id="lpips"><strong>LPIPS</strong></h3>
-<p>We use the <a href="https://github.com/richzhang/PerceptualSimilarity"><strong>LPIPS</strong></a> model to measure the distance between the LR, SR, and HR images. The parameters of the experiments are: <code>{"device": "cuda", "agg_method": "patch", "patch_size": 16, "correctness_distance": "lpips"}</code>.</p>
+<p>We use the <a href="https://github.com/richzhang/PerceptualSimilarity"><strong>LPIPS</strong></a> model to measure the distance between the LR, SR, and HR images. The parameters of the experiments are: <code>{"device": "cuda", "agg_method": "patch", "patch_size": 16, "correctness_distance": "lpips"}</code>. This distance metric allows us to quantify the amount of perceptual information introduced by the SR model. By comparing the three categories, we can assess the accuracy of the perceptual information introduced.</p>
 <table>
 <thead>
 <tr>
-<th>Model</th>
-<th>Reflectance</th>
-<th>Spectral</th>
-<th>Spatial</th>
-<th>Synthesis</th>
-<th>HA Metric</th>
-<th>OM Metric</th>
-<th>IM Metric</th>
+<th align="left">model</th>
+<th align="left">reflectance ↓</th>
+<th align="left">spectral ↓</th>
+<th align="left">spatial ↓</th>
+<th align="left">synthesis ↑</th>
+<th align="left">ha_metric ↓</th>
+<th align="left">om_metric ↓</th>
+<th align="left">im_metric ↑</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>SuperImage</td>
-<td>0.0026</td>
-<td>2.2393</td>
-<td>0.0080</td>
-<td>0.0054</td>
-<td>0.2561</td>
-<td>0.4537</td>
-<td>0.2901</td>
+<td align="left">ldm_baseline</td>
+<td align="left">0.1239 ± 0.0405</td>
+<td align="left">12.8441 ± 2.7508</td>
+<td align="left">0.0717 ± 0.0683</td>
+<td align="left">0.0409 ± 0.0290</td>
+<td align="left">0.4558 ± 0.2932</td>
+<td align="left">0.3558 ± 0.2518</td>
+<td align="left">0.1884 ± 0.1232</td>
 </tr>
 <tr>
-<td>LDMSuperResolutionPipeline</td>
-<td>0.0422</td>
-<td>13.6433</td>
-<td>0.0742</td>
-<td>0.0357</td>
-<td>0.7209</td>
-<td>0.1543</td>
-<td>0.1249</td>
+<td align="left">opensrmodel</td>
+<td align="left">0.0076 ± 0.0046</td>
+<td align="left">1.9739 ± 1.0507</td>
+<td align="left">0.0118 ± 0.0108</td>
+<td align="left">0.0194 ± 0.0120</td>
+<td align="left">0.0642 ± 0.0271</td>
+<td align="left">0.6690 ± 0.1291</td>
+<td align="left">0.2668 ± 0.1071</td>
 </tr>
 <tr>
-<td>opensr-model</td>
-<td>0.0033</td>
-<td>2.2020</td>
-<td>0.0119</td>
-<td>0.0084</td>
-<td>0.2827</td>
-<td>0.3905</td>
-<td>0.3269</td>
+<td align="left">satlas</td>
+<td align="left">0.1197 ± 0.0233</td>
+<td align="left">15.1521 ± 2.9876</td>
+<td align="left">0.2766 ± 0.0741</td>
+<td align="left">0.0648 ± 0.0302</td>
+<td align="left">0.5999 ± 0.2182</td>
+<td align="left">0.0588 ± 0.0552</td>
+<td align="left">0.3413 ± 0.1858</td>
 </tr>
 <tr>
-<td>SR4RS</td>
-<td>0.0378</td>
-<td>22.7015</td>
-<td>0.9900</td>
-<td>0.0197</td>
-<td>0.4918</td>
-<td>0.2441</td>
-<td>0.2640</td>
+<td align="left">sr4rs</td>
+<td align="left">0.0979 ± 0.0509</td>
+<td align="left">22.4905 ± 2.1168</td>
+<td align="left">1.0099 ± 0.0439</td>
+<td align="left">0.0509 ± 0.0237</td>
+<td align="left">0.3417 ± 0.1833</td>
+<td align="left">0.1924 ± 0.1402</td>
+<td align="left">0.4659 ± 0.1448</td>
+</tr>
+<tr>
+<td align="left">superimage</td>
+<td align="left">0.0068 ± 0.0016</td>
+<td align="left">1.8977 ± 1.1053</td>
+<td align="left">0.0004 ± 0.0032</td>
+<td align="left">0.0130 ± 0.0073</td>
+<td align="left">0.0357 ± 0.0200</td>
+<td align="left">0.8844 ± 0.0391</td>
+<td align="left">0.0800 ± 0.0301</td>
 </tr>
 </tbody>
 </table>
-<h3 id="l1"><strong>L1</strong></h3>
-<p>We use the L1 distance to measure the distance between the LR, SR, and HR images.  The parameters of the experiments are: <code>{"device": "cuda", "agg_method": "patch", "patch_size": 1, "correctness_distance": "l1"}</code>.</p>
+<h3 id="normalized-difference-nd"><strong>Normalized Difference (ND)</strong></h3>
+<p>We use the normalized difference (ND) distance to measure the distance between the LR, SR, and HR images. In contrast to L1 distance, ND is less sensitive to the magnitude of the reflectance values, providing a more fair detection of the hallucinations and omissions when assessing at the pixel level. The parameters of the experiments are: <code>{"device": "cuda", "agg_method": "patch", "patch_size": 1, "correctness_distance": "nd"}</code>. This distance metric allows us to quantify high-frequency details introduced by the SR model at pixel level. However, at pixel level, small changes in the reflectance values could introduce noise in the hallucination, omission, and improvement estimation.</p>
 <table>
 <thead>
 <tr>
-<th>Model</th>
-<th>Reflectance</th>
-<th>Spectral</th>
-<th>Spatial</th>
-<th>Synthesis</th>
-<th>HA Metric</th>
-<th>OM Metric</th>
-<th>IM Metric</th>
+<th align="left">model</th>
+<th align="left">reflectance ↓</th>
+<th align="left">spectral ↓</th>
+<th align="left">spatial ↓</th>
+<th align="left">synthesis ↑</th>
+<th align="left">ha_metric ↓</th>
+<th align="left">om_metric ↓</th>
+<th align="left">im_metric ↑</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>SuperImage</td>
-<td>0.0030</td>
-<td>1.4716</td>
-<td>0.0080</td>
-<td>0.0054</td>
-<td>0.3810</td>
-<td>0.3512</td>
-<td>0.2677</td>
+<td align="left">ldm_baseline</td>
+<td align="left">0.0505 ± 0.0161</td>
+<td align="left">9.6923 ± 2.1742</td>
+<td align="left">0.0715 ± 0.0679</td>
+<td align="left">0.0285 ± 0.0307</td>
+<td align="left">0.6067 ± 0.2172</td>
+<td align="left">0.3088 ± 0.1786</td>
+<td align="left">0.0845 ± 0.0428</td>
 </tr>
 <tr>
-<td>LDMSuperResolutionPipeline</td>
-<td>0.0495</td>
-<td>9.7153</td>
-<td>0.0742</td>
-<td>0.0359</td>
-<td>0.7301</td>
-<td>0.1498</td>
-<td>0.1200</td>
+<td align="left">opensrmodel</td>
+<td align="left">0.0031 ± 0.0018</td>
+<td align="left">1.2632 ± 0.5878</td>
+<td align="left">0.0114 ± 0.0111</td>
+<td align="left">0.0068 ± 0.0044</td>
+<td align="left">0.3431 ± 0.0738</td>
+<td align="left">0.4593 ± 0.0781</td>
+<td align="left">0.1976 ± 0.0328</td>
 </tr>
 <tr>
-<td>opensr-model</td>
-<td>0.0037</td>
-<td>1.3306</td>
-<td>0.0119</td>
-<td>0.0085</td>
-<td>0.4961</td>
-<td>0.2715</td>
-<td>0.2324</td>
+<td align="left">satlas</td>
+<td align="left">0.0489 ± 0.0086</td>
+<td align="left">12.1231 ± 3.1529</td>
+<td align="left">0.2742 ± 0.0748</td>
+<td align="left">0.0227 ± 0.0107</td>
+<td align="left">0.8004 ± 0.0641</td>
+<td align="left">0.1073 ± 0.0393</td>
+<td align="left">0.0923 ± 0.0266</td>
 </tr>
 <tr>
-<td>SR4RS</td>
-<td>0.0439</td>
-<td>3.5855</td>
-<td>0.9900</td>
-<td>0.0199</td>
-<td>0.7610</td>
-<td>0.1231</td>
-<td>0.1159</td>
+<td align="left">sr4rs</td>
+<td align="left">0.0396 ± 0.0198</td>
+<td align="left">3.4044 ± 1.6882</td>
+<td align="left">1.0037 ± 0.1520</td>
+<td align="left">0.0177 ± 0.0083</td>
+<td align="left">0.7274 ± 0.0840</td>
+<td align="left">0.1637 ± 0.0572</td>
+<td align="left">0.1089 ± 0.0292</td>
+</tr>
+<tr>
+<td align="left">superimage</td>
+<td align="left">0.0029 ± 0.0009</td>
+<td align="left">1.5672 ± 1.0692</td>
+<td align="left">0.0132 ± 0.1131</td>
+<td align="left">0.0046 ± 0.0027</td>
+<td align="left">0.2026 ± 0.0692</td>
+<td align="left">0.6288 ± 0.0754</td>
+<td align="left">0.1686 ± 0.0302</td>
 </tr>
 </tbody>
 </table>
@@ -1090,7 +1123,7 @@ pip install opensr-test[perceptual] # Install to test perceptual metrics
 </p>
 
 <h2 id="examples"><strong>Examples</strong></h2>
-<p>The following examples show how to use <code>opensr-test</code> to benchmark your SR model.</p>
+<p>The following examples show how to use <code>opensr-test</code> to benchmark SR models.</p>
 <table>
 <thead>
 <tr>
@@ -1168,7 +1201,7 @@ pip install opensr-test[perceptual] # Install to test perceptual metrics
 <div class="highlight"><pre><span></span><code><span class="n">metrics</span><span class="o">.</span><span class="n">plot_triplets</span><span class="p">()</span>
 </code></pre></div>
 <p align="center">
-  <img src="docs/images/img_01.png">
+  <img src="docs/images/img_01.gif">
 </p>
 
 <p>Display the summary of the metrics. The plot shows:
@@ -1183,28 +1216,28 @@ pip install opensr-test[perceptual] # Install to test perceptual metrics
 <div class="highlight"><pre><span></span><code><span class="n">metrics</span><span class="o">.</span><span class="n">plot_summary</span><span class="p">()</span>
 </code></pre></div>
 <p align="center">
-  <img src="docs/images/img_02.png">
+  <img src="docs/images/img_02.gif">
 </p>
 
 <p>Display the correctness of the SR image. The blue color represents the pixels closer to the improvement space (HR), green pixels are closer to the omission space (LR), and red pixels are closer to the hallucination space (neither in HR nor LR). The distance SR-LR and SR-HR are normalized to the LR-HR distance that is independent of the SR model. Threfore a pixel or patch with a improvement distance (<span class="arithmatex">\(d_{im}\)</span>) of 3 means that the SR is further to the HR in 3 LR-HR units. The same applies to the omission distance.</p>
 <div class="highlight"><pre><span></span><code><span class="n">metrics</span><span class="o">.</span><span class="n">plot_tc</span><span class="p">()</span>
 </code></pre></div>
 <p align="center">
-  <img src="docs/images/img_03.png">
+  <img src="docs/images/img_03.gif">
 </p>
 
 <p>Display the histogram of the distances before and after the normalization:</p>
 <div class="highlight"><pre><span></span><code><span class="n">metrics</span><span class="o">.</span><span class="n">plot_stats</span><span class="p">()</span>
 </code></pre></div>
 <p align="center">
-  <img src="docs/images/img_04.png">
+  <img src="docs/images/img_04.gif">
 </p>
 
 <p>Display a ternary plot of the metrics:</p>
 <div class="highlight"><pre><span></span><code><span class="n">metrics</span><span class="o">.</span><span class="n">plot_ternary</span><span class="p">()</span>
 </code></pre></div>
 <p align="center">
-  <img src="docs/images/img_05.png">
+  <img src="docs/images/img_05.gif">
 </p>
 
 <h2 id="deeper-understanding"><strong>Deeper understanding</strong></h2>
