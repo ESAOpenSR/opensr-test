@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://github.com/ESAOpenSR/opensr-test"><img src="docs/images/logo.png" alt="header" width="50%"></a>
+  <a href="https://github.com/ESAOpenSR/opensr-test"><img src="docs/images/logo.png" alt="header" width="45%"></a>
 </p>
 
 <p align="center">
@@ -11,6 +11,9 @@
 <p align="center">
 <a href='https://pypi.python.org/pypi/opensr-test'>
 <img src='https://img.shields.io/pypi/v/opensr-test.svg' alt='PyPI' />
+</a>
+<a href='https://colab.research.google.com/drive/1wDD_d0RUnAZkJTf63_t9qULjPjtCmbuv?usp=sharing'>
+<img src='https://colab.research.google.com/assets/colab-badge.svg' alt='COLAB' />
 </a>
 <a href="https://opensource.org/licenses/MIT" target="_blank">
     <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License">
@@ -87,39 +90,47 @@ Benchmark comparison of SR models. Downward arrows (↓) denote metrics in which
 
 ### **CLIP**
 
-We use the [**CLIP**](https://github.com/ChenDelong1999/RemoteCLIP) model to measure the distance between the LR, SR, and HR images. The parameters of the experiments are: `{"device": "cuda", "agg_method": "patch", "patch_size": 16, "correctness_distance": "clip"}`.
+We use the [**RemoteCLIP**](https://github.com/ChenDelong1999/RemoteCLIP) model to measure the distance between the LR, SR, and HR images. The parameters of the experiments are: `{"device": "cuda", "agg_method": "patch", "patch_size": 16, "correctness_distance": "clip"}`. This distance metric allows us to quantify the amount of semantic information introduced by the SR model. By comparing the three categories, we can assess the accuracy of the semantic information introduced.
 
 
-| Model | Reflectance | Spectral | Spatial | Synthesis | HA Metric | OM Metric | IM Metric |
-|-------|-------------|----------|---------|-----------|-----------|-----------|-----------|
-| SuperImage | 0.0026 | 2.2393 | 0.0080 | 0.0054 | 0.2979 | 0.4219 | 0.2802 |
-| LDMSuperResolutionPipeline | 0.0422 | 13.6433 | 0.0742 | 0.0357 | 0.8088 | 0.1019 | 0.0892 |
-| opensr-model | 0.0033 | 2.2020 | 0.0119 | 0.0084 | 0.3366 | 0.3720 | 0.2915 |
-| SR4RS | 0.0378 | 22.7015 | 0.9900 | 0.0197 | 0.4903 | 0.2621 | 0.2477 |
+|    model     | reflectance ↓   | spectral ↓       | spatial ↓       | synthesis ↑     | ha_metric ↓     | om_metric ↓     | im_metric ↑     |
+|:-------------|:----------------|:-----------------|:----------------|:----------------|:----------------|:----------------|:----------------|
+| ldm_baseline | 0.1239 ± 0.0405 | 12.8441 ± 2.7508 | 0.0717 ± 0.0683 | 0.0409 ± 0.0290 | 0.5963 ± 0.3055 | 0.2327 ± 0.2238 | 0.1710 ± 0.1435 |
+| opensrmodel  | 0.0076 ± 0.0046 | 1.9739 ± 1.0507  | 0.0118 ± 0.0108 | 0.0194 ± 0.0120 | 0.1052 ± 0.0590 | 0.6927 ± 0.1343 | 0.2021 ± 0.0854 |
+| satlas       | 0.1197 ± 0.0233 | 15.1521 ± 2.9876 | 0.2766 ± 0.0741 | 0.0648 ± 0.0302 | 0.6996 ± 0.2058 | 0.0872 ± 0.0947 | 0.2132 ± 0.1393 |
+| sr4rs        | 0.0979 ± 0.0509 | 22.4905 ± 2.1168 | 1.0099 ± 0.0439 | 0.0509 ± 0.0237 | 0.3099 ± 0.1704 | 0.3486 ± 0.1753 | 0.3415 ± 0.1042 |
+| superimage   | 0.0068 ± 0.0016 | 1.8977 ± 1.1053  | 0.0004 ± 0.0032 | 0.0130 ± 0.0073 | 0.0610 ± 0.0305 | 0.8524 ± 0.0586 | 0.0866 ± 0.0395 |
+
+
 
 ### **LPIPS**
 
-We use the [**LPIPS**](https://github.com/richzhang/PerceptualSimilarity) model to measure the distance between the LR, SR, and HR images. The parameters of the experiments are: `{"device": "cuda", "agg_method": "patch", "patch_size": 16, "correctness_distance": "lpips"}`.
-
-| Model | Reflectance | Spectral | Spatial | Synthesis | HA Metric | OM Metric | IM Metric |
-|-------|-------------|----------|---------|-----------|-----------|-----------|-----------|
-| SuperImage | 0.0026 | 2.2393 | 0.0080 | 0.0054 | 0.2561 | 0.4537 | 0.2901 |
-| LDMSuperResolutionPipeline | 0.0422 | 13.6433 | 0.0742 | 0.0357 | 0.7209 | 0.1543 | 0.1249 |
-| opensr-model | 0.0033 | 2.2020 | 0.0119 | 0.0084 | 0.2827 | 0.3905 | 0.3269 |
-| SR4RS | 0.0378 | 22.7015 | 0.9900 | 0.0197 | 0.4918 | 0.2441 | 0.2640 |
+We use the [**LPIPS**](https://github.com/richzhang/PerceptualSimilarity) model to measure the distance between the LR, SR, and HR images. The parameters of the experiments are: `{"device": "cuda", "agg_method": "patch", "patch_size": 16, "correctness_distance": "lpips"}`. This distance metric allows us to quantify the amount of perceptual information introduced by the SR model. By comparing the three categories, we can assess the accuracy of the perceptual information introduced.
 
 
-### **L1**
+|    model     | reflectance ↓   | spectral ↓       | spatial ↓       | synthesis ↑     | ha_metric ↓     | om_metric ↓     | im_metric ↑     |
+|:-------------|:----------------|:-----------------|:----------------|:----------------|:----------------|:----------------|:----------------|
+| ldm_baseline | 0.1239 ± 0.0405 | 12.8441 ± 2.7508 | 0.0717 ± 0.0683 | 0.0409 ± 0.0290 | 0.4558 ± 0.2932 | 0.3558 ± 0.2518 | 0.1884 ± 0.1232 |
+| opensrmodel  | 0.0076 ± 0.0046 | 1.9739 ± 1.0507  | 0.0118 ± 0.0108 | 0.0194 ± 0.0120 | 0.0642 ± 0.0271 | 0.6690 ± 0.1291 | 0.2668 ± 0.1071 |
+| satlas       | 0.1197 ± 0.0233 | 15.1521 ± 2.9876 | 0.2766 ± 0.0741 | 0.0648 ± 0.0302 | 0.5999 ± 0.2182 | 0.0588 ± 0.0552 | 0.3413 ± 0.1858 |
+| sr4rs        | 0.0979 ± 0.0509 | 22.4905 ± 2.1168 | 1.0099 ± 0.0439 | 0.0509 ± 0.0237 | 0.3417 ± 0.1833 | 0.1924 ± 0.1402 | 0.4659 ± 0.1448 |
+| superimage   | 0.0068 ± 0.0016 | 1.8977 ± 1.1053  | 0.0004 ± 0.0032 | 0.0130 ± 0.0073 | 0.0357 ± 0.0200 | 0.8844 ± 0.0391 | 0.0800 ± 0.0301 |
 
-We use the L1 distance to measure the distance between the LR, SR, and HR images.  The parameters of the experiments are: `{"device": "cuda", "agg_method": "patch", "patch_size": 1, "correctness_distance": "l1"}`.
 
 
-| Model | Reflectance | Spectral | Spatial | Synthesis | HA Metric | OM Metric | IM Metric |
-|-------|-------------|----------|---------|-----------|-----------|-----------|-----------|
-| SuperImage | 0.0030 | 1.4716 | 0.0080 | 0.0054 | 0.3810 | 0.3512 | 0.2677 |
-| LDMSuperResolutionPipeline | 0.0495 | 9.7153 | 0.0742 | 0.0359 | 0.7301 | 0.1498 | 0.1200 |
-| opensr-model | 0.0037 | 1.3306 | 0.0119 | 0.0085 | 0.4961 | 0.2715 | 0.2324 |
-| SR4RS | 0.0439 | 3.5855 | 0.9900 | 0.0199 | 0.7610 | 0.1231 | 0.1159 |
+### **Normalized Difference (ND)**
+
+We use the normalized difference (ND) distance to measure the distance between the LR, SR, and HR images. In contrast to L1 distance, ND is less sensitive to the magnitude of the reflectance values, providing a more fair detection of the hallucinations and omissions when assessing at the pixel level. The parameters of the experiments are: `{"device": "cuda", "agg_method": "patch", "patch_size": 1, "correctness_distance": "nd"}`. This distance metric allows us to quantify high-frequency details introduced by the SR model at pixel level. However, at pixel level, small changes in the reflectance values could introduce noise in the hallucination, omission, and improvement estimation.
+
+
+|    model     | reflectance ↓   | spectral ↓       | spatial ↓       | synthesis ↑     | ha_metric ↓     | om_metric ↓     | im_metric ↑     |
+|:-------------|:----------------|:-----------------|:----------------|:----------------|:----------------|:----------------|:----------------|
+| ldm_baseline | 0.0505 ± 0.0161 | 9.6923 ± 2.1742  | 0.0715 ± 0.0679 | 0.0285 ± 0.0307 | 0.6067 ± 0.2172 | 0.3088 ± 0.1786 | 0.0845 ± 0.0428 |
+| opensrmodel  | 0.0031 ± 0.0018 | 1.2632 ± 0.5878  | 0.0114 ± 0.0111 | 0.0068 ± 0.0044 | 0.3431 ± 0.0738 | 0.4593 ± 0.0781 | 0.1976 ± 0.0328 |
+| satlas       | 0.0489 ± 0.0086 | 12.1231 ± 3.1529 | 0.2742 ± 0.0748 | 0.0227 ± 0.0107 | 0.8004 ± 0.0641 | 0.1073 ± 0.0393 | 0.0923 ± 0.0266 |
+| sr4rs        | 0.0396 ± 0.0198 | 3.4044 ± 1.6882  | 1.0037 ± 0.1520 | 0.0177 ± 0.0083 | 0.7274 ± 0.0840 | 0.1637 ± 0.0572 | 0.1089 ± 0.0292 |
+| superimage   | 0.0029 ± 0.0009 | 1.5672 ± 1.0692  | 0.0132 ± 0.1131 | 0.0046 ± 0.0027 | 0.2026 ± 0.0692 | 0.6288 ± 0.0754 | 0.1686 ± 0.0302 |
+
 
 To reproduce the results, check this [**Colab notebook**](https://colab.research.google.com/drive/1wDD_d0RUnAZkJTf63_t9qULjPjtCmbuv).
 
@@ -151,7 +162,7 @@ The `opensr-test` package provides five datasets for benchmarking SR models. The
 | Dataset | Scale factor | Number of images | HR patch size |
 |---------|--------------|-------------------|--------------|
 | NAIP    | x4           | 62               | 484x484       |
-| SPOT    | x4           | 9               | 512x512       |
+| SPOT    | x4           | 9                | 512x512       |
 | Venµs   | x2           | 59               | 256x256       |
 | SPAIN CROPS | x4       | 28               | 512x512       |
 | SPAIN URBAN | x4       | 20               | 512x512       |
@@ -232,7 +243,7 @@ spain_urban = opensr_test.load("spain_urban")
 
 ## **Examples**
 
-The following examples show how to use `opensr-test` to benchmark your SR model.
+The following examples show how to use `opensr-test` to benchmark SR models.
 
 | Model | Framework | Link |
 |-------|-----------|------|
@@ -286,7 +297,7 @@ metrics.plot_triplets()
 ```
 
 <p align="center">
-  <img src="docs/images/img_01.png">
+  <img src="docs/images/img_01.gif">
 </p>
 
 Display the summary of the metrics. The plot shows:
@@ -304,7 +315,7 @@ metrics.plot_summary()
 ```
 
 <p align="center">
-  <img src="docs/images/img_02.png">
+  <img src="docs/images/img_02.gif">
 </p>
 
 
@@ -315,7 +326,7 @@ metrics.plot_tc()
 ```
 
 <p align="center">
-  <img src="docs/images/img_03.png">
+  <img src="docs/images/img_03.gif">
 </p>
 
 
@@ -326,7 +337,7 @@ metrics.plot_stats()
 ```
 
 <p align="center">
-  <img src="docs/images/img_04.png">
+  <img src="docs/images/img_04.gif">
 </p>
 
 Display a ternary plot of the metrics:
@@ -336,7 +347,7 @@ metrics.plot_ternary()
 ```
 
 <p align="center">
-  <img src="docs/images/img_05.png">
+  <img src="docs/images/img_05.gif">
 </p>
 
 ## **Deeper understanding**

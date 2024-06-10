@@ -538,7 +538,7 @@ def get_distance(
         distance_fn = MTF(
             x=x, y=y, method=agg_method, patch_size=patch_size, scale=scale
         )
-    elif method == "fd":
+    elif (method == "fd") or (method == "nd"):
         distance_fn = FractionalDifference(x=x, y=y, method=agg_method, patch_size=patch_size)
     elif method == "lpips":
         x_rgb = x[rgb_bands, :, :]

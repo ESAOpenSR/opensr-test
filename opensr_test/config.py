@@ -5,7 +5,7 @@ from pydantic import BaseModel, field_validator, model_validator
 
 DistanceMetrics = Literal[
     "kl", "l1", "l2", "pbias", "psnr", "sad",
-    "mtf", "lpips", "clip", "fd"
+    "mtf", "lpips", "clip", "fd", "nd"
 ]
 
 class Config(BaseModel):
@@ -34,7 +34,7 @@ class Config(BaseModel):
     synthesis_distance: DistanceMetrics = "l1"
 
     # Correctness parameters
-    correctness_distance: DistanceMetrics = "fd"
+    correctness_distance: DistanceMetrics = "nd"
     correctness_norm: Literal["softmin", "percent"] = "softmin"
     im_score: Optional[float] = 0.05
     om_score: Optional[float] = 0.05
