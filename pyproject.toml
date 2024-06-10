@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "opensr_test"
-version = "1.0.0"
+version = "1.2.0"
 description = "A comprehensive benchmark for real-world Sentinel-2 imagery super-resolution"
 authors = ["Cesar Aybar <cesar.aybar@uv.es>"]
 repository = "https://github.com/csaybar/opensr-test"

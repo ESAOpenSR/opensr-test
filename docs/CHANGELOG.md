@@ -21,6 +21,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 Unreleased changes here.
 
+## [1.2.0] - 2024-06-10
+
+- Fractional Difference Index (FDI) key is now both `fd` and `nd`. In order to
+avoid confusion, with Normalized Difference (NDI). They are in essence the
+same index. This is the metric by default from now on.
+- We change the .png by .gif in the README.md file.
+- We update the `README.md` benchmark section, with the new results (SUPER-IX feedback).
+- We add a colab badge in the `README.md` file.
+
+## [1.1.0] - 2024-05-20
+
+- Fractional Difference Index (FDI) added to the distance metrics.
+- Bug in the `plot_tc` function fixed.
+- A new parameter added to the `display_ternary` function to control the bin count.
+- Config initial parameters have been updated.
+
+
+
 ## [1.0.0] - 2024-05-20
 
 - Logo changed.
