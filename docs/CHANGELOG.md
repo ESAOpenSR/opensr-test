@@ -21,6 +21,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 Unreleased changes here.
 
+## [1.2.1] - 2024-09-02
+
+- Bug due to the new satalign package API fixed.
+
 ## [1.2.0] - 2024-06-10
 
 - Fractional Difference Index (FDI) key is now both `fd` and `nd`. In order to
