@@ -1,10 +1,11 @@
-import opensr_test
-import satalign
-import pydantic
-import torch
-import numpy as np
+from typing import Any, List, Union
 
-from typing import List, Union, Any
+import numpy as np
+import opensr_test
+import pydantic
+import satalign
+import torch
+
 
 class SpatialMetricAlign(pydantic.BaseModel):
     """ Get the spatial error between two images
@@ -33,19 +34,22 @@ class SpatialMetricAlign(pydantic.BaseModel):
 
 
         if self.method == "ecc":
-            align_model = satalign.ECC(
+            import satalign.ecc
+            align_model = satalign.ecc.ECC(
                 datacube=x,
                 reference=y,
                 max_translations=self.max_translations
             )
         elif self.method == "pcc":
-            align_model = satalign.PCC(
+            import satalign.pcc
+            align_model = satalign.pcc.PCC(
                 datacube=x,
                 reference=y,
                 max_translations=self.max_translations
             )
         elif self.method == "lgm":
-            align_model = satalign.LGM(
+            import satalign.lgm
+            align_model = satalign.lgm.LGM(
                 datacube=x,
                 reference=y,
                 max_translations=self.max_translations,

@@ -2,7 +2,8 @@ from abc import ABC, abstractmethod
 from typing import List, Optional, Union
 
 import torch
-from opensr_test.utils import check_lpips, check_openclip, check_huggingface_hub
+from opensr_test.utils import (check_huggingface_hub, check_lpips,
+                               check_openclip)
 
 
 class DistanceMetric(ABC):

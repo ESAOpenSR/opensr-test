@@ -1,11 +1,11 @@
-from typing import Optional, List, Literal
-from opensr_test.utils import get_data_path
-
 import pathlib
 import pickle
+from typing import List, Literal, Optional
+
 import numpy as np
 import requests
 import torch
+from opensr_test.utils import get_data_path
 
 
 def download(url: str, save_path: str) -> str:

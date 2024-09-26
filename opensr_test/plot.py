@@ -6,8 +6,8 @@ import matplotlib.pyplot as plt
 import mpltern
 import numpy as np
 import torch
-from skimage import exposure
 from matplotlib.patches import ArrowStyle, FancyArrowPatch
+from skimage import exposure
 
 
 def min_max_range(tensor):

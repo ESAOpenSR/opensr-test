@@ -1,4 +1,4 @@
-from typing import Any, List, Optional, Union, Literal
+from typing import Any, List, Literal, Optional, Union
 
 import torch
 from pydantic import BaseModel, field_validator, model_validator

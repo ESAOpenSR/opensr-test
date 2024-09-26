@@ -1,18 +1,19 @@
+import warnings
 from typing import Any, Optional, Union
 
-import warnings
 import torch
-
-from opensr_test.utils import (
-    apply_downsampling, apply_upsampling,
-    apply_mask, hq_histogram_matching,
-    seed_everything
-)
-from opensr_test.spatial import SpatialMetricAlign
-from opensr_test.config import Config, Results, Consistency, Synthesis, Correctness, Auxiliar
-from opensr_test.distance import get_distance
-from opensr_test.correctness import get_distances, tc_improvement, tc_omission, tc_hallucination, get_correctness_stats
 from opensr_test import plot
+from opensr_test.config import (Auxiliar, Config, Consistency, Correctness,
+                                Results, Synthesis)
+from opensr_test.correctness import (get_correctness_stats, get_distances,
+                                     tc_hallucination, tc_improvement,
+                                     tc_omission)
+from opensr_test.distance import get_distance
+from opensr_test.spatial import SpatialMetricAlign
+from opensr_test.utils import (apply_downsampling, apply_mask,
+                               apply_upsampling, hq_histogram_matching,
+                               seed_everything)
+
 
 class Metrics:
     def __init__(

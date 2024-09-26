@@ -1,10 +1,11 @@
-from typing import List, Optional
-from skimage.exposure import match_histograms
-
-import torch
 import pathlib
 import random
+from typing import List, Optional
+
 import numpy as np
+import torch
+from skimage.exposure import match_histograms
+
 
 def apply_upsampling(x: torch.Tensor, scale: int) -> torch.Tensor:
     """ Upsampling a tensor (B, C, H, W) to a lower resolution 
