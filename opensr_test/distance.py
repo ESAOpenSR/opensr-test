@@ -2,8 +2,7 @@ from abc import ABC, abstractmethod
 from typing import List, Optional, Union
 
 import torch
-from opensr_test.utils import (check_huggingface_hub, check_lpips,
-                               check_openclip)
+from opensr_test.utils import check_huggingface_hub, check_lpips, check_openclip
 
 
 class DistanceMetric(ABC):
@@ -24,12 +23,7 @@ class DistanceMetric(ABC):
     """
 
     def __init__(
-        self,
-        method: str,
-        patch_size: int,
-        x: torch.Tensor,
-        y: torch.Tensor,
-        **kwargs
+        self, method: str, patch_size: int, x: torch.Tensor, y: torch.Tensor, **kwargs
     ):
         self.method = method
         self.patch_size = patch_size
@@ -51,7 +45,7 @@ class DistanceMetric(ABC):
         Returns:
             torch.Tensor: The patches as a tensor.
         """
-        
+
         # Check if it is a square tensor
         if tensor.shape[-1] != tensor.shape[-2]:
             raise ValueError("The tensor must be square.")
@@ -64,7 +58,7 @@ class DistanceMetric(ABC):
         minimages_x = int(torch.ceil(torch.tensor(xdim / patch_size)))
         minimages_y = int(torch.ceil(torch.tensor(ydim / patch_size)))
 
-        # pad the tensor to be divisible by the patch size            
+        # pad the tensor to be divisible by the patch size
         pad_x_01 = int((minimages_x * patch_size - xdim) // 2)
         pad_x_02 = int((minimages_x * patch_size - xdim) - pad_x_01)
 
@@ -100,7 +94,7 @@ class DistanceMetric(ABC):
         # Create the patches
         x_batched = self.do_square(self.x, self.patch_size)
         y_batched = self.do_square(self.y, self.patch_size)
-        
+
         # Compute the metric for each patch
         metric_result = torch.zeros(x_batched.shape[:2])
         xrange, yrange = x_batched.shape[0:2]
@@ -108,15 +102,11 @@ class DistanceMetric(ABC):
             for y_index in range(yrange):
                 x_batch = x_batched[x_index, y_index]
                 y_batch = y_batched[x_index, y_index]
-                metric_result[x_index, y_index] = self._compute_image(
-                    x_batch, y_batch
-                )
+                metric_result[x_index, y_index] = self._compute_image(x_batch, y_batch)
 
         # Go back to the original size
         metric_result = torch.nn.functional.interpolate(
-            metric_result[None, None],
-            size=self.x.shape[-2:],
-            mode="nearest"
+            metric_result[None, None], size=self.x.shape[-2:], mode="nearest"
         ).squeeze()
 
         return metric_result
@@ -212,10 +202,10 @@ class PBIAS(DistanceMetric):
         patch_size: int = 32,
     ):
         super().__init__(x=x, y=y, method=method, patch_size=patch_size)
-        
+
         self.large_number = 1e2
         self.epsilon = 1e-8
-        
+
     def _compute_image(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
         ratio = torch.abs((x - y) / (y + self.epsilon))
         ratio[ratio > self.large_number] = self.large_number
@@ -282,7 +272,6 @@ class SAD(DistanceMetric):
         return torch.rad2deg(sam_score)
 
 
-
 class LPIPS(DistanceMetric):
     """Learned Perceptual Image Patch Similarity between two tensors"""
 
@@ -316,19 +305,12 @@ class LPIPS(DistanceMetric):
         # Scale image is lower than 64
         if (x.shape[1] < 64) or (x.shape[2] < 64):
             x = torch.nn.functional.interpolate(
-                x[None],
-                size=(64, 64),
-                mode="bilinear",
-                antialias=True
+                x[None], size=(64, 64), mode="bilinear", antialias=True
             ).squeeze()
-            
-        
+
         if (y.shape[1] < 64) or (y.shape[2] < 64):
             y = torch.nn.functional.interpolate(
-                y[None],
-                size=(64, 64),
-                mode="bilinear",
-                antialias=True
+                y[None], size=(64, 64), mode="bilinear", antialias=True
             ).squeeze()
 
         with torch.no_grad():
@@ -354,23 +336,17 @@ class CLIP(DistanceMetric):
         if method == "patch":
             if patch_size < 16:
                 raise ValueError("The patch size must be at least 16.")
-                    
+
         # if extra_requires (setup.py) is not fulfilled, raise error
-        check_openclip()
-        check_huggingface_hub()
+        check_openclip()        
         import open_clip
         from huggingface_hub import hf_hub_download
 
         # Set the model
         # Copy the pretrained model in the current directory
-        checkpoint_path = hf_hub_download(
-            "chendelong/RemoteCLIP",
-            f"RemoteCLIP-RN50.pt",
-            cache_dir='checkpoints'
+        model, _, _ = open_clip.create_model_and_transforms(
+            "ViT-B-16-SigLIP-256", pretrained="webli"
         )
-        ckpt = torch.load(checkpoint_path, map_location=device)
-        model, _, preprocess = open_clip.create_model_and_transforms("RN50")
-        model.load_state_dict(ckpt)
         model.to(device)
         model.eval()
 
@@ -382,33 +358,30 @@ class CLIP(DistanceMetric):
         x_norm = x.clamp(0, 1)
         y_norm = y.clamp(0, 1)
         self.model = model
-        super().__init__(
-            x=x_norm, y=y_norm, method=method, patch_size=patch_size
-        )
+        super().__init__(x=x_norm, y=y_norm, method=method, patch_size=patch_size)
 
     @torch.no_grad()
     def _compute_image(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
-        # Scale image to be always Bx3x224x224
-        if x.shape != (3, 224, 224):
+        # Scale image to be always Bx3x256x256
+        if x.shape != (3, 256, 256):
             x = torch.nn.functional.interpolate(
-                x[None],
-                size=224,
-                mode="bilinear",
-                antialias=True
+                x[None], size=256, mode="bilinear", antialias=True
             ).squeeze()
-            
-        
-        if y.shape != (3, 224, 224):
+
+        if y.shape != (3, 256, 256):
             y = torch.nn.functional.interpolate(
-                y[None],
-                size=224,
-                mode="bilinear",
-                antialias=True
+                y[None], size=256, mode="bilinear", antialias=True
             ).squeeze()
-        
+
         # normalize
-        means = torch.tensor([0.48145466, 0.4578275, 0.40821073]).view(3, 1, 1).to(x.device)
-        stds = torch.tensor([0.26862954, 0.26130258, 0.27577711]).view(3, 1, 1).to(x.device)
+        means = (
+            torch.tensor([0.48145466, 0.4578275, 0.40821073]).view(3, 1, 1).to(x.device)
+        )
+        stds = (
+            torch.tensor([0.26862954, 0.26130258, 0.27577711])
+            .view(3, 1, 1)
+            .to(x.device)
+        )
 
         x = (x - means) / stds
         y = (y - means) / stds
@@ -435,9 +408,7 @@ class MTF(DistanceMetric):
         patch_size: int = 32,
         scale: int = 4,
     ):
-        super().__init__(
-            x=x, y=y, method=method, patch_size=patch_size
-        )
+        super().__init__(x=x, y=y, method=method, patch_size=patch_size)
 
         if method == "patch":
             if patch_size < 16:
@@ -471,12 +442,13 @@ class MTF(DistanceMetric):
 
 class FractionalDifference(DistanceMetric):
     """Estimate the fractional difference between two tensors"""
+
     def __init__(
         self,
         x: torch.Tensor,
         y: torch.Tensor,
         method: str = "image",
-        patch_size: int = 32
+        patch_size: int = 32,
     ):
         super().__init__(x=x, y=y, method=method, patch_size=patch_size)
         self.epsilon = 1e-8
@@ -486,6 +458,7 @@ class FractionalDifference(DistanceMetric):
 
     def _compute_pixel(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
         return torch.nanmean(torch.abs(x - y) / torch.abs(x + y + self.epsilon), axis=0)
+
 
 def get_distance(
     x: torch.Tensor,
@@ -540,7 +513,9 @@ def get_distance(
             x=x, y=y, method=agg_method, patch_size=patch_size, scale=scale
         )
     elif (method == "fd") or (method == "nd"):
-        distance_fn = FractionalDifference(x=x, y=y, method=agg_method, patch_size=patch_size)
+        distance_fn = FractionalDifference(
+            x=x, y=y, method=agg_method, patch_size=patch_size
+        )
     elif method == "lpips":
         x_rgb = x[rgb_bands, :, :]
         y_rgb = y[rgb_bands, :, :]

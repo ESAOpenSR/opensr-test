@@ -4,9 +4,9 @@ import torch
 from pydantic import BaseModel, field_validator, model_validator
 
 DistanceMetrics = Literal[
-    "kl", "l1", "l2", "pbias", "psnr", "sad",
-    "mtf", "lpips", "clip", "fd", "nd"
+    "kl", "l1", "l2", "pbias", "psnr", "sad", "mtf", "lpips", "clip", "fd", "nd"
 ]
+
 
 class Config(BaseModel):
     # General parameters
@@ -19,7 +19,6 @@ class Config(BaseModel):
     harm_apply_spatial: bool = True
     clip_model_path: Optional[str] = None
 
-
     # Spatial parameters
     spatial_method: Literal["ecc", "pcc", "lgm"] = "pcc"
     spatial_threshold_distance: int = 5
@@ -29,7 +28,6 @@ class Config(BaseModel):
     reflectance_distance: DistanceMetrics = "l1"
     spectral_distance: DistanceMetrics = "sad"
 
-
     # Synthesis parameters
     synthesis_distance: DistanceMetrics = "l1"
 
@@ -38,9 +36,10 @@ class Config(BaseModel):
     correctness_norm: Literal["softmin", "percent"] = "softmin"
     im_score: Optional[float] = 0.05
     om_score: Optional[float] = 0.05
-    ha_score: Optional[float] = 0.05 # be quiet conservative about hallucinations
-    correctness_temperature: Optional[float] = 0.25 # be quiet conservative about hallucinations
-
+    ha_score: Optional[float] = 0.05  # be quiet conservative about hallucinations
+    correctness_temperature: Optional[float] = (
+        0.25  # be quiet conservative about hallucinations
+    )
 
     # General parameters - validator ----------------------------
     @field_validator("device")
@@ -72,7 +71,6 @@ class Config(BaseModel):
             raise ValueError("spatial_threshold_distance must be positive.")
         return value
 
-
     # Create SRharm - validator ------------------------------------------
     @field_validator("harm_apply_spectral")
     def check_harm_apply_spectral(cls, value) -> bool:
@@ -92,14 +90,17 @@ class Consistency(BaseModel):
     spectral: Any
     spatial: Any
 
+
 class Synthesis(BaseModel):
     distance: Any
+
 
 class Correctness(BaseModel):
     omission: Any
     improvement: Any
     hallucination: Any
     classification: Any
+
 
 class Auxiliar(BaseModel):
     sr_harm: Any
@@ -108,9 +109,9 @@ class Auxiliar(BaseModel):
     d_im: Any
     d_om: Any
 
+
 class Results(BaseModel):
     consistency: Consistency
     synthesis: Synthesis
     correctness: Correctness
     auxiliar: Auxiliar
-

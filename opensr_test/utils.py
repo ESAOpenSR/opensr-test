@@ -8,12 +8,12 @@ from skimage.exposure import match_histograms
 
 
 def apply_upsampling(x: torch.Tensor, scale: int) -> torch.Tensor:
-    """ Upsampling a tensor (B, C, H, W) to a lower resolution 
+    """Upsampling a tensor (B, C, H, W) to a lower resolution
     (B, C, H', W') using bilinear interpolation with antialiasing.
 
     Args:
         x (torch.Tensor): The tensor to upsample.
-        scale (int, optional): The super-resolution scale. Defaults 
+        scale (int, optional): The super-resolution scale. Defaults
             to 4.
 
     Returns:
@@ -28,12 +28,12 @@ def apply_upsampling(x: torch.Tensor, scale: int) -> torch.Tensor:
 
 
 def apply_downsampling(x: torch.Tensor, scale: int = 4) -> torch.Tensor:
-    """ Downsampling a tensor (B, C, H, W) to a upper resolution 
+    """Downsampling a tensor (B, C, H, W) to a upper resolution
     (B, C, H', W') using bilinear interpolation with antialiasing.
 
     Args:
         x (torch.Tensor): The tensor to downsampling.
-        scale (int, optional): The super-resolution scale. Defaults 
+        scale (int, optional): The super-resolution scale. Defaults
             to 4.
 
     Returns:
@@ -48,27 +48,27 @@ def apply_downsampling(x: torch.Tensor, scale: int = 4) -> torch.Tensor:
 
 
 def apply_mask(x: torch.Tensor, mask: int) -> torch.Tensor:
-    """ Apply a mask to the tensor. Some deep learning models
+    """Apply a mask to the tensor. Some deep learning models
     underperform at the borders of the image. This function
     crops the borders of the image to avoid this issue.
 
     Args:
         x (torch.Tensor): The tensor to apply the mask.
-        mask (int): The border mask. 
+        mask (int): The border mask.
 
     Returns:
         torch.Tensor: The tensor with the mask applied.
     """
 
     if mask is None:
-        return x        
+        return x
     if mask == 0:
-        return x        
-    return x[:, mask: -mask, mask: -mask]
+        return x
+    return x[:, mask:-mask, mask:-mask]
 
 
 def hq_histogram_matching(image1: torch.Tensor, image2: torch.Tensor) -> torch.Tensor:
-    """ Lazy implementation of histogram matching 
+    """Lazy implementation of histogram matching
 
     Args:
         image1 (torch.Tensor): The low-resolution image (C, H, W).
@@ -97,7 +97,7 @@ def hq_histogram_matching(image1: torch.Tensor, image2: torch.Tensor) -> torch.T
 
 
 def check_lpips() -> None:
-    """ Check if the LPIPS library is installed. """
+    """Check if the LPIPS library is installed."""
 
     try:
         import lpips
@@ -105,18 +105,20 @@ def check_lpips() -> None:
         raise ImportError(
             "The LPIPS library is not installed. Please install it with: pip install lpips"
         )
-    
+
+
 def check_openclip():
-    """ Check if the open_clip library is installed. """
+    """Check if the open_clip library is installed."""
     try:
         import open_clip
     except ImportError as e:
         raise ImportError(
             "The open_clip library is not installed. Please install it with: pip install open_clip"
-        ) from e    
+        ) from e
+
 
 def check_huggingface_hub():
-    """ Check if the huggingface library is installed. """    
+    """Check if the huggingface library is installed."""
 
     try:
         import huggingface_hub
@@ -128,7 +130,7 @@ def check_huggingface_hub():
 
 
 def seed_everything(seed: int):
-    """ Seed everything for reproducibility.
+    """Seed everything for reproducibility.
 
     Args:
         seed (int): The seed to use.
@@ -142,7 +144,7 @@ def seed_everything(seed: int):
 
 
 def get_data_path() -> str:
-    """ Get the path of the opensr-test dataset
+    """Get the path of the opensr-test dataset
 
     Returns:
         str: _description_

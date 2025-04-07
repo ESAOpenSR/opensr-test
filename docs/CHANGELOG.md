@@ -21,6 +21,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 Unreleased changes here.
 
+## [1.3.2] - 2024-10-31
+
+- We change the CLIP algorithm from `satclip` to generic `clip` function.
+
+## [1.2.2] - 2024-10-31
+
+- A better algorithm to Harmonize the LR and HR images.
+
 ## [1.2.1] - 2024-09-02
 
 - Bug due to the new satalign package API fixed.

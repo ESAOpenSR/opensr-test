@@ -9,7 +9,7 @@ from opensr_test.utils import get_data_path
 
 
 def download(url: str, save_path: str) -> str:
-    """ Download a file from a url.
+    """Download a file from a url.
 
     Args:
         url (str): The url of the file in HuggingFace Hub.
@@ -25,18 +25,19 @@ def download(url: str, save_path: str) -> str:
                 f.write(chunk)
     return None
 
+
 def load(
     dataset: str = "naip",
     model_dir: Optional[str] = None,
-    version: Literal["v1", "v2"] = "v2",
-    force: bool = False
+    version: Literal["v1", "v2", "v3"] = "v3",
+    force: bool = False,
 ) -> torch.Tensor:
-    """ Load a dataset.
+    """Load a dataset.
 
     Args:
         dataset (str, optional): The dataset to load. Defaults to "naip".
         force (bool, optional): If True, force the download. Defaults to False.
-        
+
     Raises:
         NotImplementedError: If the dataset is not implemented.
 
@@ -47,32 +48,30 @@ def load(
         version_key = "020"
     elif version == "v2":
         version_key = "100"
+    elif version == "v3":
+        version_key = "021"
 
     if model_dir is None:
         ROOT_FOLDER = get_data_path()
     else:
         ROOT_FOLDER = pathlib.Path(model_dir)
 
-    DATASETS = [
-        "naip", "spot", "venus", "spain_urban",
-        "spain_crops", "satellogic"
-    ]
-    if dataset not in DATASETS:        
+    DATASETS = ["naip", "spot", "venus", "spain_urban", "spain_crops", "satellogic"]
+    if dataset not in DATASETS:
         raise NotImplementedError("The dataset %s is not implemented." % dataset)
 
     URL = "https://huggingface.co/datasets/isp-uv-es/opensr-test/resolve/main"
-    
+
     ## download the dataset
     dataset_file = "%s/%s/%s/%s.pkl" % (URL, version_key, dataset, dataset)
-    hrfile_path = ROOT_FOLDER  / f"{dataset}.pkl"
+    hrfile_path = ROOT_FOLDER / f"{dataset}.pkl"
     if not hrfile_path.exists() or force:
         print(f"Downloading {dataset} dataset  - {hrfile_path.stem} file.")
         download(dataset_file, hrfile_path)
 
-
     ## Load the dataset
-    
+
     with open(hrfile_path, "rb") as f:
         dataset = pickle.load(f)
-        
+
     return dataset
